@@ -4,28 +4,35 @@
 //
 //
 
-// Package taxcode provides the /tax_codes APIs
+// Package taxcode provides the /v1/tax_codes APIs
 package taxcode
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /tax_codes APIs.
+// Client is used to invoke /v1/tax_codes APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// Get returns the details of a tax code.
+// Retrieves the details of an existing tax code. Supply the unique tax code ID and Stripe will return the corresponding tax code information.
 func Get(id string, params *stripe.TaxCodeParams) (*stripe.TaxCode, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a tax code.
+// Retrieves the details of an existing tax code. Supply the unique tax code ID and Stripe will return the corresponding tax code information.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.TaxCodeParams) (*stripe.TaxCode, error) {
 	path := stripe.FormatURLPath("/v1/tax_codes/%s", id)
 	taxcode := &stripe.TaxCode{}
@@ -33,17 +40,21 @@ func (c Client) Get(id string, params *stripe.TaxCodeParams) (*stripe.TaxCode, e
 	return taxcode, err
 }
 
-// List returns a list of tax codes.
+// A list of [all tax codes available](https://stripe.com/docs/tax/tax-categories) to add to Products in order to allow specific tax calculations.
 func List(params *stripe.TaxCodeListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of tax codes.
+// A list of [all tax codes available](https://stripe.com/docs/tax/tax-categories) to add to Products in order to allow specific tax calculations.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.TaxCodeListParams) *Iter {
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.TaxCodeList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/tax_codes", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/tax_codes", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

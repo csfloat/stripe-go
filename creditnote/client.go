@@ -4,46 +4,74 @@
 //
 //
 
-// Package creditnote provides the /credit_notes APIs
+// Package creditnote provides the /v1/credit_notes APIs
 package creditnote
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /credit_notes APIs.
+// Client is used to invoke /v1/credit_notes APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// New creates a new credit note.
+// Issue a credit note to adjust the amount of a finalized invoice. For a status=open invoice, a credit note reduces
+// its amount_due. For a status=paid invoice, a credit note does not affect its amount_due. Instead, it can result
+// in any combination of the following:
+//
+// Refund: create a new refund (using refund_amount) or link an existing refund (using refund).
+// Customer balance credit: credit the customer's balance (using credit_amount) which will be automatically applied to their next invoice when it's finalized.
+// Outside of Stripe credit: record the amount that is or will be credited outside of Stripe (using out_of_band_amount).
+//
+// For post-payment credit notes the sum of the refund, credit and outside of Stripe amounts must equal the credit note total.
+//
+// You may issue multiple credit notes for an invoice. Each credit note will increment the invoice's pre_payment_credit_notes_amount
+// or post_payment_credit_notes_amount depending on its status at the time of credit note creation.
 func New(params *stripe.CreditNoteParams) (*stripe.CreditNote, error) {
 	return getC().New(params)
 }
 
-// New creates a new credit note.
+// Issue a credit note to adjust the amount of a finalized invoice. For a status=open invoice, a credit note reduces
+// its amount_due. For a status=paid invoice, a credit note does not affect its amount_due. Instead, it can result
+// in any combination of the following:
+//
+// Refund: create a new refund (using refund_amount) or link an existing refund (using refund).
+// Customer balance credit: credit the customer's balance (using credit_amount) which will be automatically applied to their next invoice when it's finalized.
+// Outside of Stripe credit: record the amount that is or will be credited outside of Stripe (using out_of_band_amount).
+//
+// For post-payment credit notes the sum of the refund, credit and outside of Stripe amounts must equal the credit note total.
+//
+// You may issue multiple credit notes for an invoice. Each credit note will increment the invoice's pre_payment_credit_notes_amount
+// or post_payment_credit_notes_amount depending on its status at the time of credit note creation.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) New(params *stripe.CreditNoteParams) (*stripe.CreditNote, error) {
 	creditnote := &stripe.CreditNote{}
 	err := c.B.Call(
-		http.MethodPost,
-		"/v1/credit_notes",
-		c.Key,
-		params,
-		creditnote,
-	)
+		http.MethodPost, "/v1/credit_notes", c.Key, params, creditnote)
 	return creditnote, err
 }
 
-// Get returns the details of a credit note.
+// Retrieves the credit note object with the given identifier.
 func Get(id string, params *stripe.CreditNoteParams) (*stripe.CreditNote, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a credit note.
+// Retrieves the credit note object with the given identifier.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.CreditNoteParams) (*stripe.CreditNote, error) {
 	path := stripe.FormatURLPath("/v1/credit_notes/%s", id)
 	creditnote := &stripe.CreditNote{}
@@ -51,12 +79,16 @@ func (c Client) Get(id string, params *stripe.CreditNoteParams) (*stripe.CreditN
 	return creditnote, err
 }
 
-// Update updates a credit note's properties.
+// Updates an existing credit note.
 func Update(id string, params *stripe.CreditNoteParams) (*stripe.CreditNote, error) {
 	return getC().Update(id, params)
 }
 
-// Update updates a credit note's properties.
+// Updates an existing credit note.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Update(id string, params *stripe.CreditNoteParams) (*stripe.CreditNote, error) {
 	path := stripe.FormatURLPath("/v1/credit_notes/%s", id)
 	creditnote := &stripe.CreditNote{}
@@ -64,30 +96,33 @@ func (c Client) Update(id string, params *stripe.CreditNoteParams) (*stripe.Cred
 	return creditnote, err
 }
 
-// Preview is the method for the `GET /v1/credit_notes/preview` API.
+// Get a preview of a credit note without creating it.
 func Preview(params *stripe.CreditNotePreviewParams) (*stripe.CreditNote, error) {
 	return getC().Preview(params)
 }
 
-// Preview is the method for the `GET /v1/credit_notes/preview` API.
+// Get a preview of a credit note without creating it.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Preview(params *stripe.CreditNotePreviewParams) (*stripe.CreditNote, error) {
 	creditnote := &stripe.CreditNote{}
 	err := c.B.Call(
-		http.MethodGet,
-		"/v1/credit_notes/preview",
-		c.Key,
-		params,
-		creditnote,
-	)
+		http.MethodGet, "/v1/credit_notes/preview", c.Key, params, creditnote)
 	return creditnote, err
 }
 
-// VoidCreditNote is the method for the `POST /v1/credit_notes/{id}/void` API.
+// Marks a credit note as void. Learn more about [voiding credit notes](https://stripe.com/docs/billing/invoices/credit-notes#voiding).
 func VoidCreditNote(id string, params *stripe.CreditNoteVoidCreditNoteParams) (*stripe.CreditNote, error) {
 	return getC().VoidCreditNote(id, params)
 }
 
-// VoidCreditNote is the method for the `POST /v1/credit_notes/{id}/void` API.
+// Marks a credit note as void. Learn more about [voiding credit notes](https://stripe.com/docs/billing/invoices/credit-notes#voiding).
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) VoidCreditNote(id string, params *stripe.CreditNoteVoidCreditNoteParams) (*stripe.CreditNote, error) {
 	path := stripe.FormatURLPath("/v1/credit_notes/%s/void", id)
 	creditnote := &stripe.CreditNote{}
@@ -95,17 +130,21 @@ func (c Client) VoidCreditNote(id string, params *stripe.CreditNoteVoidCreditNot
 	return creditnote, err
 }
 
-// List returns a list of credit notes.
+// Returns a list of credit notes.
 func List(params *stripe.CreditNoteListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of credit notes.
+// Returns a list of credit notes.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.CreditNoteListParams) *Iter {
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.CreditNoteList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/credit_notes", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/credit_notes", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {
@@ -134,21 +173,23 @@ func (i *Iter) CreditNoteList() *stripe.CreditNoteList {
 	return i.List().(*stripe.CreditNoteList)
 }
 
-// ListLines is the method for the `GET /v1/credit_notes/{credit_note}/lines` API.
+// When retrieving a credit note, you'll get a lines property containing the first handful of those items. There is also a URL where you can retrieve the full (paginated) list of line items.
 func ListLines(params *stripe.CreditNoteListLinesParams) *LineItemIter {
 	return getC().ListLines(params)
 }
 
-// ListLines is the method for the `GET /v1/credit_notes/{credit_note}/lines` API.
+// When retrieving a credit note, you'll get a lines property containing the first handful of those items. There is also a URL where you can retrieve the full (paginated) list of line items.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) ListLines(listParams *stripe.CreditNoteListLinesParams) *LineItemIter {
 	path := stripe.FormatURLPath(
-		"/v1/credit_notes/%s/lines",
-		stripe.StringValue(listParams.CreditNote),
-	)
+		"/v1/credit_notes/%s/lines", stripe.StringValue(listParams.CreditNote))
 	return &LineItemIter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.CreditNoteLineItemList{}
-			err := c.B.CallRaw(http.MethodGet, path, c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, path, c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {
@@ -160,17 +201,21 @@ func (c Client) ListLines(listParams *stripe.CreditNoteListLinesParams) *LineIte
 	}
 }
 
-// PreviewLines is the method for the `GET /v1/credit_notes/preview/lines` API.
+// When retrieving a credit note preview, you'll get a lines property containing the first handful of those items. This URL you can retrieve the full (paginated) list of line items.
 func PreviewLines(params *stripe.CreditNotePreviewLinesParams) *LineItemIter {
 	return getC().PreviewLines(params)
 }
 
-// PreviewLines is the method for the `GET /v1/credit_notes/preview/lines` API.
+// When retrieving a credit note preview, you'll get a lines property containing the first handful of those items. This URL you can retrieve the full (paginated) list of line items.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) PreviewLines(listParams *stripe.CreditNotePreviewLinesParams) *LineItemIter {
 	return &LineItemIter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.CreditNoteLineItemList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/credit_notes/preview/lines", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/credit_notes/preview/lines", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

@@ -6,10 +6,28 @@
 
 package stripe
 
+// Deletes a ValueListItem object, removing it from its parent value list.
+type RadarValueListItemParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// The value of the item (whose type must match the type of the parent value list).
+	Value *string `form:"value"`
+	// The identifier of the value list which the created item will be added to.
+	ValueList *string `form:"value_list"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *RadarValueListItemParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 // Returns a list of ValueListItem objects. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
 type RadarValueListItemListParams struct {
-	ListParams   `form:"*"`
-	Created      *int64            `form:"created"`
+	ListParams `form:"*"`
+	// Only return items that were created during the given date interval.
+	Created *int64 `form:"created"`
+	// Only return items that were created during the given date interval.
 	CreatedRange *RangeQueryParams `form:"created"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
@@ -24,8 +42,25 @@ func (p *RadarValueListItemListParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
+// Deletes a ValueListItem object, removing it from its parent value list.
+type RadarValueListItemDeleteParams struct {
+	Params `form:"*"`
+}
+
+// Retrieves a ValueListItem object.
+type RadarValueListItemRetrieveParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *RadarValueListItemRetrieveParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 // Creates a new ValueListItem object, which is added to the specified parent value list.
-type RadarValueListItemParams struct {
+type RadarValueListItemCreateParams struct {
 	Params `form:"*"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
@@ -36,7 +71,7 @@ type RadarValueListItemParams struct {
 }
 
 // AddExpand appends a new field to expand.
-func (p *RadarValueListItemParams) AddExpand(f string) {
+func (p *RadarValueListItemCreateParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 

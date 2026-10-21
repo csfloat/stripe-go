@@ -8,7 +8,7 @@ package stripe
 
 import (
 	"encoding/json"
-	"github.com/stripe/stripe-go/v75/form"
+	"github.com/stripe/stripe-go/v82/form"
 	"strconv"
 )
 
@@ -34,6 +34,16 @@ const (
 	CardAddressZipCheckUnchecked   CardAddressZipCheck = "unchecked"
 )
 
+// This field indicates whether this payment method can be shown again to its customer in a checkout flow. Stripe products such as Checkout and Elements use this field to determine whether a payment method can be shown as a saved payment method in a checkout flow. The field defaults to “unspecified”.
+type CardAllowRedisplay string
+
+// List of values that CardAllowRedisplay can take
+const (
+	CardAllowRedisplayAlways      CardAllowRedisplay = "always"
+	CardAllowRedisplayLimited     CardAllowRedisplay = "limited"
+	CardAllowRedisplayUnspecified CardAllowRedisplay = "unspecified"
+)
+
 // A set of available payout methods for this card. Only values from this set should be passed as the `method` when creating a payout.
 type CardAvailablePayoutMethod string
 
@@ -43,7 +53,7 @@ const (
 	CardAvailablePayoutMethodStandard CardAvailablePayoutMethod = "standard"
 )
 
-// Card brand. Can be `American Express`, `Diners Club`, `Discover`, `Eftpos Australia`, `JCB`, `MasterCard`, `UnionPay`, `Visa`, or `Unknown`.
+// Card brand. Can be `American Express`, `Diners Club`, `Discover`, `Eftpos Australia`, `Girocard`, `JCB`, `MasterCard`, `UnionPay`, `Visa`, or `Unknown`.
 type CardBrand string
 
 // List of values that CardBrand can take
@@ -80,6 +90,15 @@ const (
 	CardFundingUnknown CardFunding = "unknown"
 )
 
+// Status of a card based on the card issuer.
+type CardRegulatedStatus string
+
+// List of values that CardRegulatedStatus can take
+const (
+	CardRegulatedStatusRegulated   CardRegulatedStatus = "regulated"
+	CardRegulatedStatusUnregulated CardRegulatedStatus = "unregulated"
+)
+
 // If the card number is tokenized, this is the method that was used. Can be `android_pay` (includes Google Pay), `apple_pay`, `masterpass`, `visa_checkout`, or null.
 type CardTokenizationMethod string
 
@@ -89,22 +108,11 @@ const (
 	CardTokenizationMethodApplePay   CardTokenizationMethod = "apple_pay"
 )
 
-type CardOwnerParams struct {
-	// Owner's address.
-	Address *AddressParams `form:"address"`
-	// Owner's email address.
-	Email *string `form:"email"`
-	// Owner's full name.
-	Name *string `form:"name"`
-	// Owner's phone number.
-	Phone *string `form:"phone"`
-}
-
 // cardSource is a string that's used to build card form parameters. It's a
 // constant just to make mistakes less likely.
 const cardSource = "source"
 
-// Update a specified source for a given customer.
+// Delete a specified source for a given customer.
 type CardParams struct {
 	Params   `form:"*"`
 	Account  *string `form:"-"` // Included in URL
@@ -169,9 +177,9 @@ func (p *CardParams) AppendToAsCardSourceOrExternalAccount(body *form.Values, ke
 
 	if p.DefaultForCurrency != nil {
 		body.Add(
-			form.FormatKey(append(keyParts, "default_for_currency")),
-			strconv.FormatBool(BoolValue(p.DefaultForCurrency)),
-		)
+			form.FormatKey(
+				append(keyParts, "default_for_currency")), strconv.FormatBool(
+				BoolValue(p.DefaultForCurrency)))
 	}
 
 	if p.Token != nil {
@@ -188,69 +196,60 @@ func (p *CardParams) AppendToAsCardSourceOrExternalAccount(body *form.Values, ke
 	}
 	if p.CVC != nil {
 		body.Add(
-			form.FormatKey(append(keyParts, cardSource, "cvc")),
-			StringValue(p.CVC),
-		)
+			form.FormatKey(append(keyParts, cardSource, "cvc")), StringValue(p.CVC))
 	}
 	if p.Currency != nil {
 		body.Add(
-			form.FormatKey(append(keyParts, cardSource, "currency")),
-			StringValue(p.Currency),
-		)
+			form.FormatKey(append(keyParts, cardSource, "currency")), StringValue(
+				p.Currency))
 	}
 	if p.ExpMonth != nil {
 		body.Add(
-			form.FormatKey(append(keyParts, cardSource, "exp_month")),
-			StringValue(p.ExpMonth),
-		)
+			form.FormatKey(append(keyParts, cardSource, "exp_month")), StringValue(
+				p.ExpMonth))
 	}
 	if p.ExpYear != nil {
 		body.Add(
-			form.FormatKey(append(keyParts, cardSource, "exp_year")),
-			StringValue(p.ExpYear),
-		)
+			form.FormatKey(append(keyParts, cardSource, "exp_year")), StringValue(
+				p.ExpYear))
 	}
 	if p.Name != nil {
 		body.Add(
-			form.FormatKey(append(keyParts, cardSource, "name")),
-			StringValue(p.Name),
-		)
+			form.FormatKey(append(keyParts, cardSource, "name")), StringValue(p.Name))
 	}
 	if p.AddressCity != nil {
 		body.Add(
-			form.FormatKey(append(keyParts, cardSource, "address_city")),
-			StringValue(p.AddressCity),
-		)
+			form.FormatKey(append(keyParts, cardSource, "address_city")), StringValue(
+				p.AddressCity))
 	}
 	if p.AddressCountry != nil {
 		body.Add(
-			form.FormatKey(append(keyParts, cardSource, "address_country")),
-			StringValue(p.AddressCountry),
-		)
+			form.FormatKey(
+				append(keyParts, cardSource, "address_country")), StringValue(
+				p.AddressCountry))
 	}
 	if p.AddressLine1 != nil {
 		body.Add(
-			form.FormatKey(append(keyParts, cardSource, "address_line1")),
-			StringValue(p.AddressLine1),
-		)
+			form.FormatKey(
+				append(keyParts, cardSource, "address_line1")), StringValue(
+				p.AddressLine1))
 	}
 	if p.AddressLine2 != nil {
 		body.Add(
-			form.FormatKey(append(keyParts, cardSource, "address_line2")),
-			StringValue(p.AddressLine2),
-		)
+			form.FormatKey(
+				append(keyParts, cardSource, "address_line2")), StringValue(
+				p.AddressLine2))
 	}
 	if p.AddressState != nil {
 		body.Add(
-			form.FormatKey(append(keyParts, cardSource, "address_state")),
-			StringValue(p.AddressState),
-		)
+			form.FormatKey(
+				append(keyParts, cardSource, "address_state")), StringValue(
+				p.AddressState))
 	}
 	if p.AddressZip != nil {
 		body.Add(
-			form.FormatKey(append(keyParts, cardSource, "address_zip")),
-			StringValue(p.AddressZip),
-		)
+			form.FormatKey(append(keyParts, cardSource, "address_zip")), StringValue(
+				p.AddressZip))
 	}
 }
 
@@ -268,10 +267,21 @@ func (p *CardParams) AddMetadata(key string, value string) {
 	p.Metadata[key] = value
 }
 
+type CardOwnerParams struct {
+	// Owner's address.
+	Address *AddressParams `form:"address"`
+	// Owner's email address.
+	Email *string `form:"email"`
+	// Owner's full name.
+	Name *string `form:"name"`
+	// Owner's phone number.
+	Phone *string `form:"phone"`
+}
 type CardListParams struct {
 	ListParams `form:"*"`
-	Account    *string `form:"-"` // Included in URL
 	Customer   *string `form:"-"` // Included in URL
+	Account    *string `form:"-"` // Included in URL
+	Object     *string `form:"object"`
 }
 
 // AppendTo implements custom encoding logic for CardListParams
@@ -283,6 +293,103 @@ func (p *CardListParams) AppendTo(body *form.Values, keyParts []string) {
 	}
 }
 
+// Delete a specified source for a given customer.
+type CardDeleteParams struct {
+	Params   `form:"*"`
+	Customer *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CardDeleteParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+type CardUpdateOwnerParams struct {
+	// Owner's address.
+	Address *AddressParams `form:"address"`
+	// Owner's email address.
+	Email *string `form:"email"`
+	// Owner's full name.
+	Name *string `form:"name"`
+	// Owner's phone number.
+	Phone *string `form:"phone"`
+}
+
+// Update a specified source for a given customer.
+type CardUpdateParams struct {
+	Params   `form:"*"`
+	Customer *string `form:"-"` // Included in URL
+	// The name of the person or business that owns the bank account.
+	AccountHolderName *string `form:"account_holder_name"`
+	// The type of entity that holds the account. This can be either `individual` or `company`.
+	AccountHolderType *string `form:"account_holder_type"`
+	// City/District/Suburb/Town/Village.
+	AddressCity *string `form:"address_city"`
+	// Billing address country, if provided when creating card.
+	AddressCountry *string `form:"address_country"`
+	// Address line 1 (Street address/PO Box/Company name).
+	AddressLine1 *string `form:"address_line1"`
+	// Address line 2 (Apartment/Suite/Unit/Building).
+	AddressLine2 *string `form:"address_line2"`
+	// State/County/Province/Region.
+	AddressState *string `form:"address_state"`
+	// ZIP or postal code.
+	AddressZip *string `form:"address_zip"`
+	// Required when adding a card to an account (not applicable to customers or recipients). The card (which must be a debit card) can be used as a transfer destination for funds in this currency.
+	Currency *string `form:"currency"`
+	// Card security code. Highly recommended to always include this value, but it's required only for accounts based in European countries.
+	CVC *string `form:"cvc"`
+	// Applicable only on accounts (not customers or recipients). If you set this to `true` (or if this is the first external account being added in this currency), this card will become the default external account for its currency.
+	DefaultForCurrency *bool `form:"default_for_currency"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Two digit number representing the card's expiration month.
+	ExpMonth *string `form:"exp_month"`
+	// Four digit number representing the card's expiration year.
+	ExpYear *string `form:"exp_year"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+	// Cardholder name.
+	Name *string `form:"name"`
+	// The card number, as a string without any separators.
+	Number *string                `form:"number"`
+	Owner  *CardUpdateOwnerParams `form:"owner"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CardUpdateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *CardUpdateParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// New creates a new card
+type CardCreateParams struct {
+	Params   `form:"*"`
+	Account  *string `form:"-"` // Included in URL
+	Customer *string `form:"-"` // Included in URL
+	Token    *string `form:"-"` // Included in URL
+}
+
+// Get returns the details of a card.
+type CardRetrieveParams struct {
+	Params  `form:"*"`
+	Account *string `form:"-"` // Included in URL
+}
+type CardNetworks struct {
+	// The preferred network for co-branded cards. Can be `cartes_bancaires`, `mastercard`, `visa` or `invalid_preference` if requested network is not valid for the card.
+	Preferred string `json:"preferred"`
+}
+
 // You can store multiple cards on a customer in order to charge the customer
 // later. You can also store multiple debit cards on a recipient in order to
 // transfer to those cards later.
@@ -290,7 +397,6 @@ func (p *CardListParams) AppendTo(body *form.Values, keyParts []string) {
 // Related guide: [Card payments with Sources](https://stripe.com/docs/sources/cards)
 type Card struct {
 	APIResource
-	// The account this card belongs to. This attribute will not be in the card object if the card belongs to a customer or recipient instead.
 	Account *Account `json:"account"`
 	// City/District/Suburb/Town/Village.
 	AddressCity string `json:"address_city"`
@@ -308,19 +414,21 @@ type Card struct {
 	AddressZip string `json:"address_zip"`
 	// If `address_zip` was provided, results of the check: `pass`, `fail`, `unavailable`, or `unchecked`.
 	AddressZipCheck CardAddressZipCheck `json:"address_zip_check"`
+	// This field indicates whether this payment method can be shown again to its customer in a checkout flow. Stripe products such as Checkout and Elements use this field to determine whether a payment method can be shown as a saved payment method in a checkout flow. The field defaults to “unspecified”.
+	AllowRedisplay CardAllowRedisplay `json:"allow_redisplay"`
 	// A set of available payout methods for this card. Only values from this set should be passed as the `method` when creating a payout.
 	AvailablePayoutMethods []CardAvailablePayoutMethod `json:"available_payout_methods"`
-	// Card brand. Can be `American Express`, `Diners Club`, `Discover`, `Eftpos Australia`, `JCB`, `MasterCard`, `UnionPay`, `Visa`, or `Unknown`.
+	// Card brand. Can be `American Express`, `Diners Club`, `Discover`, `Eftpos Australia`, `Girocard`, `JCB`, `MasterCard`, `UnionPay`, `Visa`, or `Unknown`.
 	Brand CardBrand `json:"brand"`
 	// Two-letter ISO code representing the country of the card. You could use this attribute to get a sense of the international breakdown of cards you've collected.
 	Country string `json:"country"`
-	// Three-letter [ISO code for currency](https://stripe.com/docs/payouts). Only applicable on accounts (not customers or recipients). The card can be used as a transfer destination for funds in this currency.
+	// Three-letter [ISO code for currency](https://www.iso.org/iso-4217-currency-codes.html) in lowercase. Must be a [supported currency](https://docs.stripe.com/currencies). Only applicable on accounts (not customers or recipients). The card can be used as a transfer destination for funds in this currency. This property is only available when returned as an [External Account](https://stripe.com/api/external_account_cards/object) where [controller.is_controller](https://stripe.com/api/accounts/object#account_object-controller-is_controller) is `true`.
 	Currency Currency `json:"currency"`
 	// The customer that this card belongs to. This attribute will not be in the card object if the card belongs to an account or recipient instead.
 	Customer *Customer `json:"customer"`
 	// If a CVC was provided, results of the check: `pass`, `fail`, `unavailable`, or `unchecked`. A result of unchecked indicates that CVC was provided but hasn't been checked yet. Checks are typically performed when attaching a card to a Customer object, or when creating a charge. For more details, see [Check if a card is valid without a charge](https://support.stripe.com/questions/check-if-a-card-is-valid-without-a-charge).
 	CVCCheck CardCVCCheck `json:"cvc_check"`
-	// Whether this card is the default external account for its currency.
+	// Whether this card is the default external account for its currency. This property is only available for accounts where [controller.requirement_collection](https://stripe.com/api/accounts/object#account_object-controller-requirement_collection) is `application`, which includes Custom accounts.
 	DefaultForCurrency bool `json:"default_for_currency"`
 	Deleted            bool `json:"deleted"`
 	// Description is a succinct summary of the card's information.
@@ -360,10 +468,13 @@ type Card struct {
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
 	Metadata map[string]string `json:"metadata"`
 	// Cardholder name.
-	Name string `json:"name"`
+	Name     string        `json:"name"`
+	Networks *CardNetworks `json:"networks"`
 	// String representing the object's type. Objects of the same type share the same value.
 	Object string `json:"object"`
-	// For external accounts, possible values are `new` and `errored`. If a transfer fails, the status is set to `errored` and transfers are stopped until account details are updated.
+	// Status of a card based on the card issuer.
+	RegulatedStatus CardRegulatedStatus `json:"regulated_status"`
+	// For external accounts that are cards, possible values are `new` and `errored`. If a payout fails, the status is set to `errored` and [scheduled payouts](https://stripe.com/docs/payouts#payout-schedule) are stopped until account details are updated.
 	Status string `json:"status"`
 	// If the card number is tokenized, this is the method that was used. Can be `android_pay` (includes Google Pay), `apple_pay`, `masterpass`, `visa_checkout`, or null.
 	TokenizationMethod CardTokenizationMethod `json:"tokenization_method"`

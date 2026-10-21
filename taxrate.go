@@ -8,6 +8,28 @@ package stripe
 
 import "encoding/json"
 
+// The level of the jurisdiction that imposes this tax rate. Will be `null` for manually defined tax rates.
+type TaxRateJurisdictionLevel string
+
+// List of values that TaxRateJurisdictionLevel can take
+const (
+	TaxRateJurisdictionLevelCity     TaxRateJurisdictionLevel = "city"
+	TaxRateJurisdictionLevelCountry  TaxRateJurisdictionLevel = "country"
+	TaxRateJurisdictionLevelCounty   TaxRateJurisdictionLevel = "county"
+	TaxRateJurisdictionLevelDistrict TaxRateJurisdictionLevel = "district"
+	TaxRateJurisdictionLevelMultiple TaxRateJurisdictionLevel = "multiple"
+	TaxRateJurisdictionLevelState    TaxRateJurisdictionLevel = "state"
+)
+
+// Indicates the type of tax rate applied to the taxable amount. This value can be `null` when no tax applies to the location. This field is only present for TaxRates created by Stripe Tax.
+type TaxRateRateType string
+
+// List of values that TaxRateRateType can take
+const (
+	TaxRateRateTypeFlatAmount TaxRateRateType = "flat_amount"
+	TaxRateRateTypePercentage TaxRateRateType = "percentage"
+)
+
 // The high-level tax type, such as `vat` or `sales_tax`.
 type TaxRateTaxType string
 
@@ -22,6 +44,7 @@ const (
 	TaxRateTaxTypeLeaseTax          TaxRateTaxType = "lease_tax"
 	TaxRateTaxTypePST               TaxRateTaxType = "pst"
 	TaxRateTaxTypeQST               TaxRateTaxType = "qst"
+	TaxRateTaxTypeRetailDeliveryFee TaxRateTaxType = "retail_delivery_fee"
 	TaxRateTaxTypeRST               TaxRateTaxType = "rst"
 	TaxRateTaxTypeSalesTax          TaxRateTaxType = "sales_tax"
 	TaxRateTaxTypeServiceTax        TaxRateTaxType = "service_tax"
@@ -69,7 +92,7 @@ type TaxRateParams struct {
 	Metadata map[string]string `form:"metadata"`
 	// This represents the tax rate percent out of 100.
 	Percentage *float64 `form:"percentage"`
-	// [ISO 3166-2 subdivision code](https://en.wikipedia.org/wiki/ISO_3166-2:US), without country prefix. For example, "NY" for New York, United States.
+	// [ISO 3166-2 subdivision code](https://en.wikipedia.org/wiki/ISO_3166-2), without country prefix. For example, "NY" for New York, United States.
 	State *string `form:"state"`
 	// The high-level tax type, such as `vat` or `sales_tax`.
 	TaxType *string `form:"tax_type"`
@@ -89,9 +112,107 @@ func (p *TaxRateParams) AddMetadata(key string, value string) {
 	p.Metadata[key] = value
 }
 
-// Tax rates can be applied to [invoices](https://stripe.com/docs/billing/invoices/tax-rates), [subscriptions](https://stripe.com/docs/billing/subscriptions/taxes) and [Checkout Sessions](https://stripe.com/docs/payments/checkout/set-up-a-subscription#tax-rates) to collect tax.
+// Creates a new tax rate.
+type TaxRateCreateParams struct {
+	Params `form:"*"`
+	// Flag determining whether the tax rate is active or inactive (archived). Inactive tax rates cannot be used with new applications or Checkout Sessions, but will still work for subscriptions and invoices that already have it set.
+	Active *bool `form:"active"`
+	// Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).
+	Country *string `form:"country"`
+	// An arbitrary string attached to the tax rate for your internal use only. It will not be visible to your customers.
+	Description *string `form:"description"`
+	// The display name of the tax rate, which will be shown to users.
+	DisplayName *string `form:"display_name"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// This specifies if the tax rate is inclusive or exclusive.
+	Inclusive *bool `form:"inclusive"`
+	// The jurisdiction for the tax rate. You can use this label field for tax reporting purposes. It also appears on your customer's invoice.
+	Jurisdiction *string `form:"jurisdiction"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+	// This represents the tax rate percent out of 100.
+	Percentage *float64 `form:"percentage"`
+	// [ISO 3166-2 subdivision code](https://en.wikipedia.org/wiki/ISO_3166-2), without country prefix. For example, "NY" for New York, United States.
+	State *string `form:"state"`
+	// The high-level tax type, such as `vat` or `sales_tax`.
+	TaxType *string `form:"tax_type"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TaxRateCreateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *TaxRateCreateParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// Retrieves a tax rate with the given ID
+type TaxRateRetrieveParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TaxRateRetrieveParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Updates an existing tax rate.
+type TaxRateUpdateParams struct {
+	Params `form:"*"`
+	// Flag determining whether the tax rate is active or inactive (archived). Inactive tax rates cannot be used with new applications or Checkout Sessions, but will still work for subscriptions and invoices that already have it set.
+	Active *bool `form:"active"`
+	// Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).
+	Country *string `form:"country"`
+	// An arbitrary string attached to the tax rate for your internal use only. It will not be visible to your customers.
+	Description *string `form:"description"`
+	// The display name of the tax rate, which will be shown to users.
+	DisplayName *string `form:"display_name"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// The jurisdiction for the tax rate. You can use this label field for tax reporting purposes. It also appears on your customer's invoice.
+	Jurisdiction *string `form:"jurisdiction"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+	// [ISO 3166-2 subdivision code](https://en.wikipedia.org/wiki/ISO_3166-2), without country prefix. For example, "NY" for New York, United States.
+	State *string `form:"state"`
+	// The high-level tax type, such as `vat` or `sales_tax`.
+	TaxType *string `form:"tax_type"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TaxRateUpdateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *TaxRateUpdateParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// The amount of the tax rate when the `rate_type` is `flat_amount`. Tax rates with `rate_type` `percentage` can vary based on the transaction, resulting in this field being `null`. This field exposes the amount and currency of the flat tax rate.
+type TaxRateFlatAmount struct {
+	// Amount of the tax when the `rate_type` is `flat_amount`. This positive integer represents how much to charge in the smallest currency unit (e.g., 100 cents to charge $1.00 or 100 to charge ¥100, a zero-decimal currency). The amount value supports up to eight digits (e.g., a value of 99999999 for a USD charge of $999,999.99).
+	Amount int64 `json:"amount"`
+	// Three-letter ISO currency code, in lowercase.
+	Currency Currency `json:"currency"`
+}
+
+// Tax rates can be applied to [invoices](https://stripe.com/invoicing/taxes/tax-rates), [subscriptions](https://stripe.com/billing/taxes/tax-rates) and [Checkout Sessions](https://stripe.com/payments/checkout/use-manual-tax-rates) to collect tax.
 //
-// Related guide: [Tax rates](https://stripe.com/docs/billing/taxes/tax-rates)
+// Related guide: [Tax rates](https://stripe.com/billing/taxes/tax-rates)
 type TaxRate struct {
 	APIResource
 	// Defaults to `true`. When set to `false`, this tax rate cannot be used with new applications or Checkout Sessions, but will still work for subscriptions and invoices that already have it set.
@@ -108,12 +229,16 @@ type TaxRate struct {
 	// this percentage reflects the rate actually used to calculate tax based on the product's taxability
 	// and whether the user is registered to collect taxes in the corresponding jurisdiction.
 	EffectivePercentage float64 `json:"effective_percentage"`
+	// The amount of the tax rate when the `rate_type` is `flat_amount`. Tax rates with `rate_type` `percentage` can vary based on the transaction, resulting in this field being `null`. This field exposes the amount and currency of the flat tax rate.
+	FlatAmount *TaxRateFlatAmount `json:"flat_amount"`
 	// Unique identifier for the object.
 	ID string `json:"id"`
 	// This specifies if the tax rate is inclusive or exclusive.
 	Inclusive bool `json:"inclusive"`
 	// The jurisdiction for the tax rate. You can use this label field for tax reporting purposes. It also appears on your customer's invoice.
 	Jurisdiction string `json:"jurisdiction"`
+	// The level of the jurisdiction that imposes this tax rate. Will be `null` for manually defined tax rates.
+	JurisdictionLevel TaxRateJurisdictionLevel `json:"jurisdiction_level"`
 	// Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.
 	Livemode bool `json:"livemode"`
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
@@ -122,7 +247,9 @@ type TaxRate struct {
 	Object string `json:"object"`
 	// Tax rate percentage out of 100. For tax calculations with automatic_tax[enabled]=true, this percentage includes the statutory tax rate of non-taxable jurisdictions.
 	Percentage float64 `json:"percentage"`
-	// [ISO 3166-2 subdivision code](https://en.wikipedia.org/wiki/ISO_3166-2:US), without country prefix. For example, "NY" for New York, United States.
+	// Indicates the type of tax rate applied to the taxable amount. This value can be `null` when no tax applies to the location. This field is only present for TaxRates created by Stripe Tax.
+	RateType TaxRateRateType `json:"rate_type"`
+	// [ISO 3166-2 subdivision code](https://en.wikipedia.org/wiki/ISO_3166-2), without country prefix. For example, "NY" for New York, United States.
 	State string `json:"state"`
 	// The high-level tax type, such as `vat` or `sales_tax`.
 	TaxType TaxRateTaxType `json:"tax_type"`

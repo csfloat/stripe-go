@@ -4,28 +4,35 @@
 //
 //
 
-// Package transactionentry provides the /treasury/transaction_entries APIs
+// Package transactionentry provides the /v1/treasury/transaction_entries APIs
 package transactionentry
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /treasury/transaction_entries APIs.
+// Client is used to invoke /v1/treasury/transaction_entries APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// Get returns the details of a treasury transaction entry.
+// Retrieves a TransactionEntry object.
 func Get(id string, params *stripe.TreasuryTransactionEntryParams) (*stripe.TreasuryTransactionEntry, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a treasury transaction entry.
+// Retrieves a TransactionEntry object.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.TreasuryTransactionEntryParams) (*stripe.TreasuryTransactionEntry, error) {
 	path := stripe.FormatURLPath("/v1/treasury/transaction_entries/%s", id)
 	transactionentry := &stripe.TreasuryTransactionEntry{}
@@ -33,17 +40,21 @@ func (c Client) Get(id string, params *stripe.TreasuryTransactionEntryParams) (*
 	return transactionentry, err
 }
 
-// List returns a list of treasury transaction entries.
+// Retrieves a list of TransactionEntry objects.
 func List(params *stripe.TreasuryTransactionEntryListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of treasury transaction entries.
+// Retrieves a list of TransactionEntry objects.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.TreasuryTransactionEntryListParams) *Iter {
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.TreasuryTransactionEntryList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/treasury/transaction_entries", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/treasury/transaction_entries", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

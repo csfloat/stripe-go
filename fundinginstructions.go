@@ -11,11 +11,14 @@ type FundingInstructionsBankTransferFinancialAddressSupportedNetwork string
 
 // List of values that FundingInstructionsBankTransferFinancialAddressSupportedNetwork can take
 const (
-	FundingInstructionsBankTransferFinancialAddressSupportedNetworkBACS   FundingInstructionsBankTransferFinancialAddressSupportedNetwork = "bacs"
-	FundingInstructionsBankTransferFinancialAddressSupportedNetworkFPS    FundingInstructionsBankTransferFinancialAddressSupportedNetwork = "fps"
-	FundingInstructionsBankTransferFinancialAddressSupportedNetworkSEPA   FundingInstructionsBankTransferFinancialAddressSupportedNetwork = "sepa"
-	FundingInstructionsBankTransferFinancialAddressSupportedNetworkSpei   FundingInstructionsBankTransferFinancialAddressSupportedNetwork = "spei"
-	FundingInstructionsBankTransferFinancialAddressSupportedNetworkZengin FundingInstructionsBankTransferFinancialAddressSupportedNetwork = "zengin"
+	FundingInstructionsBankTransferFinancialAddressSupportedNetworkACH            FundingInstructionsBankTransferFinancialAddressSupportedNetwork = "ach"
+	FundingInstructionsBankTransferFinancialAddressSupportedNetworkBACS           FundingInstructionsBankTransferFinancialAddressSupportedNetwork = "bacs"
+	FundingInstructionsBankTransferFinancialAddressSupportedNetworkDomesticWireUS FundingInstructionsBankTransferFinancialAddressSupportedNetwork = "domestic_wire_us"
+	FundingInstructionsBankTransferFinancialAddressSupportedNetworkFPS            FundingInstructionsBankTransferFinancialAddressSupportedNetwork = "fps"
+	FundingInstructionsBankTransferFinancialAddressSupportedNetworkSEPA           FundingInstructionsBankTransferFinancialAddressSupportedNetwork = "sepa"
+	FundingInstructionsBankTransferFinancialAddressSupportedNetworkSpei           FundingInstructionsBankTransferFinancialAddressSupportedNetwork = "spei"
+	FundingInstructionsBankTransferFinancialAddressSupportedNetworkSwift          FundingInstructionsBankTransferFinancialAddressSupportedNetwork = "swift"
+	FundingInstructionsBankTransferFinancialAddressSupportedNetworkZengin         FundingInstructionsBankTransferFinancialAddressSupportedNetwork = "zengin"
 )
 
 // The type of financial address
@@ -23,9 +26,11 @@ type FundingInstructionsBankTransferFinancialAddressType string
 
 // List of values that FundingInstructionsBankTransferFinancialAddressType can take
 const (
+	FundingInstructionsBankTransferFinancialAddressTypeABA      FundingInstructionsBankTransferFinancialAddressType = "aba"
 	FundingInstructionsBankTransferFinancialAddressTypeIBAN     FundingInstructionsBankTransferFinancialAddressType = "iban"
 	FundingInstructionsBankTransferFinancialAddressTypeSortCode FundingInstructionsBankTransferFinancialAddressType = "sort_code"
 	FundingInstructionsBankTransferFinancialAddressTypeSpei     FundingInstructionsBankTransferFinancialAddressType = "spei"
+	FundingInstructionsBankTransferFinancialAddressTypeSwift    FundingInstructionsBankTransferFinancialAddressType = "swift"
 	FundingInstructionsBankTransferFinancialAddressTypeZengin   FundingInstructionsBankTransferFinancialAddressType = "zengin"
 )
 
@@ -46,10 +51,28 @@ const (
 	FundingInstructionsFundingTypeBankTransfer FundingInstructionsFundingType = "bank_transfer"
 )
 
+// ABA Records contain U.S. bank account details per the ABA format.
+type FundingInstructionsBankTransferFinancialAddressABA struct {
+	AccountHolderAddress *Address `json:"account_holder_address"`
+	// The account holder name
+	AccountHolderName string `json:"account_holder_name"`
+	// The ABA account number
+	AccountNumber string `json:"account_number"`
+	// The account type
+	AccountType string   `json:"account_type"`
+	BankAddress *Address `json:"bank_address"`
+	// The bank name
+	BankName string `json:"bank_name"`
+	// The ABA routing number
+	RoutingNumber string `json:"routing_number"`
+}
+
 // Iban Records contain E.U. bank account details per the SEPA format.
 type FundingInstructionsBankTransferFinancialAddressIBAN struct {
+	AccountHolderAddress *Address `json:"account_holder_address"`
 	// The name of the person or business that owns the bank account
-	AccountHolderName string `json:"account_holder_name"`
+	AccountHolderName string   `json:"account_holder_name"`
+	BankAddress       *Address `json:"bank_address"`
 	// The BIC/SWIFT code of the account.
 	BIC string `json:"bic"`
 	// Two-letter country code ([ISO 3166-1 alpha-2](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2)).
@@ -60,16 +83,22 @@ type FundingInstructionsBankTransferFinancialAddressIBAN struct {
 
 // Sort Code Records contain U.K. bank account details per the sort code format.
 type FundingInstructionsBankTransferFinancialAddressSortCode struct {
+	AccountHolderAddress *Address `json:"account_holder_address"`
 	// The name of the person or business that owns the bank account
 	AccountHolderName string `json:"account_holder_name"`
 	// The account number
-	AccountNumber string `json:"account_number"`
+	AccountNumber string   `json:"account_number"`
+	BankAddress   *Address `json:"bank_address"`
 	// The six-digit sort code
 	SortCode string `json:"sort_code"`
 }
 
 // SPEI Records contain Mexico bank account details per the SPEI format.
 type FundingInstructionsBankTransferFinancialAddressSpei struct {
+	AccountHolderAddress *Address `json:"account_holder_address"`
+	// The account holder name
+	AccountHolderName string   `json:"account_holder_name"`
+	BankAddress       *Address `json:"bank_address"`
 	// The three-digit bank code
 	BankCode string `json:"bank_code"`
 	// The short banking institution name
@@ -78,14 +107,32 @@ type FundingInstructionsBankTransferFinancialAddressSpei struct {
 	Clabe string `json:"clabe"`
 }
 
+// SWIFT Records contain U.S. bank account details per the SWIFT format.
+type FundingInstructionsBankTransferFinancialAddressSwift struct {
+	AccountHolderAddress *Address `json:"account_holder_address"`
+	// The account holder name
+	AccountHolderName string `json:"account_holder_name"`
+	// The account number
+	AccountNumber string `json:"account_number"`
+	// The account type
+	AccountType string   `json:"account_type"`
+	BankAddress *Address `json:"bank_address"`
+	// The bank name
+	BankName string `json:"bank_name"`
+	// The SWIFT code
+	SwiftCode string `json:"swift_code"`
+}
+
 // Zengin Records contain Japan bank account details per the Zengin format.
 type FundingInstructionsBankTransferFinancialAddressZengin struct {
+	AccountHolderAddress *Address `json:"account_holder_address"`
 	// The account holder name
 	AccountHolderName string `json:"account_holder_name"`
 	// The account number
 	AccountNumber string `json:"account_number"`
 	// The bank account type. In Japan, this can only be `futsu` or `toza`.
-	AccountType string `json:"account_type"`
+	AccountType string   `json:"account_type"`
+	BankAddress *Address `json:"bank_address"`
 	// The bank code of the account
 	BankCode string `json:"bank_code"`
 	// The bank name of the account
@@ -98,6 +145,8 @@ type FundingInstructionsBankTransferFinancialAddressZengin struct {
 
 // A list of financial addresses that can be used to fund a particular balance
 type FundingInstructionsBankTransferFinancialAddress struct {
+	// ABA Records contain U.S. bank account details per the ABA format.
+	ABA *FundingInstructionsBankTransferFinancialAddressABA `json:"aba"`
 	// Iban Records contain E.U. bank account details per the SEPA format.
 	IBAN *FundingInstructionsBankTransferFinancialAddressIBAN `json:"iban"`
 	// Sort Code Records contain U.K. bank account details per the sort code format.
@@ -106,6 +155,8 @@ type FundingInstructionsBankTransferFinancialAddress struct {
 	Spei *FundingInstructionsBankTransferFinancialAddressSpei `json:"spei"`
 	// The payment networks supported by this FinancialAddress
 	SupportedNetworks []FundingInstructionsBankTransferFinancialAddressSupportedNetwork `json:"supported_networks"`
+	// SWIFT Records contain U.S. bank account details per the SWIFT format.
+	Swift *FundingInstructionsBankTransferFinancialAddressSwift `json:"swift"`
 	// The type of financial address
 	Type FundingInstructionsBankTransferFinancialAddressType `json:"type"`
 	// Zengin Records contain Japan bank account details per the Zengin format.

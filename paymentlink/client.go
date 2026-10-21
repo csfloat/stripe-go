@@ -4,46 +4,52 @@
 //
 //
 
-// Package paymentlink provides the /payment_links APIs
+// Package paymentlink provides the /v1/payment_links APIs
 package paymentlink
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /payment_links APIs.
+// Client is used to invoke /v1/payment_links APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// New creates a new payment link.
+// Creates a payment link.
 func New(params *stripe.PaymentLinkParams) (*stripe.PaymentLink, error) {
 	return getC().New(params)
 }
 
-// New creates a new payment link.
+// Creates a payment link.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) New(params *stripe.PaymentLinkParams) (*stripe.PaymentLink, error) {
 	paymentlink := &stripe.PaymentLink{}
 	err := c.B.Call(
-		http.MethodPost,
-		"/v1/payment_links",
-		c.Key,
-		params,
-		paymentlink,
-	)
+		http.MethodPost, "/v1/payment_links", c.Key, params, paymentlink)
 	return paymentlink, err
 }
 
-// Get returns the details of a payment link.
+// Retrieve a payment link.
 func Get(id string, params *stripe.PaymentLinkParams) (*stripe.PaymentLink, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a payment link.
+// Retrieve a payment link.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.PaymentLinkParams) (*stripe.PaymentLink, error) {
 	path := stripe.FormatURLPath("/v1/payment_links/%s", id)
 	paymentlink := &stripe.PaymentLink{}
@@ -51,12 +57,16 @@ func (c Client) Get(id string, params *stripe.PaymentLinkParams) (*stripe.Paymen
 	return paymentlink, err
 }
 
-// Update updates a payment link's properties.
+// Updates a payment link.
 func Update(id string, params *stripe.PaymentLinkParams) (*stripe.PaymentLink, error) {
 	return getC().Update(id, params)
 }
 
-// Update updates a payment link's properties.
+// Updates a payment link.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Update(id string, params *stripe.PaymentLinkParams) (*stripe.PaymentLink, error) {
 	path := stripe.FormatURLPath("/v1/payment_links/%s", id)
 	paymentlink := &stripe.PaymentLink{}
@@ -64,17 +74,21 @@ func (c Client) Update(id string, params *stripe.PaymentLinkParams) (*stripe.Pay
 	return paymentlink, err
 }
 
-// List returns a list of payment links.
+// Returns a list of your payment links.
 func List(params *stripe.PaymentLinkListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of payment links.
+// Returns a list of your payment links.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.PaymentLinkListParams) *Iter {
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.PaymentLinkList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/payment_links", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/payment_links", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {
@@ -103,21 +117,24 @@ func (i *Iter) PaymentLinkList() *stripe.PaymentLinkList {
 	return i.List().(*stripe.PaymentLinkList)
 }
 
-// ListLineItems is the method for the `GET /v1/payment_links/{payment_link}/line_items` API.
+// When retrieving a payment link, there is an includable line_items property containing the first handful of those items. There is also a URL where you can retrieve the full (paginated) list of line items.
 func ListLineItems(params *stripe.PaymentLinkListLineItemsParams) *LineItemIter {
 	return getC().ListLineItems(params)
 }
 
-// ListLineItems is the method for the `GET /v1/payment_links/{payment_link}/line_items` API.
+// When retrieving a payment link, there is an includable line_items property containing the first handful of those items. There is also a URL where you can retrieve the full (paginated) list of line items.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) ListLineItems(listParams *stripe.PaymentLinkListLineItemsParams) *LineItemIter {
 	path := stripe.FormatURLPath(
-		"/v1/payment_links/%s/line_items",
-		stripe.StringValue(listParams.PaymentLink),
-	)
+		"/v1/payment_links/%s/line_items", stripe.StringValue(
+			listParams.PaymentLink))
 	return &LineItemIter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.LineItemList{}
-			err := c.B.CallRaw(http.MethodGet, path, c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, path, c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

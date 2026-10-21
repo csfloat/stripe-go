@@ -4,28 +4,35 @@
 //
 //
 
-// Package receiveddebit provides the /treasury/received_debits APIs
+// Package receiveddebit provides the /v1/treasury/received_debits APIs
 package receiveddebit
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /treasury/received_debits APIs.
+// Client is used to invoke /v1/treasury/received_debits APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// Get returns the details of a treasury received debit.
+// Retrieves the details of an existing ReceivedDebit by passing the unique ReceivedDebit ID from the ReceivedDebit list
 func Get(id string, params *stripe.TreasuryReceivedDebitParams) (*stripe.TreasuryReceivedDebit, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a treasury received debit.
+// Retrieves the details of an existing ReceivedDebit by passing the unique ReceivedDebit ID from the ReceivedDebit list
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.TreasuryReceivedDebitParams) (*stripe.TreasuryReceivedDebit, error) {
 	path := stripe.FormatURLPath("/v1/treasury/received_debits/%s", id)
 	receiveddebit := &stripe.TreasuryReceivedDebit{}
@@ -33,17 +40,21 @@ func (c Client) Get(id string, params *stripe.TreasuryReceivedDebitParams) (*str
 	return receiveddebit, err
 }
 
-// List returns a list of treasury received debits.
+// Returns a list of ReceivedDebits.
 func List(params *stripe.TreasuryReceivedDebitListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of treasury received debits.
+// Returns a list of ReceivedDebits.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.TreasuryReceivedDebitListParams) *Iter {
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.TreasuryReceivedDebitList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/treasury/received_debits", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/treasury/received_debits", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

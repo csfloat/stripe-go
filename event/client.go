@@ -4,28 +4,35 @@
 //
 //
 
-// Package event provides the /events APIs
+// Package event provides the /v1/events APIs
 package event
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /events APIs.
+// Client is used to invoke /v1/events APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// Get returns the details of an event.
+// Retrieves the details of an event if it was created in the last 30 days. Supply the unique identifier of the event, which you might have received in a webhook.
 func Get(id string, params *stripe.EventParams) (*stripe.Event, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of an event.
+// Retrieves the details of an event if it was created in the last 30 days. Supply the unique identifier of the event, which you might have received in a webhook.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.EventParams) (*stripe.Event, error) {
 	path := stripe.FormatURLPath("/v1/events/%s", id)
 	event := &stripe.Event{}
@@ -33,17 +40,21 @@ func (c Client) Get(id string, params *stripe.EventParams) (*stripe.Event, error
 	return event, err
 }
 
-// List returns a list of events.
+// List events, going back up to 30 days. Each event data is rendered according to Stripe API version at its creation time, specified in [event object](https://docs.stripe.com/api/events/object) api_version attribute (not according to your current Stripe API version or Stripe-Version header).
 func List(params *stripe.EventListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of events.
+// List events, going back up to 30 days. Each event data is rendered according to Stripe API version at its creation time, specified in [event object](https://docs.stripe.com/api/events/object) api_version attribute (not according to your current Stripe API version or Stripe-Version header).
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.EventListParams) *Iter {
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.EventList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/events", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/events", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

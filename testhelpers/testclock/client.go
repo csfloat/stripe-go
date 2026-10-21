@@ -4,46 +4,52 @@
 //
 //
 
-// Package testclock provides the /test_helpers/test_clocks APIs
+// Package testclock provides the /v1/test_helpers/test_clocks APIs
 package testclock
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /test_helpers/test_clocks APIs.
+// Client is used to invoke /v1/test_helpers/test_clocks APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// New creates a new test helpers test clock.
+// Creates a new test clock that can be attached to new customers and quotes.
 func New(params *stripe.TestHelpersTestClockParams) (*stripe.TestHelpersTestClock, error) {
 	return getC().New(params)
 }
 
-// New creates a new test helpers test clock.
+// Creates a new test clock that can be attached to new customers and quotes.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) New(params *stripe.TestHelpersTestClockParams) (*stripe.TestHelpersTestClock, error) {
 	testclock := &stripe.TestHelpersTestClock{}
 	err := c.B.Call(
-		http.MethodPost,
-		"/v1/test_helpers/test_clocks",
-		c.Key,
-		params,
-		testclock,
-	)
+		http.MethodPost, "/v1/test_helpers/test_clocks", c.Key, params, testclock)
 	return testclock, err
 }
 
-// Get returns the details of a test helpers test clock.
+// Retrieves a test clock.
 func Get(id string, params *stripe.TestHelpersTestClockParams) (*stripe.TestHelpersTestClock, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a test helpers test clock.
+// Retrieves a test clock.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.TestHelpersTestClockParams) (*stripe.TestHelpersTestClock, error) {
 	path := stripe.FormatURLPath("/v1/test_helpers/test_clocks/%s", id)
 	testclock := &stripe.TestHelpersTestClock{}
@@ -51,12 +57,16 @@ func (c Client) Get(id string, params *stripe.TestHelpersTestClockParams) (*stri
 	return testclock, err
 }
 
-// Del removes a test helpers test clock.
+// Deletes a test clock.
 func Del(id string, params *stripe.TestHelpersTestClockParams) (*stripe.TestHelpersTestClock, error) {
 	return getC().Del(id, params)
 }
 
-// Del removes a test helpers test clock.
+// Deletes a test clock.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Del(id string, params *stripe.TestHelpersTestClockParams) (*stripe.TestHelpersTestClock, error) {
 	path := stripe.FormatURLPath("/v1/test_helpers/test_clocks/%s", id)
 	testclock := &stripe.TestHelpersTestClock{}
@@ -64,12 +74,16 @@ func (c Client) Del(id string, params *stripe.TestHelpersTestClockParams) (*stri
 	return testclock, err
 }
 
-// Advance is the method for the `POST /v1/test_helpers/test_clocks/{test_clock}/advance` API.
+// Starts advancing a test clock to a specified time in the future. Advancement is done when status changes to Ready.
 func Advance(id string, params *stripe.TestHelpersTestClockAdvanceParams) (*stripe.TestHelpersTestClock, error) {
 	return getC().Advance(id, params)
 }
 
-// Advance is the method for the `POST /v1/test_helpers/test_clocks/{test_clock}/advance` API.
+// Starts advancing a test clock to a specified time in the future. Advancement is done when status changes to Ready.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Advance(id string, params *stripe.TestHelpersTestClockAdvanceParams) (*stripe.TestHelpersTestClock, error) {
 	path := stripe.FormatURLPath("/v1/test_helpers/test_clocks/%s/advance", id)
 	testclock := &stripe.TestHelpersTestClock{}
@@ -77,17 +91,21 @@ func (c Client) Advance(id string, params *stripe.TestHelpersTestClockAdvancePar
 	return testclock, err
 }
 
-// List returns a list of test helpers test clocks.
+// Returns a list of your test clocks.
 func List(params *stripe.TestHelpersTestClockListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of test helpers test clocks.
+// Returns a list of your test clocks.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.TestHelpersTestClockListParams) *Iter {
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.TestHelpersTestClockList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/test_helpers/test_clocks", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/test_helpers/test_clocks", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

@@ -29,6 +29,19 @@ const (
 	SetupAttemptPaymentMethodDetailsCardThreeDSecureAuthenticationFlowFrictionless SetupAttemptPaymentMethodDetailsCardThreeDSecureAuthenticationFlow = "frictionless"
 )
 
+// The Electronic Commerce Indicator (ECI). A protocol-level field
+// indicating what degree of authentication was performed.
+type SetupAttemptPaymentMethodDetailsCardThreeDSecureElectronicCommerceIndicator string
+
+// List of values that SetupAttemptPaymentMethodDetailsCardThreeDSecureElectronicCommerceIndicator can take
+const (
+	SetupAttemptPaymentMethodDetailsCardThreeDSecureElectronicCommerceIndicator01 SetupAttemptPaymentMethodDetailsCardThreeDSecureElectronicCommerceIndicator = "01"
+	SetupAttemptPaymentMethodDetailsCardThreeDSecureElectronicCommerceIndicator02 SetupAttemptPaymentMethodDetailsCardThreeDSecureElectronicCommerceIndicator = "02"
+	SetupAttemptPaymentMethodDetailsCardThreeDSecureElectronicCommerceIndicator05 SetupAttemptPaymentMethodDetailsCardThreeDSecureElectronicCommerceIndicator = "05"
+	SetupAttemptPaymentMethodDetailsCardThreeDSecureElectronicCommerceIndicator06 SetupAttemptPaymentMethodDetailsCardThreeDSecureElectronicCommerceIndicator = "06"
+	SetupAttemptPaymentMethodDetailsCardThreeDSecureElectronicCommerceIndicator07 SetupAttemptPaymentMethodDetailsCardThreeDSecureElectronicCommerceIndicator = "07"
+)
+
 // Indicates the outcome of 3D Secure authentication.
 type SetupAttemptPaymentMethodDetailsCardThreeDSecureResult string
 
@@ -67,6 +80,14 @@ const (
 	SetupAttemptPaymentMethodDetailsCardWalletTypeLink      SetupAttemptPaymentMethodDetailsCardWalletType = "link"
 )
 
+// The method used to process this payment method offline. Only deferred is allowed.
+type SetupAttemptPaymentMethodDetailsCardPresentOfflineType string
+
+// List of values that SetupAttemptPaymentMethodDetailsCardPresentOfflineType can take
+const (
+	SetupAttemptPaymentMethodDetailsCardPresentOfflineTypeDeferred SetupAttemptPaymentMethodDetailsCardPresentOfflineType = "deferred"
+)
+
 // The type of the payment method used in the SetupIntent (e.g., `card`). An additional hash is included on `payment_method_details` with a name matching this value. It contains confirmation-specific information for the payment method.
 type SetupAttemptPaymentMethodDetailsType string
 
@@ -97,15 +118,15 @@ const (
 	SetupAttemptUsageOnSession  SetupAttemptUsage = "on_session"
 )
 
-// Returns a list of SetupAttempts associated with a provided SetupIntent.
+// Returns a list of SetupAttempts that associate with a provided SetupIntent.
 type SetupAttemptListParams struct {
 	ListParams `form:"*"`
 	// A filter on the list, based on the object `created` field. The value
-	// can be a string with an integer Unix timestamp, or it can be a
+	// can be a string with an integer Unix timestamp or a
 	// dictionary with a number of different query options.
 	Created *int64 `form:"created"`
 	// A filter on the list, based on the object `created` field. The value
-	// can be a string with an integer Unix timestamp, or it can be a
+	// can be a string with an integer Unix timestamp or a
 	// dictionary with a number of different query options.
 	CreatedRange *RangeQueryParams `form:"created"`
 	// Specifies which fields in the response should be expanded.
@@ -121,6 +142,7 @@ func (p *SetupAttemptListParams) AddExpand(f string) {
 }
 
 type SetupAttemptPaymentMethodDetailsACSSDebit struct{}
+type SetupAttemptPaymentMethodDetailsAmazonPay struct{}
 type SetupAttemptPaymentMethodDetailsAUBECSDebit struct{}
 type SetupAttemptPaymentMethodDetailsBACSDebit struct{}
 type SetupAttemptPaymentMethodDetailsBancontact struct {
@@ -160,11 +182,17 @@ type SetupAttemptPaymentMethodDetailsCardThreeDSecure struct {
 	// For authenticated transactions: how the customer was authenticated by
 	// the issuing bank.
 	AuthenticationFlow SetupAttemptPaymentMethodDetailsCardThreeDSecureAuthenticationFlow `json:"authentication_flow"`
+	// The Electronic Commerce Indicator (ECI). A protocol-level field
+	// indicating what degree of authentication was performed.
+	ElectronicCommerceIndicator SetupAttemptPaymentMethodDetailsCardThreeDSecureElectronicCommerceIndicator `json:"electronic_commerce_indicator"`
 	// Indicates the outcome of 3D Secure authentication.
 	Result SetupAttemptPaymentMethodDetailsCardThreeDSecureResult `json:"result"`
 	// Additional information about why 3D Secure succeeded or failed based
 	// on the `result`.
 	ResultReason SetupAttemptPaymentMethodDetailsCardThreeDSecureResultReason `json:"result_reason"`
+	// The 3D Secure 1 XID or 3D Secure 2 Directory Server Transaction ID
+	// (dsTransId) for this payment.
+	TransactionID string `json:"transaction_id"`
 	// The version of 3D Secure that was used.
 	Version string `json:"version"`
 }
@@ -179,7 +207,7 @@ type SetupAttemptPaymentMethodDetailsCardWallet struct {
 	Type SetupAttemptPaymentMethodDetailsCardWalletType `json:"type"`
 }
 type SetupAttemptPaymentMethodDetailsCard struct {
-	// Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+	// Card brand. Can be `amex`, `diners`, `discover`, `eftpos_au`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
 	Brand string `json:"brand"`
 	// Check results by Card networks on Card address and CVC at the time of authorization
 	Checks *SetupAttemptPaymentMethodDetailsCardChecks `json:"checks"`
@@ -203,20 +231,30 @@ type SetupAttemptPaymentMethodDetailsCard struct {
 	Issuer string `json:"issuer"`
 	// The last four digits of the card.
 	Last4 string `json:"last4"`
-	// Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `mastercard`, `unionpay`, `visa`, or `unknown`.
+	// Identifies which network this charge was processed on. Can be `amex`, `cartes_bancaires`, `diners`, `discover`, `eftpos_au`, `interac`, `jcb`, `link`, `mastercard`, `unionpay`, `visa`, or `unknown`.
 	Network string `json:"network"`
 	// Populated if this authorization used 3D Secure authentication.
 	ThreeDSecure *SetupAttemptPaymentMethodDetailsCardThreeDSecure `json:"three_d_secure"`
 	// If this Card is part of a card wallet, this contains the details of the card wallet.
 	Wallet *SetupAttemptPaymentMethodDetailsCardWallet `json:"wallet"`
 }
+
+// Details about payments collected offline.
+type SetupAttemptPaymentMethodDetailsCardPresentOffline struct {
+	// Time at which the payment was collected while offline
+	StoredAt int64 `json:"stored_at"`
+	// The method used to process this payment method offline. Only deferred is allowed.
+	Type SetupAttemptPaymentMethodDetailsCardPresentOfflineType `json:"type"`
+}
 type SetupAttemptPaymentMethodDetailsCardPresent struct {
 	// The ID of the Card PaymentMethod which was generated by this SetupAttempt.
 	GeneratedCard *PaymentMethod `json:"generated_card"`
+	// Details about payments collected offline.
+	Offline *SetupAttemptPaymentMethodDetailsCardPresentOffline `json:"offline"`
 }
 type SetupAttemptPaymentMethodDetailsCashApp struct{}
 type SetupAttemptPaymentMethodDetailsIDEAL struct {
-	// The customer's bank. Can be one of `abn_amro`, `asn_bank`, `bunq`, `handelsbanken`, `ing`, `knab`, `moneyou`, `n26`, `rabobank`, `regiobank`, `revolut`, `sns_bank`, `triodos_bank`, `van_lanschot`, or `yoursafe`.
+	// The customer's bank. Can be one of `abn_amro`, `asn_bank`, `bunq`, `handelsbanken`, `ing`, `knab`, `moneyou`, `n26`, `nn`, `rabobank`, `regiobank`, `revolut`, `sns_bank`, `triodos_bank`, `van_lanschot`, or `yoursafe`.
 	Bank string `json:"bank"`
 	// The Bank Identifier Code of the customer's bank.
 	BIC string `json:"bic"`
@@ -230,9 +268,17 @@ type SetupAttemptPaymentMethodDetailsIDEAL struct {
 	// (if supported) at the time of authorization or settlement. They cannot be set or mutated.
 	VerifiedName string `json:"verified_name"`
 }
+type SetupAttemptPaymentMethodDetailsKakaoPay struct{}
 type SetupAttemptPaymentMethodDetailsKlarna struct{}
+type SetupAttemptPaymentMethodDetailsKrCard struct{}
 type SetupAttemptPaymentMethodDetailsLink struct{}
+type SetupAttemptPaymentMethodDetailsNaverPay struct {
+	// Uniquely identifies this particular Naver Pay account. You can use this attribute to check whether two Naver Pay accounts are the same.
+	BuyerID string `json:"buyer_id"`
+}
+type SetupAttemptPaymentMethodDetailsNzBankAccount struct{}
 type SetupAttemptPaymentMethodDetailsPaypal struct{}
+type SetupAttemptPaymentMethodDetailsRevolutPay struct{}
 type SetupAttemptPaymentMethodDetailsSEPADebit struct{}
 type SetupAttemptPaymentMethodDetailsSofort struct {
 	// Bank code of bank associated with the bank account.
@@ -256,27 +302,33 @@ type SetupAttemptPaymentMethodDetailsSofort struct {
 }
 type SetupAttemptPaymentMethodDetailsUSBankAccount struct{}
 type SetupAttemptPaymentMethodDetails struct {
-	ACSSDebit   *SetupAttemptPaymentMethodDetailsACSSDebit   `json:"acss_debit"`
-	AUBECSDebit *SetupAttemptPaymentMethodDetailsAUBECSDebit `json:"au_becs_debit"`
-	BACSDebit   *SetupAttemptPaymentMethodDetailsBACSDebit   `json:"bacs_debit"`
-	Bancontact  *SetupAttemptPaymentMethodDetailsBancontact  `json:"bancontact"`
-	Boleto      *SetupAttemptPaymentMethodDetailsBoleto      `json:"boleto"`
-	Card        *SetupAttemptPaymentMethodDetailsCard        `json:"card"`
-	CardPresent *SetupAttemptPaymentMethodDetailsCardPresent `json:"card_present"`
-	CashApp     *SetupAttemptPaymentMethodDetailsCashApp     `json:"cashapp"`
-	IDEAL       *SetupAttemptPaymentMethodDetailsIDEAL       `json:"ideal"`
-	Klarna      *SetupAttemptPaymentMethodDetailsKlarna      `json:"klarna"`
-	Link        *SetupAttemptPaymentMethodDetailsLink        `json:"link"`
-	Paypal      *SetupAttemptPaymentMethodDetailsPaypal      `json:"paypal"`
-	SEPADebit   *SetupAttemptPaymentMethodDetailsSEPADebit   `json:"sepa_debit"`
-	Sofort      *SetupAttemptPaymentMethodDetailsSofort      `json:"sofort"`
+	ACSSDebit     *SetupAttemptPaymentMethodDetailsACSSDebit     `json:"acss_debit"`
+	AmazonPay     *SetupAttemptPaymentMethodDetailsAmazonPay     `json:"amazon_pay"`
+	AUBECSDebit   *SetupAttemptPaymentMethodDetailsAUBECSDebit   `json:"au_becs_debit"`
+	BACSDebit     *SetupAttemptPaymentMethodDetailsBACSDebit     `json:"bacs_debit"`
+	Bancontact    *SetupAttemptPaymentMethodDetailsBancontact    `json:"bancontact"`
+	Boleto        *SetupAttemptPaymentMethodDetailsBoleto        `json:"boleto"`
+	Card          *SetupAttemptPaymentMethodDetailsCard          `json:"card"`
+	CardPresent   *SetupAttemptPaymentMethodDetailsCardPresent   `json:"card_present"`
+	CashApp       *SetupAttemptPaymentMethodDetailsCashApp       `json:"cashapp"`
+	IDEAL         *SetupAttemptPaymentMethodDetailsIDEAL         `json:"ideal"`
+	KakaoPay      *SetupAttemptPaymentMethodDetailsKakaoPay      `json:"kakao_pay"`
+	Klarna        *SetupAttemptPaymentMethodDetailsKlarna        `json:"klarna"`
+	KrCard        *SetupAttemptPaymentMethodDetailsKrCard        `json:"kr_card"`
+	Link          *SetupAttemptPaymentMethodDetailsLink          `json:"link"`
+	NaverPay      *SetupAttemptPaymentMethodDetailsNaverPay      `json:"naver_pay"`
+	NzBankAccount *SetupAttemptPaymentMethodDetailsNzBankAccount `json:"nz_bank_account"`
+	Paypal        *SetupAttemptPaymentMethodDetailsPaypal        `json:"paypal"`
+	RevolutPay    *SetupAttemptPaymentMethodDetailsRevolutPay    `json:"revolut_pay"`
+	SEPADebit     *SetupAttemptPaymentMethodDetailsSEPADebit     `json:"sepa_debit"`
+	Sofort        *SetupAttemptPaymentMethodDetailsSofort        `json:"sofort"`
 	// The type of the payment method used in the SetupIntent (e.g., `card`). An additional hash is included on `payment_method_details` with a name matching this value. It contains confirmation-specific information for the payment method.
 	Type          SetupAttemptPaymentMethodDetailsType           `json:"type"`
 	USBankAccount *SetupAttemptPaymentMethodDetailsUSBankAccount `json:"us_bank_account"`
 }
 
 // A SetupAttempt describes one attempted confirmation of a SetupIntent,
-// whether that confirmation was successful or unsuccessful. You can use
+// whether that confirmation is successful or unsuccessful. You can use
 // SetupAttempts to inspect details of a specific attempt at setting up a
 // payment method using a SetupIntent.
 type SetupAttempt struct {

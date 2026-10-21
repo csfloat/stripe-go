@@ -5,344 +5,458 @@
 //
 
 // Package client provides a Stripe client for invoking APIs across all resources
+//
+// Deprecated: This package is deprecated. All functionality of [API] is now available in [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 package client
 
 import (
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/account"
-	"github.com/stripe/stripe-go/v75/accountlink"
-	"github.com/stripe/stripe-go/v75/accountsession"
-	"github.com/stripe/stripe-go/v75/applepaydomain"
-	"github.com/stripe/stripe-go/v75/applicationfee"
-	appssecret "github.com/stripe/stripe-go/v75/apps/secret"
-	"github.com/stripe/stripe-go/v75/balance"
-	"github.com/stripe/stripe-go/v75/balancetransaction"
-	"github.com/stripe/stripe-go/v75/bankaccount"
-	billingportalconfiguration "github.com/stripe/stripe-go/v75/billingportal/configuration"
-	billingportalsession "github.com/stripe/stripe-go/v75/billingportal/session"
-	"github.com/stripe/stripe-go/v75/capability"
-	"github.com/stripe/stripe-go/v75/card"
-	"github.com/stripe/stripe-go/v75/cashbalance"
-	"github.com/stripe/stripe-go/v75/charge"
-	checkoutsession "github.com/stripe/stripe-go/v75/checkout/session"
-	"github.com/stripe/stripe-go/v75/countryspec"
-	"github.com/stripe/stripe-go/v75/coupon"
-	"github.com/stripe/stripe-go/v75/creditnote"
-	"github.com/stripe/stripe-go/v75/customer"
-	"github.com/stripe/stripe-go/v75/customerbalancetransaction"
-	"github.com/stripe/stripe-go/v75/customercashbalancetransaction"
-	"github.com/stripe/stripe-go/v75/dispute"
-	"github.com/stripe/stripe-go/v75/ephemeralkey"
-	"github.com/stripe/stripe-go/v75/event"
-	"github.com/stripe/stripe-go/v75/feerefund"
-	"github.com/stripe/stripe-go/v75/file"
-	"github.com/stripe/stripe-go/v75/filelink"
-	financialconnectionsaccount "github.com/stripe/stripe-go/v75/financialconnections/account"
-	financialconnectionssession "github.com/stripe/stripe-go/v75/financialconnections/session"
-	identityverificationreport "github.com/stripe/stripe-go/v75/identity/verificationreport"
-	identityverificationsession "github.com/stripe/stripe-go/v75/identity/verificationsession"
-	"github.com/stripe/stripe-go/v75/invoice"
-	"github.com/stripe/stripe-go/v75/invoiceitem"
-	issuingauthorization "github.com/stripe/stripe-go/v75/issuing/authorization"
-	issuingcard "github.com/stripe/stripe-go/v75/issuing/card"
-	issuingcardholder "github.com/stripe/stripe-go/v75/issuing/cardholder"
-	issuingdispute "github.com/stripe/stripe-go/v75/issuing/dispute"
-	issuingtransaction "github.com/stripe/stripe-go/v75/issuing/transaction"
-	"github.com/stripe/stripe-go/v75/loginlink"
-	"github.com/stripe/stripe-go/v75/mandate"
-	"github.com/stripe/stripe-go/v75/oauth"
-	"github.com/stripe/stripe-go/v75/paymentintent"
-	"github.com/stripe/stripe-go/v75/paymentlink"
-	"github.com/stripe/stripe-go/v75/paymentmethod"
-	"github.com/stripe/stripe-go/v75/paymentmethoddomain"
-	"github.com/stripe/stripe-go/v75/paymentsource"
-	"github.com/stripe/stripe-go/v75/payout"
-	"github.com/stripe/stripe-go/v75/person"
-	"github.com/stripe/stripe-go/v75/plan"
-	"github.com/stripe/stripe-go/v75/price"
-	"github.com/stripe/stripe-go/v75/product"
-	"github.com/stripe/stripe-go/v75/promotioncode"
-	"github.com/stripe/stripe-go/v75/quote"
-	radarearlyfraudwarning "github.com/stripe/stripe-go/v75/radar/earlyfraudwarning"
-	radarvaluelist "github.com/stripe/stripe-go/v75/radar/valuelist"
-	radarvaluelistitem "github.com/stripe/stripe-go/v75/radar/valuelistitem"
-	"github.com/stripe/stripe-go/v75/refund"
-	reportingreportrun "github.com/stripe/stripe-go/v75/reporting/reportrun"
-	reportingreporttype "github.com/stripe/stripe-go/v75/reporting/reporttype"
-	"github.com/stripe/stripe-go/v75/review"
-	"github.com/stripe/stripe-go/v75/setupattempt"
-	"github.com/stripe/stripe-go/v75/setupintent"
-	"github.com/stripe/stripe-go/v75/shippingrate"
-	sigmascheduledqueryrun "github.com/stripe/stripe-go/v75/sigma/scheduledqueryrun"
-	"github.com/stripe/stripe-go/v75/source"
-	"github.com/stripe/stripe-go/v75/sourcetransaction"
-	"github.com/stripe/stripe-go/v75/subscription"
-	"github.com/stripe/stripe-go/v75/subscriptionitem"
-	"github.com/stripe/stripe-go/v75/subscriptionschedule"
-	taxcalculation "github.com/stripe/stripe-go/v75/tax/calculation"
-	taxsettings "github.com/stripe/stripe-go/v75/tax/settings"
-	taxtransaction "github.com/stripe/stripe-go/v75/tax/transaction"
-	"github.com/stripe/stripe-go/v75/taxcode"
-	"github.com/stripe/stripe-go/v75/taxid"
-	"github.com/stripe/stripe-go/v75/taxrate"
-	terminalconfiguration "github.com/stripe/stripe-go/v75/terminal/configuration"
-	terminalconnectiontoken "github.com/stripe/stripe-go/v75/terminal/connectiontoken"
-	terminallocation "github.com/stripe/stripe-go/v75/terminal/location"
-	terminalreader "github.com/stripe/stripe-go/v75/terminal/reader"
-	testhelperscustomer "github.com/stripe/stripe-go/v75/testhelpers/customer"
-	testhelpersissuingcard "github.com/stripe/stripe-go/v75/testhelpers/issuing/card"
-	testhelpersrefund "github.com/stripe/stripe-go/v75/testhelpers/refund"
-	testhelpersterminalreader "github.com/stripe/stripe-go/v75/testhelpers/terminal/reader"
-	testhelperstestclock "github.com/stripe/stripe-go/v75/testhelpers/testclock"
-	testhelperstreasuryinboundtransfer "github.com/stripe/stripe-go/v75/testhelpers/treasury/inboundtransfer"
-	testhelperstreasuryoutboundpayment "github.com/stripe/stripe-go/v75/testhelpers/treasury/outboundpayment"
-	testhelperstreasuryoutboundtransfer "github.com/stripe/stripe-go/v75/testhelpers/treasury/outboundtransfer"
-	testhelperstreasuryreceivedcredit "github.com/stripe/stripe-go/v75/testhelpers/treasury/receivedcredit"
-	testhelperstreasuryreceiveddebit "github.com/stripe/stripe-go/v75/testhelpers/treasury/receiveddebit"
-	"github.com/stripe/stripe-go/v75/token"
-	"github.com/stripe/stripe-go/v75/topup"
-	"github.com/stripe/stripe-go/v75/transfer"
-	"github.com/stripe/stripe-go/v75/transferreversal"
-	treasurycreditreversal "github.com/stripe/stripe-go/v75/treasury/creditreversal"
-	treasurydebitreversal "github.com/stripe/stripe-go/v75/treasury/debitreversal"
-	treasuryfinancialaccount "github.com/stripe/stripe-go/v75/treasury/financialaccount"
-	treasuryinboundtransfer "github.com/stripe/stripe-go/v75/treasury/inboundtransfer"
-	treasuryoutboundpayment "github.com/stripe/stripe-go/v75/treasury/outboundpayment"
-	treasuryoutboundtransfer "github.com/stripe/stripe-go/v75/treasury/outboundtransfer"
-	treasuryreceivedcredit "github.com/stripe/stripe-go/v75/treasury/receivedcredit"
-	treasuryreceiveddebit "github.com/stripe/stripe-go/v75/treasury/receiveddebit"
-	treasurytransaction "github.com/stripe/stripe-go/v75/treasury/transaction"
-	treasurytransactionentry "github.com/stripe/stripe-go/v75/treasury/transactionentry"
-	"github.com/stripe/stripe-go/v75/usagerecord"
-	"github.com/stripe/stripe-go/v75/usagerecordsummary"
-	"github.com/stripe/stripe-go/v75/webhookendpoint"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/account"
+	"github.com/stripe/stripe-go/v82/accountlink"
+	"github.com/stripe/stripe-go/v82/accountsession"
+	"github.com/stripe/stripe-go/v82/applepaydomain"
+	"github.com/stripe/stripe-go/v82/applicationfee"
+	appssecret "github.com/stripe/stripe-go/v82/apps/secret"
+	"github.com/stripe/stripe-go/v82/balance"
+	"github.com/stripe/stripe-go/v82/balancetransaction"
+	"github.com/stripe/stripe-go/v82/bankaccount"
+	billingalert "github.com/stripe/stripe-go/v82/billing/alert"
+	billingcreditbalancesummary "github.com/stripe/stripe-go/v82/billing/creditbalancesummary"
+	billingcreditbalancetransaction "github.com/stripe/stripe-go/v82/billing/creditbalancetransaction"
+	billingcreditgrant "github.com/stripe/stripe-go/v82/billing/creditgrant"
+	billingmeter "github.com/stripe/stripe-go/v82/billing/meter"
+	billingmeterevent "github.com/stripe/stripe-go/v82/billing/meterevent"
+	billingmetereventadjustment "github.com/stripe/stripe-go/v82/billing/metereventadjustment"
+	billingmetereventsummary "github.com/stripe/stripe-go/v82/billing/metereventsummary"
+	billingportalconfiguration "github.com/stripe/stripe-go/v82/billingportal/configuration"
+	billingportalsession "github.com/stripe/stripe-go/v82/billingportal/session"
+	"github.com/stripe/stripe-go/v82/capability"
+	"github.com/stripe/stripe-go/v82/card"
+	"github.com/stripe/stripe-go/v82/cashbalance"
+	"github.com/stripe/stripe-go/v82/charge"
+	checkoutsession "github.com/stripe/stripe-go/v82/checkout/session"
+	climateorder "github.com/stripe/stripe-go/v82/climate/order"
+	climateproduct "github.com/stripe/stripe-go/v82/climate/product"
+	climatesupplier "github.com/stripe/stripe-go/v82/climate/supplier"
+	"github.com/stripe/stripe-go/v82/confirmationtoken"
+	"github.com/stripe/stripe-go/v82/countryspec"
+	"github.com/stripe/stripe-go/v82/coupon"
+	"github.com/stripe/stripe-go/v82/creditnote"
+	"github.com/stripe/stripe-go/v82/customer"
+	"github.com/stripe/stripe-go/v82/customerbalancetransaction"
+	"github.com/stripe/stripe-go/v82/customercashbalancetransaction"
+	"github.com/stripe/stripe-go/v82/customersession"
+	"github.com/stripe/stripe-go/v82/dispute"
+	entitlementsactiveentitlement "github.com/stripe/stripe-go/v82/entitlements/activeentitlement"
+	entitlementsfeature "github.com/stripe/stripe-go/v82/entitlements/feature"
+	"github.com/stripe/stripe-go/v82/ephemeralkey"
+	"github.com/stripe/stripe-go/v82/event"
+	"github.com/stripe/stripe-go/v82/feerefund"
+	"github.com/stripe/stripe-go/v82/file"
+	"github.com/stripe/stripe-go/v82/filelink"
+	financialconnectionsaccount "github.com/stripe/stripe-go/v82/financialconnections/account"
+	financialconnectionssession "github.com/stripe/stripe-go/v82/financialconnections/session"
+	financialconnectionstransaction "github.com/stripe/stripe-go/v82/financialconnections/transaction"
+	forwardingrequest "github.com/stripe/stripe-go/v82/forwarding/request"
+	identityverificationreport "github.com/stripe/stripe-go/v82/identity/verificationreport"
+	identityverificationsession "github.com/stripe/stripe-go/v82/identity/verificationsession"
+	"github.com/stripe/stripe-go/v82/invoice"
+	"github.com/stripe/stripe-go/v82/invoiceitem"
+	"github.com/stripe/stripe-go/v82/invoicelineitem"
+	"github.com/stripe/stripe-go/v82/invoicepayment"
+	"github.com/stripe/stripe-go/v82/invoicerenderingtemplate"
+	issuingauthorization "github.com/stripe/stripe-go/v82/issuing/authorization"
+	issuingcard "github.com/stripe/stripe-go/v82/issuing/card"
+	issuingcardholder "github.com/stripe/stripe-go/v82/issuing/cardholder"
+	issuingdispute "github.com/stripe/stripe-go/v82/issuing/dispute"
+	issuingpersonalizationdesign "github.com/stripe/stripe-go/v82/issuing/personalizationdesign"
+	issuingphysicalbundle "github.com/stripe/stripe-go/v82/issuing/physicalbundle"
+	issuingtoken "github.com/stripe/stripe-go/v82/issuing/token"
+	issuingtransaction "github.com/stripe/stripe-go/v82/issuing/transaction"
+	"github.com/stripe/stripe-go/v82/loginlink"
+	"github.com/stripe/stripe-go/v82/mandate"
+	"github.com/stripe/stripe-go/v82/oauth"
+	"github.com/stripe/stripe-go/v82/paymentintent"
+	"github.com/stripe/stripe-go/v82/paymentlink"
+	"github.com/stripe/stripe-go/v82/paymentmethod"
+	"github.com/stripe/stripe-go/v82/paymentmethodconfiguration"
+	"github.com/stripe/stripe-go/v82/paymentmethoddomain"
+	"github.com/stripe/stripe-go/v82/paymentsource"
+	"github.com/stripe/stripe-go/v82/payout"
+	"github.com/stripe/stripe-go/v82/person"
+	"github.com/stripe/stripe-go/v82/plan"
+	"github.com/stripe/stripe-go/v82/price"
+	"github.com/stripe/stripe-go/v82/product"
+	"github.com/stripe/stripe-go/v82/productfeature"
+	"github.com/stripe/stripe-go/v82/promotioncode"
+	"github.com/stripe/stripe-go/v82/quote"
+	radarearlyfraudwarning "github.com/stripe/stripe-go/v82/radar/earlyfraudwarning"
+	radarvaluelist "github.com/stripe/stripe-go/v82/radar/valuelist"
+	radarvaluelistitem "github.com/stripe/stripe-go/v82/radar/valuelistitem"
+	"github.com/stripe/stripe-go/v82/refund"
+	reportingreportrun "github.com/stripe/stripe-go/v82/reporting/reportrun"
+	reportingreporttype "github.com/stripe/stripe-go/v82/reporting/reporttype"
+	"github.com/stripe/stripe-go/v82/review"
+	"github.com/stripe/stripe-go/v82/setupattempt"
+	"github.com/stripe/stripe-go/v82/setupintent"
+	"github.com/stripe/stripe-go/v82/shippingrate"
+	sigmascheduledqueryrun "github.com/stripe/stripe-go/v82/sigma/scheduledqueryrun"
+	"github.com/stripe/stripe-go/v82/source"
+	"github.com/stripe/stripe-go/v82/sourcetransaction"
+	"github.com/stripe/stripe-go/v82/subscription"
+	"github.com/stripe/stripe-go/v82/subscriptionitem"
+	"github.com/stripe/stripe-go/v82/subscriptionschedule"
+	taxcalculation "github.com/stripe/stripe-go/v82/tax/calculation"
+	taxregistration "github.com/stripe/stripe-go/v82/tax/registration"
+	taxsettings "github.com/stripe/stripe-go/v82/tax/settings"
+	taxtransaction "github.com/stripe/stripe-go/v82/tax/transaction"
+	"github.com/stripe/stripe-go/v82/taxcode"
+	"github.com/stripe/stripe-go/v82/taxid"
+	"github.com/stripe/stripe-go/v82/taxrate"
+	terminalconfiguration "github.com/stripe/stripe-go/v82/terminal/configuration"
+	terminalconnectiontoken "github.com/stripe/stripe-go/v82/terminal/connectiontoken"
+	terminallocation "github.com/stripe/stripe-go/v82/terminal/location"
+	terminalreader "github.com/stripe/stripe-go/v82/terminal/reader"
+	testhelpersconfirmationtoken "github.com/stripe/stripe-go/v82/testhelpers/confirmationtoken"
+	testhelperscustomer "github.com/stripe/stripe-go/v82/testhelpers/customer"
+	testhelpersissuingauthorization "github.com/stripe/stripe-go/v82/testhelpers/issuing/authorization"
+	testhelpersissuingcard "github.com/stripe/stripe-go/v82/testhelpers/issuing/card"
+	testhelpersissuingpersonalizationdesign "github.com/stripe/stripe-go/v82/testhelpers/issuing/personalizationdesign"
+	testhelpersissuingtransaction "github.com/stripe/stripe-go/v82/testhelpers/issuing/transaction"
+	testhelpersrefund "github.com/stripe/stripe-go/v82/testhelpers/refund"
+	testhelpersterminalreader "github.com/stripe/stripe-go/v82/testhelpers/terminal/reader"
+	testhelperstestclock "github.com/stripe/stripe-go/v82/testhelpers/testclock"
+	testhelperstreasuryinboundtransfer "github.com/stripe/stripe-go/v82/testhelpers/treasury/inboundtransfer"
+	testhelperstreasuryoutboundpayment "github.com/stripe/stripe-go/v82/testhelpers/treasury/outboundpayment"
+	testhelperstreasuryoutboundtransfer "github.com/stripe/stripe-go/v82/testhelpers/treasury/outboundtransfer"
+	testhelperstreasuryreceivedcredit "github.com/stripe/stripe-go/v82/testhelpers/treasury/receivedcredit"
+	testhelperstreasuryreceiveddebit "github.com/stripe/stripe-go/v82/testhelpers/treasury/receiveddebit"
+	"github.com/stripe/stripe-go/v82/token"
+	"github.com/stripe/stripe-go/v82/topup"
+	"github.com/stripe/stripe-go/v82/transfer"
+	"github.com/stripe/stripe-go/v82/transferreversal"
+	treasurycreditreversal "github.com/stripe/stripe-go/v82/treasury/creditreversal"
+	treasurydebitreversal "github.com/stripe/stripe-go/v82/treasury/debitreversal"
+	treasuryfinancialaccount "github.com/stripe/stripe-go/v82/treasury/financialaccount"
+	treasuryinboundtransfer "github.com/stripe/stripe-go/v82/treasury/inboundtransfer"
+	treasuryoutboundpayment "github.com/stripe/stripe-go/v82/treasury/outboundpayment"
+	treasuryoutboundtransfer "github.com/stripe/stripe-go/v82/treasury/outboundtransfer"
+	treasuryreceivedcredit "github.com/stripe/stripe-go/v82/treasury/receivedcredit"
+	treasuryreceiveddebit "github.com/stripe/stripe-go/v82/treasury/receiveddebit"
+	treasurytransaction "github.com/stripe/stripe-go/v82/treasury/transaction"
+	treasurytransactionentry "github.com/stripe/stripe-go/v82/treasury/transactionentry"
+	v2billingmeterevent "github.com/stripe/stripe-go/v82/v2/billing/meterevent"
+	v2billingmetereventadjustment "github.com/stripe/stripe-go/v82/v2/billing/metereventadjustment"
+	v2billingmetereventsession "github.com/stripe/stripe-go/v82/v2/billing/metereventsession"
+	v2billingmetereventstream "github.com/stripe/stripe-go/v82/v2/billing/metereventstream"
+	v2coreevent "github.com/stripe/stripe-go/v82/v2/core/event"
+	v2coreeventdestination "github.com/stripe/stripe-go/v82/v2/core/eventdestination"
+	"github.com/stripe/stripe-go/v82/webhookendpoint"
 )
 
 // API is the Stripe client. It contains all the different resources available.
+//
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type API struct {
-	// AccountLinks is the client used to invoke /account_links APIs.
+	// AccountLinks is the client used to invoke /v1/account_links APIs.
 	AccountLinks *accountlink.Client
-	// Accounts is the client used to invoke /accounts APIs.
+	// Accounts is the client used to invoke /v1/accounts APIs.
 	Accounts *account.Client
-	// AccountSessions is the client used to invoke /account_sessions APIs.
+	// AccountSessions is the client used to invoke /v1/account_sessions APIs.
 	AccountSessions *accountsession.Client
-	// ApplePayDomains is the client used to invoke /apple_pay/domains APIs.
+	// ApplePayDomains is the client used to invoke /v1/apple_pay/domains APIs.
 	ApplePayDomains *applepaydomain.Client
-	// ApplicationFees is the client used to invoke /application_fees APIs.
+	// ApplicationFees is the client used to invoke /v1/application_fees APIs.
 	ApplicationFees *applicationfee.Client
-	// AppsSecrets is the client used to invoke /apps/secrets APIs.
+	// AppsSecrets is the client used to invoke /v1/apps/secrets APIs.
 	AppsSecrets *appssecret.Client
-	// Balance is the client used to invoke /balance APIs.
+	// Balance is the client used to invoke /v1/balance APIs.
 	Balance *balance.Client
-	// BalanceTransactions is the client used to invoke /balance_transactions APIs.
+	// BalanceTransactions is the client used to invoke /v1/balance_transactions APIs.
 	BalanceTransactions *balancetransaction.Client
-	// BankAccounts is the client used to invoke bankaccount related APIs.
+	// BankAccounts is the client used to invoke /v1/accounts/{account}/external_accounts APIs.
 	BankAccounts *bankaccount.Client
-	// BillingPortalConfigurations is the client used to invoke /billing_portal/configurations APIs.
+	// BillingAlerts is the client used to invoke /v1/billing/alerts APIs.
+	BillingAlerts *billingalert.Client
+	// BillingCreditBalanceSummary is the client used to invoke /v1/billing/credit_balance_summary APIs.
+	BillingCreditBalanceSummary *billingcreditbalancesummary.Client
+	// BillingCreditBalanceTransactions is the client used to invoke /v1/billing/credit_balance_transactions APIs.
+	BillingCreditBalanceTransactions *billingcreditbalancetransaction.Client
+	// BillingCreditGrants is the client used to invoke /v1/billing/credit_grants APIs.
+	BillingCreditGrants *billingcreditgrant.Client
+	// BillingMeterEventAdjustments is the client used to invoke /v1/billing/meter_event_adjustments APIs.
+	BillingMeterEventAdjustments *billingmetereventadjustment.Client
+	// BillingMeterEvents is the client used to invoke /v1/billing/meter_events APIs.
+	BillingMeterEvents *billingmeterevent.Client
+	// BillingMeterEventSummaries is the client used to invoke /v1/billing/meters/{id}/event_summaries APIs.
+	BillingMeterEventSummaries *billingmetereventsummary.Client
+	// BillingMeters is the client used to invoke /v1/billing/meters APIs.
+	BillingMeters *billingmeter.Client
+	// BillingPortalConfigurations is the client used to invoke /v1/billing_portal/configurations APIs.
 	BillingPortalConfigurations *billingportalconfiguration.Client
-	// BillingPortalSessions is the client used to invoke /billing_portal/sessions APIs.
+	// BillingPortalSessions is the client used to invoke /v1/billing_portal/sessions APIs.
 	BillingPortalSessions *billingportalsession.Client
-	// Capabilities is the client used to invoke /accounts/{account}/capabilities APIs.
+	// Capabilities is the client used to invoke /v1/accounts/{account}/capabilities APIs.
 	Capabilities *capability.Client
-	// Cards is the client used to invoke card related APIs.
+	// Cards is the client used to invoke /v1/accounts/{account}/external_accounts APIs.
 	Cards *card.Client
-	// CashBalances is the client used to invoke /customers/{customer}/cash_balance APIs.
+	// CashBalances is the client used to invoke /v1/customers/{customer}/cash_balance APIs.
 	CashBalances *cashbalance.Client
-	// Charges is the client used to invoke /charges APIs.
+	// Charges is the client used to invoke /v1/charges APIs.
 	Charges *charge.Client
-	// CheckoutSessions is the client used to invoke /checkout/sessions APIs.
+	// CheckoutSessions is the client used to invoke /v1/checkout/sessions APIs.
 	CheckoutSessions *checkoutsession.Client
-	// CountrySpecs is the client used to invoke /country_specs APIs.
+	// ClimateOrders is the client used to invoke /v1/climate/orders APIs.
+	ClimateOrders *climateorder.Client
+	// ClimateProducts is the client used to invoke /v1/climate/products APIs.
+	ClimateProducts *climateproduct.Client
+	// ClimateSuppliers is the client used to invoke /v1/climate/suppliers APIs.
+	ClimateSuppliers *climatesupplier.Client
+	// ConfirmationTokens is the client used to invoke /v1/confirmation_tokens APIs.
+	ConfirmationTokens *confirmationtoken.Client
+	// CountrySpecs is the client used to invoke /v1/country_specs APIs.
 	CountrySpecs *countryspec.Client
-	// Coupons is the client used to invoke /coupons APIs.
+	// Coupons is the client used to invoke /v1/coupons APIs.
 	Coupons *coupon.Client
-	// CreditNotes is the client used to invoke /credit_notes APIs.
+	// CreditNotes is the client used to invoke /v1/credit_notes APIs.
 	CreditNotes *creditnote.Client
-	// CustomerBalanceTransactions is the client used to invoke /customers/{customer}/balance_transactions APIs.
+	// CustomerBalanceTransactions is the client used to invoke /v1/customers/{customer}/balance_transactions APIs.
 	CustomerBalanceTransactions *customerbalancetransaction.Client
-	// CustomerCashBalanceTransactions is the client used to invoke /customers/{customer}/cash_balance_transactions APIs.
+	// CustomerCashBalanceTransactions is the client used to invoke /v1/customers/{customer}/cash_balance_transactions APIs.
 	CustomerCashBalanceTransactions *customercashbalancetransaction.Client
-	// Customers is the client used to invoke /customers APIs.
+	// Customers is the client used to invoke /v1/customers APIs.
 	Customers *customer.Client
-	// Disputes is the client used to invoke /disputes APIs.
+	// CustomerSessions is the client used to invoke /v1/customer_sessions APIs.
+	CustomerSessions *customersession.Client
+	// Disputes is the client used to invoke /v1/disputes APIs.
 	Disputes *dispute.Client
-	// EphemeralKeys is the client used to invoke /ephemeral_keys APIs.
+	// EntitlementsActiveEntitlements is the client used to invoke /v1/entitlements/active_entitlements APIs.
+	EntitlementsActiveEntitlements *entitlementsactiveentitlement.Client
+	// EntitlementsFeatures is the client used to invoke /v1/entitlements/features APIs.
+	EntitlementsFeatures *entitlementsfeature.Client
+	// EphemeralKeys is the client used to invoke /v1/ephemeral_keys APIs.
 	EphemeralKeys *ephemeralkey.Client
-	// Events is the client used to invoke /events APIs.
+	// Events is the client used to invoke /v1/events APIs.
 	Events *event.Client
-	// FeeRefunds is the client used to invoke /application_fees/{id}/refunds APIs.
+	// FeeRefunds is the client used to invoke /v1/application_fees/{id}/refunds APIs.
 	FeeRefunds *feerefund.Client
-	// FileLinks is the client used to invoke /file_links APIs.
+	// FileLinks is the client used to invoke /v1/file_links APIs.
 	FileLinks *filelink.Client
-	// Files is the client used to invoke /files APIs.
+	// Files is the client used to invoke /v1/files APIs.
 	Files *file.Client
-	// FinancialConnectionsAccounts is the client used to invoke /financial_connections/accounts APIs.
+	// FinancialConnectionsAccounts is the client used to invoke /v1/financial_connections/accounts APIs.
 	FinancialConnectionsAccounts *financialconnectionsaccount.Client
-	// FinancialConnectionsSessions is the client used to invoke /financial_connections/sessions APIs.
+	// FinancialConnectionsSessions is the client used to invoke /v1/financial_connections/sessions APIs.
 	FinancialConnectionsSessions *financialconnectionssession.Client
-	// IdentityVerificationReports is the client used to invoke /identity/verification_reports APIs.
+	// FinancialConnectionsTransactions is the client used to invoke /v1/financial_connections/transactions APIs.
+	FinancialConnectionsTransactions *financialconnectionstransaction.Client
+	// ForwardingRequests is the client used to invoke /v1/forwarding/requests APIs.
+	ForwardingRequests *forwardingrequest.Client
+	// IdentityVerificationReports is the client used to invoke /v1/identity/verification_reports APIs.
 	IdentityVerificationReports *identityverificationreport.Client
-	// IdentityVerificationSessions is the client used to invoke /identity/verification_sessions APIs.
+	// IdentityVerificationSessions is the client used to invoke /v1/identity/verification_sessions APIs.
 	IdentityVerificationSessions *identityverificationsession.Client
-	// InvoiceItems is the client used to invoke /invoiceitems APIs.
+	// InvoiceItems is the client used to invoke /v1/invoiceitems APIs.
 	InvoiceItems *invoiceitem.Client
-	// Invoices is the client used to invoke /invoices APIs.
+	// InvoiceLineItems is the client used to invoke /v1/invoices/{invoice}/lines APIs.
+	InvoiceLineItems *invoicelineitem.Client
+	// InvoicePayments is the client used to invoke /v1/invoice_payments APIs.
+	InvoicePayments *invoicepayment.Client
+	// InvoiceRenderingTemplates is the client used to invoke /v1/invoice_rendering_templates APIs.
+	InvoiceRenderingTemplates *invoicerenderingtemplate.Client
+	// Invoices is the client used to invoke /v1/invoices APIs.
 	Invoices *invoice.Client
-	// IssuingAuthorizations is the client used to invoke /issuing/authorizations APIs.
+	// IssuingAuthorizations is the client used to invoke /v1/issuing/authorizations APIs.
 	IssuingAuthorizations *issuingauthorization.Client
-	// IssuingCardholders is the client used to invoke /issuing/cardholders APIs.
+	// IssuingCardholders is the client used to invoke /v1/issuing/cardholders APIs.
 	IssuingCardholders *issuingcardholder.Client
-	// IssuingCards is the client used to invoke /issuing/cards APIs.
+	// IssuingCards is the client used to invoke /v1/issuing/cards APIs.
 	IssuingCards *issuingcard.Client
-	// IssuingDisputes is the client used to invoke /issuing/disputes APIs.
+	// IssuingDisputes is the client used to invoke /v1/issuing/disputes APIs.
 	IssuingDisputes *issuingdispute.Client
-	// IssuingTransactions is the client used to invoke /issuing/transactions APIs.
+	// IssuingPersonalizationDesigns is the client used to invoke /v1/issuing/personalization_designs APIs.
+	IssuingPersonalizationDesigns *issuingpersonalizationdesign.Client
+	// IssuingPhysicalBundles is the client used to invoke /v1/issuing/physical_bundles APIs.
+	IssuingPhysicalBundles *issuingphysicalbundle.Client
+	// IssuingTokens is the client used to invoke /v1/issuing/tokens APIs.
+	IssuingTokens *issuingtoken.Client
+	// IssuingTransactions is the client used to invoke /v1/issuing/transactions APIs.
 	IssuingTransactions *issuingtransaction.Client
-	// LoginLinks is the client used to invoke /accounts/{account}/login_links APIs.
+	// LoginLinks is the client used to invoke /v1/accounts/{account}/login_links APIs.
 	LoginLinks *loginlink.Client
-	// Mandates is the client used to invoke /mandates APIs.
+	// Mandates is the client used to invoke /v1/mandates APIs.
 	Mandates *mandate.Client
 	// OAuth is the client used to invoke /oauth APIs
 	OAuth *oauth.Client
-	// PaymentIntents is the client used to invoke /payment_intents APIs.
+	// PaymentIntents is the client used to invoke /v1/payment_intents APIs.
 	PaymentIntents *paymentintent.Client
-	// PaymentLinks is the client used to invoke /payment_links APIs.
+	// PaymentLinks is the client used to invoke /v1/payment_links APIs.
 	PaymentLinks *paymentlink.Client
-	// PaymentMethodDomains is the client used to invoke /payment_method_domains APIs.
+	// PaymentMethodConfigurations is the client used to invoke /v1/payment_method_configurations APIs.
+	PaymentMethodConfigurations *paymentmethodconfiguration.Client
+	// PaymentMethodDomains is the client used to invoke /v1/payment_method_domains APIs.
 	PaymentMethodDomains *paymentmethoddomain.Client
-	// PaymentMethods is the client used to invoke /payment_methods APIs.
+	// PaymentMethods is the client used to invoke /v1/payment_methods APIs.
 	PaymentMethods *paymentmethod.Client
-	// PaymentSources is the client used to invoke /customers/{customer}/sources APIs.
+	// PaymentSources is the client used to invoke /v1/customers/{customer}/sources APIs.
 	PaymentSources *paymentsource.Client
-	// Payouts is the client used to invoke /payouts APIs.
+	// Payouts is the client used to invoke /v1/payouts APIs.
 	Payouts *payout.Client
-	// Persons is the client used to invoke /accounts/{account}/persons APIs.
+	// Persons is the client used to invoke /v1/accounts/{account}/persons APIs.
 	Persons *person.Client
-	// Plans is the client used to invoke /plans APIs.
+	// Plans is the client used to invoke /v1/plans APIs.
 	Plans *plan.Client
-	// Prices is the client used to invoke /prices APIs.
+	// Prices is the client used to invoke /v1/prices APIs.
 	Prices *price.Client
-	// Products is the client used to invoke /products APIs.
+	// ProductFeatures is the client used to invoke /v1/products/{product}/features APIs.
+	ProductFeatures *productfeature.Client
+	// Products is the client used to invoke /v1/products APIs.
 	Products *product.Client
-	// PromotionCodes is the client used to invoke /promotion_codes APIs.
+	// PromotionCodes is the client used to invoke /v1/promotion_codes APIs.
 	PromotionCodes *promotioncode.Client
-	// Quotes is the client used to invoke /quotes APIs.
+	// Quotes is the client used to invoke /v1/quotes APIs.
 	Quotes *quote.Client
-	// RadarEarlyFraudWarnings is the client used to invoke /radar/early_fraud_warnings APIs.
+	// RadarEarlyFraudWarnings is the client used to invoke /v1/radar/early_fraud_warnings APIs.
 	RadarEarlyFraudWarnings *radarearlyfraudwarning.Client
-	// RadarValueListItems is the client used to invoke /radar/value_list_items APIs.
+	// RadarValueListItems is the client used to invoke /v1/radar/value_list_items APIs.
 	RadarValueListItems *radarvaluelistitem.Client
-	// RadarValueLists is the client used to invoke /radar/value_lists APIs.
+	// RadarValueLists is the client used to invoke /v1/radar/value_lists APIs.
 	RadarValueLists *radarvaluelist.Client
-	// Refunds is the client used to invoke /refunds APIs.
+	// Refunds is the client used to invoke /v1/refunds APIs.
 	Refunds *refund.Client
-	// ReportingReportRuns is the client used to invoke /reporting/report_runs APIs.
+	// ReportingReportRuns is the client used to invoke /v1/reporting/report_runs APIs.
 	ReportingReportRuns *reportingreportrun.Client
-	// ReportingReportTypes is the client used to invoke /reporting/report_types APIs.
+	// ReportingReportTypes is the client used to invoke /v1/reporting/report_types APIs.
 	ReportingReportTypes *reportingreporttype.Client
-	// Reviews is the client used to invoke /reviews APIs.
+	// Reviews is the client used to invoke /v1/reviews APIs.
 	Reviews *review.Client
-	// SetupAttempts is the client used to invoke /setup_attempts APIs.
+	// SetupAttempts is the client used to invoke /v1/setup_attempts APIs.
 	SetupAttempts *setupattempt.Client
-	// SetupIntents is the client used to invoke /setup_intents APIs.
+	// SetupIntents is the client used to invoke /v1/setup_intents APIs.
 	SetupIntents *setupintent.Client
-	// ShippingRates is the client used to invoke /shipping_rates APIs.
+	// ShippingRates is the client used to invoke /v1/shipping_rates APIs.
 	ShippingRates *shippingrate.Client
-	// SigmaScheduledQueryRuns is the client used to invoke /sigma/scheduled_query_runs APIs.
+	// SigmaScheduledQueryRuns is the client used to invoke /v1/sigma/scheduled_query_runs APIs.
 	SigmaScheduledQueryRuns *sigmascheduledqueryrun.Client
-	// Sources is the client used to invoke /sources APIs.
+	// Sources is the client used to invoke /v1/sources APIs.
 	Sources *source.Client
-	// SourceTransactions is the client used to invoke sourcetransaction related APIs.
+	// SourceTransactions is the client used to invoke /v1/sources/{source}/source_transactions APIs.
 	SourceTransactions *sourcetransaction.Client
-	// SubscriptionItems is the client used to invoke /subscription_items APIs.
+	// SubscriptionItems is the client used to invoke /v1/subscription_items APIs.
 	SubscriptionItems *subscriptionitem.Client
-	// Subscriptions is the client used to invoke /subscriptions APIs.
+	// Subscriptions is the client used to invoke /v1/subscriptions APIs.
 	Subscriptions *subscription.Client
-	// SubscriptionSchedules is the client used to invoke /subscription_schedules APIs.
+	// SubscriptionSchedules is the client used to invoke /v1/subscription_schedules APIs.
 	SubscriptionSchedules *subscriptionschedule.Client
-	// TaxCalculations is the client used to invoke /tax/calculations APIs.
+	// TaxCalculations is the client used to invoke /v1/tax/calculations APIs.
 	TaxCalculations *taxcalculation.Client
-	// TaxCodes is the client used to invoke /tax_codes APIs.
+	// TaxCodes is the client used to invoke /v1/tax_codes APIs.
 	TaxCodes *taxcode.Client
-	// TaxIDs is the client used to invoke /customers/{customer}/tax_ids APIs.
+	// TaxIDs is the client used to invoke /v1/tax_ids APIs.
 	TaxIDs *taxid.Client
-	// TaxRates is the client used to invoke /tax_rates APIs.
+	// TaxRates is the client used to invoke /v1/tax_rates APIs.
 	TaxRates *taxrate.Client
-	// TaxSettings is the client used to invoke /tax/settings APIs.
+	// TaxRegistrations is the client used to invoke /v1/tax/registrations APIs.
+	TaxRegistrations *taxregistration.Client
+	// TaxSettings is the client used to invoke /v1/tax/settings APIs.
 	TaxSettings *taxsettings.Client
-	// TaxTransactions is the client used to invoke /tax/transactions APIs.
+	// TaxTransactions is the client used to invoke /v1/tax/transactions APIs.
 	TaxTransactions *taxtransaction.Client
-	// TerminalConfigurations is the client used to invoke /terminal/configurations APIs.
+	// TerminalConfigurations is the client used to invoke /v1/terminal/configurations APIs.
 	TerminalConfigurations *terminalconfiguration.Client
-	// TerminalConnectionTokens is the client used to invoke /terminal/connection_tokens APIs.
+	// TerminalConnectionTokens is the client used to invoke /v1/terminal/connection_tokens APIs.
 	TerminalConnectionTokens *terminalconnectiontoken.Client
-	// TerminalLocations is the client used to invoke /terminal/locations APIs.
+	// TerminalLocations is the client used to invoke /v1/terminal/locations APIs.
 	TerminalLocations *terminallocation.Client
-	// TerminalReaders is the client used to invoke /terminal/readers APIs.
+	// TerminalReaders is the client used to invoke /v1/terminal/readers APIs.
 	TerminalReaders *terminalreader.Client
-	// TestHelpersCustomers is the client used to invoke /customers APIs.
+	// TestHelpersConfirmationTokens is the client used to invoke /v1/confirmation_tokens APIs.
+	TestHelpersConfirmationTokens *testhelpersconfirmationtoken.Client
+	// TestHelpersCustomers is the client used to invoke /v1/customers APIs.
 	TestHelpersCustomers *testhelperscustomer.Client
-	// TestHelpersIssuingCards is the client used to invoke /issuing/cards APIs.
+	// TestHelpersIssuingAuthorizations is the client used to invoke /v1/issuing/authorizations APIs.
+	TestHelpersIssuingAuthorizations *testhelpersissuingauthorization.Client
+	// TestHelpersIssuingCards is the client used to invoke /v1/issuing/cards APIs.
 	TestHelpersIssuingCards *testhelpersissuingcard.Client
-	// TestHelpersRefunds is the client used to invoke /refunds APIs.
+	// TestHelpersIssuingPersonalizationDesigns is the client used to invoke /v1/issuing/personalization_designs APIs.
+	TestHelpersIssuingPersonalizationDesigns *testhelpersissuingpersonalizationdesign.Client
+	// TestHelpersIssuingTransactions is the client used to invoke /v1/issuing/transactions APIs.
+	TestHelpersIssuingTransactions *testhelpersissuingtransaction.Client
+	// TestHelpersRefunds is the client used to invoke /v1/refunds APIs.
 	TestHelpersRefunds *testhelpersrefund.Client
-	// TestHelpersTerminalReaders is the client used to invoke /terminal/readers APIs.
+	// TestHelpersTerminalReaders is the client used to invoke /v1/terminal/readers APIs.
 	TestHelpersTerminalReaders *testhelpersterminalreader.Client
-	// TestHelpersTestClocks is the client used to invoke /test_helpers/test_clocks APIs.
+	// TestHelpersTestClocks is the client used to invoke /v1/test_helpers/test_clocks APIs.
 	TestHelpersTestClocks *testhelperstestclock.Client
-	// TestHelpersTreasuryInboundTransfers is the client used to invoke /treasury/inbound_transfers APIs.
+	// TestHelpersTreasuryInboundTransfers is the client used to invoke /v1/treasury/inbound_transfers APIs.
 	TestHelpersTreasuryInboundTransfers *testhelperstreasuryinboundtransfer.Client
-	// TestHelpersTreasuryOutboundPayments is the client used to invoke /treasury/outbound_payments APIs.
+	// TestHelpersTreasuryOutboundPayments is the client used to invoke /v1/treasury/outbound_payments APIs.
 	TestHelpersTreasuryOutboundPayments *testhelperstreasuryoutboundpayment.Client
-	// TestHelpersTreasuryOutboundTransfers is the client used to invoke /treasury/outbound_transfers APIs.
+	// TestHelpersTreasuryOutboundTransfers is the client used to invoke /v1/treasury/outbound_transfers APIs.
 	TestHelpersTreasuryOutboundTransfers *testhelperstreasuryoutboundtransfer.Client
-	// TestHelpersTreasuryReceivedCredits is the client used to invoke /treasury/received_credits APIs.
+	// TestHelpersTreasuryReceivedCredits is the client used to invoke /v1/treasury/received_credits APIs.
 	TestHelpersTreasuryReceivedCredits *testhelperstreasuryreceivedcredit.Client
-	// TestHelpersTreasuryReceivedDebits is the client used to invoke /treasury/received_debits APIs.
+	// TestHelpersTreasuryReceivedDebits is the client used to invoke /v1/treasury/received_debits APIs.
 	TestHelpersTreasuryReceivedDebits *testhelperstreasuryreceiveddebit.Client
-	// Tokens is the client used to invoke /tokens APIs.
+	// Tokens is the client used to invoke /v1/tokens APIs.
 	Tokens *token.Client
-	// Topups is the client used to invoke /topups APIs.
+	// Topups is the client used to invoke /v1/topups APIs.
 	Topups *topup.Client
-	// TransferReversals is the client used to invoke /transfers/{id}/reversals APIs.
+	// TransferReversals is the client used to invoke /v1/transfers/{id}/reversals APIs.
 	TransferReversals *transferreversal.Client
-	// Transfers is the client used to invoke /transfers APIs.
+	// Transfers is the client used to invoke /v1/transfers APIs.
 	Transfers *transfer.Client
-	// TreasuryCreditReversals is the client used to invoke /treasury/credit_reversals APIs.
+	// TreasuryCreditReversals is the client used to invoke /v1/treasury/credit_reversals APIs.
 	TreasuryCreditReversals *treasurycreditreversal.Client
-	// TreasuryDebitReversals is the client used to invoke /treasury/debit_reversals APIs.
+	// TreasuryDebitReversals is the client used to invoke /v1/treasury/debit_reversals APIs.
 	TreasuryDebitReversals *treasurydebitreversal.Client
-	// TreasuryFinancialAccounts is the client used to invoke /treasury/financial_accounts APIs.
+	// TreasuryFinancialAccounts is the client used to invoke /v1/treasury/financial_accounts APIs.
 	TreasuryFinancialAccounts *treasuryfinancialaccount.Client
-	// TreasuryInboundTransfers is the client used to invoke /treasury/inbound_transfers APIs.
+	// TreasuryInboundTransfers is the client used to invoke /v1/treasury/inbound_transfers APIs.
 	TreasuryInboundTransfers *treasuryinboundtransfer.Client
-	// TreasuryOutboundPayments is the client used to invoke /treasury/outbound_payments APIs.
+	// TreasuryOutboundPayments is the client used to invoke /v1/treasury/outbound_payments APIs.
 	TreasuryOutboundPayments *treasuryoutboundpayment.Client
-	// TreasuryOutboundTransfers is the client used to invoke /treasury/outbound_transfers APIs.
+	// TreasuryOutboundTransfers is the client used to invoke /v1/treasury/outbound_transfers APIs.
 	TreasuryOutboundTransfers *treasuryoutboundtransfer.Client
-	// TreasuryReceivedCredits is the client used to invoke /treasury/received_credits APIs.
+	// TreasuryReceivedCredits is the client used to invoke /v1/treasury/received_credits APIs.
 	TreasuryReceivedCredits *treasuryreceivedcredit.Client
-	// TreasuryReceivedDebits is the client used to invoke /treasury/received_debits APIs.
+	// TreasuryReceivedDebits is the client used to invoke /v1/treasury/received_debits APIs.
 	TreasuryReceivedDebits *treasuryreceiveddebit.Client
-	// TreasuryTransactionEntries is the client used to invoke /treasury/transaction_entries APIs.
+	// TreasuryTransactionEntries is the client used to invoke /v1/treasury/transaction_entries APIs.
 	TreasuryTransactionEntries *treasurytransactionentry.Client
-	// TreasuryTransactions is the client used to invoke /treasury/transactions APIs.
+	// TreasuryTransactions is the client used to invoke /v1/treasury/transactions APIs.
 	TreasuryTransactions *treasurytransaction.Client
-	// UsageRecords is the client used to invoke /subscription_items/{subscription_item}/usage_records APIs.
-	UsageRecords *usagerecord.Client
-	// UsageRecordSummaries is the client used to invoke /subscription_items/{subscription_item}/usage_record_summaries APIs.
-	UsageRecordSummaries *usagerecordsummary.Client
-	// WebhookEndpoints is the client used to invoke /webhook_endpoints APIs.
+	// V2BillingMeterEventAdjustments is the client used to invoke /v2/billing/meter_event_adjustments APIs.
+	V2BillingMeterEventAdjustments *v2billingmetereventadjustment.Client
+	// V2BillingMeterEvents is the client used to invoke /v2/billing/meter_events APIs.
+	V2BillingMeterEvents *v2billingmeterevent.Client
+	// V2BillingMeterEventSessions is the client used to invoke /v2/billing/meter_event_session APIs.
+	V2BillingMeterEventSessions *v2billingmetereventsession.Client
+	// V2BillingMeterEventStreams is the client used to invoke /v2/billing/meter_event_stream APIs.
+	V2BillingMeterEventStreams *v2billingmetereventstream.Client
+	// V2CoreEventDestinations is the client used to invoke /v2/core/event_destinations APIs.
+	V2CoreEventDestinations *v2coreeventdestination.Client
+	// V2CoreEvents is the client used to invoke /v2/core/events APIs.
+	V2CoreEvents *v2coreevent.Client
+	// WebhookEndpoints is the client used to invoke /v1/webhook_endpoints APIs.
 	WebhookEndpoints *webhookendpoint.Client
 }
 
+// Deprecated: Use [stripe.NewClient] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (a *API) Init(key string, backends *stripe.Backends) {
-
+	usage := []string{"stripe_client"}
 	if backends == nil {
 		backends = &stripe.Backends{
-			API:     stripe.GetBackend(stripe.APIBackend),
-			Connect: stripe.GetBackend(stripe.ConnectBackend),
-			Uploads: stripe.GetBackend(stripe.UploadsBackend),
+			API:         &stripe.UsageBackend{B: stripe.GetBackend(stripe.APIBackend), Usage: usage},
+			Connect:     &stripe.UsageBackend{B: stripe.GetBackend(stripe.ConnectBackend), Usage: usage},
+			Uploads:     &stripe.UsageBackend{B: stripe.GetBackend(stripe.UploadsBackend), Usage: usage},
+			MeterEvents: &stripe.UsageBackend{B: stripe.GetBackend(stripe.MeterEventsBackend), Usage: usage},
 		}
 	}
 
@@ -355,6 +469,14 @@ func (a *API) Init(key string, backends *stripe.Backends) {
 	a.Balance = &balance.Client{B: backends.API, Key: key}
 	a.BalanceTransactions = &balancetransaction.Client{B: backends.API, Key: key}
 	a.BankAccounts = &bankaccount.Client{B: backends.API, Key: key}
+	a.BillingAlerts = &billingalert.Client{B: backends.API, Key: key}
+	a.BillingCreditBalanceSummary = &billingcreditbalancesummary.Client{B: backends.API, Key: key}
+	a.BillingCreditBalanceTransactions = &billingcreditbalancetransaction.Client{B: backends.API, Key: key}
+	a.BillingCreditGrants = &billingcreditgrant.Client{B: backends.API, Key: key}
+	a.BillingMeterEventAdjustments = &billingmetereventadjustment.Client{B: backends.API, Key: key}
+	a.BillingMeterEvents = &billingmeterevent.Client{B: backends.API, Key: key}
+	a.BillingMeterEventSummaries = &billingmetereventsummary.Client{B: backends.API, Key: key}
+	a.BillingMeters = &billingmeter.Client{B: backends.API, Key: key}
 	a.BillingPortalConfigurations = &billingportalconfiguration.Client{B: backends.API, Key: key}
 	a.BillingPortalSessions = &billingportalsession.Client{B: backends.API, Key: key}
 	a.Capabilities = &capability.Client{B: backends.API, Key: key}
@@ -362,13 +484,20 @@ func (a *API) Init(key string, backends *stripe.Backends) {
 	a.CashBalances = &cashbalance.Client{B: backends.API, Key: key}
 	a.Charges = &charge.Client{B: backends.API, Key: key}
 	a.CheckoutSessions = &checkoutsession.Client{B: backends.API, Key: key}
+	a.ClimateOrders = &climateorder.Client{B: backends.API, Key: key}
+	a.ClimateProducts = &climateproduct.Client{B: backends.API, Key: key}
+	a.ClimateSuppliers = &climatesupplier.Client{B: backends.API, Key: key}
+	a.ConfirmationTokens = &confirmationtoken.Client{B: backends.API, Key: key}
 	a.CountrySpecs = &countryspec.Client{B: backends.API, Key: key}
 	a.Coupons = &coupon.Client{B: backends.API, Key: key}
 	a.CreditNotes = &creditnote.Client{B: backends.API, Key: key}
 	a.CustomerBalanceTransactions = &customerbalancetransaction.Client{B: backends.API, Key: key}
 	a.CustomerCashBalanceTransactions = &customercashbalancetransaction.Client{B: backends.API, Key: key}
 	a.Customers = &customer.Client{B: backends.API, Key: key}
+	a.CustomerSessions = &customersession.Client{B: backends.API, Key: key}
 	a.Disputes = &dispute.Client{B: backends.API, Key: key}
+	a.EntitlementsActiveEntitlements = &entitlementsactiveentitlement.Client{B: backends.API, Key: key}
+	a.EntitlementsFeatures = &entitlementsfeature.Client{B: backends.API, Key: key}
 	a.EphemeralKeys = &ephemeralkey.Client{B: backends.API, Key: key}
 	a.Events = &event.Client{B: backends.API, Key: key}
 	a.FeeRefunds = &feerefund.Client{B: backends.API, Key: key}
@@ -376,20 +505,29 @@ func (a *API) Init(key string, backends *stripe.Backends) {
 	a.Files = &file.Client{B: backends.API, BUploads: backends.Uploads, Key: key}
 	a.FinancialConnectionsAccounts = &financialconnectionsaccount.Client{B: backends.API, Key: key}
 	a.FinancialConnectionsSessions = &financialconnectionssession.Client{B: backends.API, Key: key}
+	a.FinancialConnectionsTransactions = &financialconnectionstransaction.Client{B: backends.API, Key: key}
+	a.ForwardingRequests = &forwardingrequest.Client{B: backends.API, Key: key}
 	a.IdentityVerificationReports = &identityverificationreport.Client{B: backends.API, Key: key}
 	a.IdentityVerificationSessions = &identityverificationsession.Client{B: backends.API, Key: key}
 	a.InvoiceItems = &invoiceitem.Client{B: backends.API, Key: key}
+	a.InvoiceLineItems = &invoicelineitem.Client{B: backends.API, Key: key}
+	a.InvoicePayments = &invoicepayment.Client{B: backends.API, Key: key}
+	a.InvoiceRenderingTemplates = &invoicerenderingtemplate.Client{B: backends.API, Key: key}
 	a.Invoices = &invoice.Client{B: backends.API, Key: key}
 	a.IssuingAuthorizations = &issuingauthorization.Client{B: backends.API, Key: key}
 	a.IssuingCardholders = &issuingcardholder.Client{B: backends.API, Key: key}
 	a.IssuingCards = &issuingcard.Client{B: backends.API, Key: key}
 	a.IssuingDisputes = &issuingdispute.Client{B: backends.API, Key: key}
+	a.IssuingPersonalizationDesigns = &issuingpersonalizationdesign.Client{B: backends.API, Key: key}
+	a.IssuingPhysicalBundles = &issuingphysicalbundle.Client{B: backends.API, Key: key}
+	a.IssuingTokens = &issuingtoken.Client{B: backends.API, Key: key}
 	a.IssuingTransactions = &issuingtransaction.Client{B: backends.API, Key: key}
 	a.LoginLinks = &loginlink.Client{B: backends.API, Key: key}
 	a.Mandates = &mandate.Client{B: backends.API, Key: key}
 	a.OAuth = &oauth.Client{B: backends.Connect, Key: key}
 	a.PaymentIntents = &paymentintent.Client{B: backends.API, Key: key}
 	a.PaymentLinks = &paymentlink.Client{B: backends.API, Key: key}
+	a.PaymentMethodConfigurations = &paymentmethodconfiguration.Client{B: backends.API, Key: key}
 	a.PaymentMethodDomains = &paymentmethoddomain.Client{B: backends.API, Key: key}
 	a.PaymentMethods = &paymentmethod.Client{B: backends.API, Key: key}
 	a.PaymentSources = &paymentsource.Client{B: backends.API, Key: key}
@@ -397,6 +535,7 @@ func (a *API) Init(key string, backends *stripe.Backends) {
 	a.Persons = &person.Client{B: backends.API, Key: key}
 	a.Plans = &plan.Client{B: backends.API, Key: key}
 	a.Prices = &price.Client{B: backends.API, Key: key}
+	a.ProductFeatures = &productfeature.Client{B: backends.API, Key: key}
 	a.Products = &product.Client{B: backends.API, Key: key}
 	a.PromotionCodes = &promotioncode.Client{B: backends.API, Key: key}
 	a.Quotes = &quote.Client{B: backends.API, BUploads: backends.Uploads, Key: key}
@@ -420,14 +559,19 @@ func (a *API) Init(key string, backends *stripe.Backends) {
 	a.TaxCodes = &taxcode.Client{B: backends.API, Key: key}
 	a.TaxIDs = &taxid.Client{B: backends.API, Key: key}
 	a.TaxRates = &taxrate.Client{B: backends.API, Key: key}
+	a.TaxRegistrations = &taxregistration.Client{B: backends.API, Key: key}
 	a.TaxSettings = &taxsettings.Client{B: backends.API, Key: key}
 	a.TaxTransactions = &taxtransaction.Client{B: backends.API, Key: key}
 	a.TerminalConfigurations = &terminalconfiguration.Client{B: backends.API, Key: key}
 	a.TerminalConnectionTokens = &terminalconnectiontoken.Client{B: backends.API, Key: key}
 	a.TerminalLocations = &terminallocation.Client{B: backends.API, Key: key}
 	a.TerminalReaders = &terminalreader.Client{B: backends.API, Key: key}
+	a.TestHelpersConfirmationTokens = &testhelpersconfirmationtoken.Client{B: backends.API, Key: key}
 	a.TestHelpersCustomers = &testhelperscustomer.Client{B: backends.API, Key: key}
+	a.TestHelpersIssuingAuthorizations = &testhelpersissuingauthorization.Client{B: backends.API, Key: key}
 	a.TestHelpersIssuingCards = &testhelpersissuingcard.Client{B: backends.API, Key: key}
+	a.TestHelpersIssuingPersonalizationDesigns = &testhelpersissuingpersonalizationdesign.Client{B: backends.API, Key: key}
+	a.TestHelpersIssuingTransactions = &testhelpersissuingtransaction.Client{B: backends.API, Key: key}
 	a.TestHelpersRefunds = &testhelpersrefund.Client{B: backends.API, Key: key}
 	a.TestHelpersTerminalReaders = &testhelpersterminalreader.Client{B: backends.API, Key: key}
 	a.TestHelpersTestClocks = &testhelperstestclock.Client{B: backends.API, Key: key}
@@ -450,13 +594,21 @@ func (a *API) Init(key string, backends *stripe.Backends) {
 	a.TreasuryReceivedDebits = &treasuryreceiveddebit.Client{B: backends.API, Key: key}
 	a.TreasuryTransactionEntries = &treasurytransactionentry.Client{B: backends.API, Key: key}
 	a.TreasuryTransactions = &treasurytransaction.Client{B: backends.API, Key: key}
-	a.UsageRecords = &usagerecord.Client{B: backends.API, Key: key}
-	a.UsageRecordSummaries = &usagerecordsummary.Client{B: backends.API, Key: key}
+	a.V2BillingMeterEventAdjustments = &v2billingmetereventadjustment.Client{B: backends.API, Key: key}
+	a.V2BillingMeterEvents = &v2billingmeterevent.Client{B: backends.API, Key: key}
+	a.V2BillingMeterEventSessions = &v2billingmetereventsession.Client{B: backends.API, Key: key}
+	a.V2BillingMeterEventStreams = &v2billingmetereventstream.Client{BMeterEvents: backends.MeterEvents, Key: key}
+	a.V2CoreEventDestinations = &v2coreeventdestination.Client{B: backends.API, Key: key}
+	a.V2CoreEvents = &v2coreevent.Client{B: backends.API, Key: key}
 	a.WebhookEndpoints = &webhookendpoint.Client{B: backends.API, Key: key}
 }
 
 // New creates a new Stripe client with the appropriate secret key
 // as well as providing the ability to override the backends as needed.
+//
+// Deprecated: Use [stripe.NewClient] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func New(key string, backends *stripe.Backends) *API {
 	api := API{}
 	api.Init(key, backends)

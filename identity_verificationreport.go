@@ -38,6 +38,24 @@ const (
 )
 
 // A short machine-readable string giving the reason for the verification failure.
+type IdentityVerificationReportEmailErrorCode string
+
+// List of values that IdentityVerificationReportEmailErrorCode can take
+const (
+	IdentityVerificationReportEmailErrorCodeEmailUnverifiedOther      IdentityVerificationReportEmailErrorCode = "email_unverified_other"
+	IdentityVerificationReportEmailErrorCodeEmailVerificationDeclined IdentityVerificationReportEmailErrorCode = "email_verification_declined"
+)
+
+// Status of this `email` check.
+type IdentityVerificationReportEmailStatus string
+
+// List of values that IdentityVerificationReportEmailStatus can take
+const (
+	IdentityVerificationReportEmailStatusUnverified IdentityVerificationReportEmailStatus = "unverified"
+	IdentityVerificationReportEmailStatusVerified   IdentityVerificationReportEmailStatus = "verified"
+)
+
+// A short machine-readable string giving the reason for the verification failure.
 type IdentityVerificationReportIDNumberErrorCode string
 
 // List of values that IdentityVerificationReportIDNumberErrorCode can take
@@ -77,6 +95,24 @@ const (
 )
 
 // A short machine-readable string giving the reason for the verification failure.
+type IdentityVerificationReportPhoneErrorCode string
+
+// List of values that IdentityVerificationReportPhoneErrorCode can take
+const (
+	IdentityVerificationReportPhoneErrorCodePhoneUnverifiedOther      IdentityVerificationReportPhoneErrorCode = "phone_unverified_other"
+	IdentityVerificationReportPhoneErrorCodePhoneVerificationDeclined IdentityVerificationReportPhoneErrorCode = "phone_verification_declined"
+)
+
+// Status of this `phone` check.
+type IdentityVerificationReportPhoneStatus string
+
+// List of values that IdentityVerificationReportPhoneStatus can take
+const (
+	IdentityVerificationReportPhoneStatusUnverified IdentityVerificationReportPhoneStatus = "unverified"
+	IdentityVerificationReportPhoneStatusVerified   IdentityVerificationReportPhoneStatus = "verified"
+)
+
+// A short machine-readable string giving the reason for the verification failure.
 type IdentityVerificationReportSelfieErrorCode string
 
 // List of values that IdentityVerificationReportSelfieErrorCode can take
@@ -101,9 +137,32 @@ type IdentityVerificationReportType string
 
 // List of values that IdentityVerificationReportType can take
 const (
-	IdentityVerificationReportTypeDocument IdentityVerificationReportType = "document"
-	IdentityVerificationReportTypeIDNumber IdentityVerificationReportType = "id_number"
+	IdentityVerificationReportTypeDocument         IdentityVerificationReportType = "document"
+	IdentityVerificationReportTypeIDNumber         IdentityVerificationReportType = "id_number"
+	IdentityVerificationReportTypeVerificationFlow IdentityVerificationReportType = "verification_flow"
 )
+
+// List all verification reports.
+type IdentityVerificationReportListParams struct {
+	ListParams `form:"*"`
+	// A string to reference this user. This can be a customer ID, a session ID, or similar, and can be used to reconcile this verification with your internal systems.
+	ClientReferenceID *string `form:"client_reference_id"`
+	// Only return VerificationReports that were created during the given date interval.
+	Created *int64 `form:"created"`
+	// Only return VerificationReports that were created during the given date interval.
+	CreatedRange *RangeQueryParams `form:"created"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Only return VerificationReports of this type
+	Type *string `form:"type"`
+	// Only return VerificationReports created by this VerificationSession ID. It is allowed to provide a VerificationIntent ID.
+	VerificationSession *string `form:"verification_session"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *IdentityVerificationReportListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
 
 // Retrieves an existing VerificationReport
 type IdentityVerificationReportParams struct {
@@ -117,21 +176,15 @@ func (p *IdentityVerificationReportParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
-// List all verification reports.
-type IdentityVerificationReportListParams struct {
-	ListParams   `form:"*"`
-	Created      *int64            `form:"created"`
-	CreatedRange *RangeQueryParams `form:"created"`
+// Retrieves an existing VerificationReport
+type IdentityVerificationReportRetrieveParams struct {
+	Params `form:"*"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
-	// Only return VerificationReports of this type
-	Type *string `form:"type"`
-	// Only return VerificationReports created by this VerificationSession ID. It is allowed to provide a VerificationIntent ID.
-	VerificationSession *string `form:"verification_session"`
 }
 
 // AddExpand appends a new field to expand.
-func (p *IdentityVerificationReportListParams) AddExpand(f string) {
+func (p *IdentityVerificationReportRetrieveParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
@@ -201,6 +254,24 @@ type IdentityVerificationReportDocument struct {
 	Type IdentityVerificationReportDocumentType `json:"type"`
 }
 
+// Details on the verification error. Present when status is `unverified`.
+type IdentityVerificationReportEmailError struct {
+	// A short machine-readable string giving the reason for the verification failure.
+	Code IdentityVerificationReportEmailErrorCode `json:"code"`
+	// A human-readable message giving the reason for the failure. These messages can be shown to your users.
+	Reason string `json:"reason"`
+}
+
+// Result from a email check
+type IdentityVerificationReportEmail struct {
+	// Email to be verified.
+	Email string `json:"email"`
+	// Details on the verification error. Present when status is `unverified`.
+	Error *IdentityVerificationReportEmailError `json:"error"`
+	// Status of this `email` check.
+	Status IdentityVerificationReportEmailStatus `json:"status"`
+}
+
 // Date of birth.
 type IdentityVerificationReportIDNumberDOB struct {
 	// Numerical day between 1 and 31.
@@ -227,7 +298,7 @@ type IdentityVerificationReportIDNumber struct {
 	Error *IdentityVerificationReportIDNumberError `json:"error"`
 	// First name.
 	FirstName string `json:"first_name"`
-	// ID number.
+	// ID number. When `id_number_type` is `us_ssn`, only the last 4 digits are present.
 	IDNumber string `json:"id_number"`
 	// Type of ID number.
 	IDNumberType IdentityVerificationReportIDNumberIDNumberType `json:"id_number_type"`
@@ -250,6 +321,24 @@ type IdentityVerificationReportOptionsIDNumber struct{}
 type IdentityVerificationReportOptions struct {
 	Document *IdentityVerificationReportOptionsDocument `json:"document"`
 	IDNumber *IdentityVerificationReportOptionsIDNumber `json:"id_number"`
+}
+
+// Details on the verification error. Present when status is `unverified`.
+type IdentityVerificationReportPhoneError struct {
+	// A short machine-readable string giving the reason for the verification failure.
+	Code IdentityVerificationReportPhoneErrorCode `json:"code"`
+	// A human-readable message giving the reason for the failure. These messages can be shown to your users.
+	Reason string `json:"reason"`
+}
+
+// Result from a phone check
+type IdentityVerificationReportPhone struct {
+	// Details on the verification error. Present when status is `unverified`.
+	Error *IdentityVerificationReportPhoneError `json:"error"`
+	// Phone to be verified.
+	Phone string `json:"phone"`
+	// Status of this `phone` check.
+	Status IdentityVerificationReportPhoneStatus `json:"status"`
 }
 
 // Details on the verification error. Present when status is `unverified`.
@@ -282,13 +371,17 @@ type IdentityVerificationReportSelfie struct {
 // API. To configure and create VerificationReports, use the
 // [VerificationSession](https://stripe.com/docs/api/identity/verification_sessions) API.
 //
-// Related guides: [Accessing verification results](https://stripe.com/docs/identity/verification-sessions#results).
+// Related guide: [Accessing verification results](https://stripe.com/docs/identity/verification-sessions#results).
 type IdentityVerificationReport struct {
 	APIResource
+	// A string to reference this user. This can be a customer ID, a session ID, or similar, and can be used to reconcile this verification with your internal systems.
+	ClientReferenceID string `json:"client_reference_id"`
 	// Time at which the object was created. Measured in seconds since the Unix epoch.
 	Created int64 `json:"created"`
 	// Result from a document check
 	Document *IdentityVerificationReportDocument `json:"document"`
+	// Result from a email check
+	Email *IdentityVerificationReportEmail `json:"email"`
 	// Unique identifier for the object.
 	ID string `json:"id"`
 	// Result from an id_number check
@@ -298,10 +391,14 @@ type IdentityVerificationReport struct {
 	// String representing the object's type. Objects of the same type share the same value.
 	Object  string                             `json:"object"`
 	Options *IdentityVerificationReportOptions `json:"options"`
+	// Result from a phone check
+	Phone *IdentityVerificationReportPhone `json:"phone"`
 	// Result from a selfie check
 	Selfie *IdentityVerificationReportSelfie `json:"selfie"`
 	// Type of report.
 	Type IdentityVerificationReportType `json:"type"`
+	// The configuration token of a verification flow from the dashboard.
+	VerificationFlow string `json:"verification_flow"`
 	// ID of the VerificationSession that created this report.
 	VerificationSession string `json:"verification_session"`
 }

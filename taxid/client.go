@@ -4,103 +4,124 @@
 //
 //
 
-// Package taxid provides the /customers/{customer}/tax_ids APIs
+// Package taxid provides the /v1/tax_ids APIs
 package taxid
 
 import (
-	"fmt"
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /customers/{customer}/tax_ids APIs.
+// Client is used to invoke /v1/tax_ids APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// New creates a new tax id.
+// Creates a new tax_id object for a customer.
 func New(params *stripe.TaxIDParams) (*stripe.TaxID, error) {
 	return getC().New(params)
 }
 
-// New creates a new tax id.
+// Creates a new tax_id object for a customer.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) New(params *stripe.TaxIDParams) (*stripe.TaxID, error) {
-	if params == nil {
-		return nil, fmt.Errorf(
-			"params cannot be nil, and params.Customer must be set",
+	path := "/v1/tax_ids"
+	if params.Customer != nil {
+		path = stripe.FormatURLPath(
+			"/v1/customers/%s/tax_ids",
+			stripe.StringValue(params.Customer),
 		)
 	}
-	path := stripe.FormatURLPath(
-		"/v1/customers/%s/tax_ids",
-		stripe.StringValue(params.Customer),
-	)
 	taxid := &stripe.TaxID{}
 	err := c.B.Call(http.MethodPost, path, c.Key, params, taxid)
 	return taxid, err
 }
 
-// Get returns the details of a tax id.
+// Retrieves the tax_id object with the given identifier.
 func Get(id string, params *stripe.TaxIDParams) (*stripe.TaxID, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a tax id.
+// Retrieves the tax_id object with the given identifier.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.TaxIDParams) (*stripe.TaxID, error) {
-	if params == nil {
-		return nil, fmt.Errorf(
-			"params cannot be nil, and params.Customer must be set",
-		)
-	}
 	path := stripe.FormatURLPath(
-		"/v1/customers/%s/tax_ids/%s",
-		stripe.StringValue(params.Customer),
+		"/v1/tax_ids/%s",
 		id,
 	)
+	if params.Customer != nil {
+		path = stripe.FormatURLPath(
+			"/v1/customers/%s/tax_ids/%s",
+			stripe.StringValue(params.Customer),
+			id,
+		)
+	}
 	taxid := &stripe.TaxID{}
 	err := c.B.Call(http.MethodGet, path, c.Key, params, taxid)
 	return taxid, err
 }
 
-// Del removes a tax id.
+// Deletes an existing tax_id object.
 func Del(id string, params *stripe.TaxIDParams) (*stripe.TaxID, error) {
 	return getC().Del(id, params)
 }
 
-// Del removes a tax id.
+// Deletes an existing tax_id object.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Del(id string, params *stripe.TaxIDParams) (*stripe.TaxID, error) {
-	if params == nil {
-		return nil, fmt.Errorf(
-			"params cannot be nil, and params.Customer must be set",
-		)
-	}
 	path := stripe.FormatURLPath(
-		"/v1/customers/%s/tax_ids/%s",
-		stripe.StringValue(params.Customer),
+		"/v1/tax_ids/%s",
 		id,
 	)
+	if params.Customer != nil {
+		path = stripe.FormatURLPath(
+			"/v1/customers/%s/tax_ids/%s",
+			stripe.StringValue(params.Customer),
+			id,
+		)
+	}
 	taxid := &stripe.TaxID{}
 	err := c.B.Call(http.MethodDelete, path, c.Key, params, taxid)
 	return taxid, err
 }
 
-// List returns a list of tax ids.
+// Returns a list of tax IDs for a customer.
 func List(params *stripe.TaxIDListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of tax ids.
+// Returns a list of tax IDs for a customer.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.TaxIDListParams) *Iter {
-	path := stripe.FormatURLPath(
-		"/v1/customers/%s/tax_ids",
-		stripe.StringValue(listParams.Customer),
-	)
+	path := "/v1/tax_ids"
+	if listParams != nil && listParams.Customer != nil {
+		path = stripe.FormatURLPath(
+			"/v1/customers/%s/tax_ids",
+			stripe.StringValue(listParams.Customer),
+		)
+	}
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.TaxIDList{}
-			err := c.B.CallRaw(http.MethodGet, path, c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, path, c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

@@ -4,27 +4,34 @@
 //
 //
 
-// Package refund provides the /refunds APIs
+// Package refund provides the /v1/refunds APIs
 package refund
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
+	stripe "github.com/stripe/stripe-go/v82"
 )
 
-// Client is used to invoke /refunds APIs.
+// Client is used to invoke /v1/refunds APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// Expire is the method for the `POST /v1/test_helpers/refunds/{refund}/expire` API.
+// Expire a refund with a status of requires_action.
 func Expire(id string, params *stripe.TestHelpersRefundExpireParams) (*stripe.Refund, error) {
 	return getC().Expire(id, params)
 }
 
-// Expire is the method for the `POST /v1/test_helpers/refunds/{refund}/expire` API.
+// Expire a refund with a status of requires_action.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Expire(id string, params *stripe.TestHelpersRefundExpireParams) (*stripe.Refund, error) {
 	path := stripe.FormatURLPath("/v1/test_helpers/refunds/%s/expire", id)
 	refund := &stripe.Refund{}

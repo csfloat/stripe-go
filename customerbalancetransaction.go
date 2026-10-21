@@ -8,24 +8,39 @@ package stripe
 
 import "encoding/json"
 
-// Transaction type: `adjustment`, `applied_to_invoice`, `credit_note`, `initial`, `invoice_overpaid`, `invoice_too_large`, `invoice_too_small`, `unspent_receiver_credit`, or `unapplied_from_invoice`. See the [Customer Balance page](https://stripe.com/docs/billing/customer/balance#types) to learn more about transaction types.
+// Transaction type: `adjustment`, `applied_to_invoice`, `credit_note`, `initial`, `invoice_overpaid`, `invoice_too_large`, `invoice_too_small`, `unspent_receiver_credit`, `unapplied_from_invoice`, `checkout_session_subscription_payment`, or `checkout_session_subscription_payment_canceled`. See the [Customer Balance page](https://stripe.com/docs/billing/customer/balance#types) to learn more about transaction types.
 type CustomerBalanceTransactionType string
 
 // List of values that CustomerBalanceTransactionType can take
 const (
-	CustomerBalanceTransactionTypeAdjustment            CustomerBalanceTransactionType = "adjustment"
-	CustomerBalanceTransactionTypeAppliedToInvoice      CustomerBalanceTransactionType = "applied_to_invoice"
-	CustomerBalanceTransactionTypeCreditNote            CustomerBalanceTransactionType = "credit_note"
-	CustomerBalanceTransactionTypeInitial               CustomerBalanceTransactionType = "initial"
-	CustomerBalanceTransactionTypeInvoiceOverpaid       CustomerBalanceTransactionType = "invoice_overpaid"
-	CustomerBalanceTransactionTypeInvoiceTooLarge       CustomerBalanceTransactionType = "invoice_too_large"
-	CustomerBalanceTransactionTypeInvoiceTooSmall       CustomerBalanceTransactionType = "invoice_too_small"
-	CustomerBalanceTransactionTypeMigration             CustomerBalanceTransactionType = "migration"
-	CustomerBalanceTransactionTypeUnappliedFromInvoice  CustomerBalanceTransactionType = "unapplied_from_invoice"
-	CustomerBalanceTransactionTypeUnspentReceiverCredit CustomerBalanceTransactionType = "unspent_receiver_credit"
+	CustomerBalanceTransactionTypeAdjustment                                 CustomerBalanceTransactionType = "adjustment"
+	CustomerBalanceTransactionTypeAppliedToInvoice                           CustomerBalanceTransactionType = "applied_to_invoice"
+	CustomerBalanceTransactionTypeCheckoutSessionSubscriptionPayment         CustomerBalanceTransactionType = "checkout_session_subscription_payment"
+	CustomerBalanceTransactionTypeCheckoutSessionSubscriptionPaymentCanceled CustomerBalanceTransactionType = "checkout_session_subscription_payment_canceled"
+	CustomerBalanceTransactionTypeCreditNote                                 CustomerBalanceTransactionType = "credit_note"
+	CustomerBalanceTransactionTypeInitial                                    CustomerBalanceTransactionType = "initial"
+	CustomerBalanceTransactionTypeInvoiceOverpaid                            CustomerBalanceTransactionType = "invoice_overpaid"
+	CustomerBalanceTransactionTypeInvoiceTooLarge                            CustomerBalanceTransactionType = "invoice_too_large"
+	CustomerBalanceTransactionTypeInvoiceTooSmall                            CustomerBalanceTransactionType = "invoice_too_small"
+	CustomerBalanceTransactionTypeMigration                                  CustomerBalanceTransactionType = "migration"
+	CustomerBalanceTransactionTypeUnappliedFromInvoice                       CustomerBalanceTransactionType = "unapplied_from_invoice"
+	CustomerBalanceTransactionTypeUnspentReceiverCredit                      CustomerBalanceTransactionType = "unspent_receiver_credit"
 )
 
-// Retrieves a specific customer balance transaction that updated the customer's [balances](https://stripe.com/docs/billing/customer/balance).
+// Returns a list of transactions that updated the customer's [balances](https://stripe.com/docs/billing/customer/balance).
+type CustomerBalanceTransactionListParams struct {
+	ListParams `form:"*"`
+	Customer   *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CustomerBalanceTransactionListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Creates an immutable transaction that updates the customer's credit [balance](https://stripe.com/docs/billing/customer/balance).
 type CustomerBalanceTransactionParams struct {
 	Params   `form:"*"`
 	Customer *string `form:"-"` // Included in URL
@@ -55,17 +70,73 @@ func (p *CustomerBalanceTransactionParams) AddMetadata(key string, value string)
 	p.Metadata[key] = value
 }
 
-// Returns a list of transactions that updated the customer's [balances](https://stripe.com/docs/billing/customer/balance).
-type CustomerBalanceTransactionListParams struct {
-	ListParams `form:"*"`
-	Customer   *string `form:"-"` // Included in URL
+// Creates an immutable transaction that updates the customer's credit [balance](https://stripe.com/docs/billing/customer/balance).
+type CustomerBalanceTransactionCreateParams struct {
+	Params   `form:"*"`
+	Customer *string `form:"-"` // Included in URL
+	// The integer amount in **cents (or local equivalent)** to apply to the customer's credit balance.
+	Amount *int64 `form:"amount"`
+	// Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies). Specifies the [`invoice_credit_balance`](https://stripe.com/docs/api/customers/object#customer_object-invoice_credit_balance) that this transaction will apply to. If the customer's `currency` is not set, it will be updated to this value.
+	Currency *string `form:"currency"`
+	// An arbitrary string attached to the object. Often useful for displaying to users.
+	Description *string `form:"description"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CustomerBalanceTransactionCreateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *CustomerBalanceTransactionCreateParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// Retrieves a specific customer balance transaction that updated the customer's [balances](https://stripe.com/docs/billing/customer/balance).
+type CustomerBalanceTransactionRetrieveParams struct {
+	Params   `form:"*"`
+	Customer *string `form:"-"` // Included in URL
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
 }
 
 // AddExpand appends a new field to expand.
-func (p *CustomerBalanceTransactionListParams) AddExpand(f string) {
+func (p *CustomerBalanceTransactionRetrieveParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
+}
+
+// Most credit balance transaction fields are immutable, but you may update its description and metadata.
+type CustomerBalanceTransactionUpdateParams struct {
+	Params   `form:"*"`
+	Customer *string `form:"-"` // Included in URL
+	// An arbitrary string attached to the object. Often useful for displaying to users.
+	Description *string `form:"description"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *CustomerBalanceTransactionUpdateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *CustomerBalanceTransactionUpdateParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // Each customer has a [Balance](https://stripe.com/docs/api/customers/object#customer_object-balance) value,
@@ -78,6 +149,8 @@ type CustomerBalanceTransaction struct {
 	APIResource
 	// The amount of the transaction. A negative value is a credit for the customer's balance, and a positive value is a debit to the customer's `balance`.
 	Amount int64 `json:"amount"`
+	// The ID of the checkout session (if any) that created the transaction.
+	CheckoutSession *CheckoutSession `json:"checkout_session"`
 	// Time at which the object was created. Measured in seconds since the Unix epoch.
 	Created int64 `json:"created"`
 	// The ID of the credit note (if any) related to the transaction.
@@ -100,7 +173,7 @@ type CustomerBalanceTransaction struct {
 	Metadata map[string]string `json:"metadata"`
 	// String representing the object's type. Objects of the same type share the same value.
 	Object string `json:"object"`
-	// Transaction type: `adjustment`, `applied_to_invoice`, `credit_note`, `initial`, `invoice_overpaid`, `invoice_too_large`, `invoice_too_small`, `unspent_receiver_credit`, or `unapplied_from_invoice`. See the [Customer Balance page](https://stripe.com/docs/billing/customer/balance#types) to learn more about transaction types.
+	// Transaction type: `adjustment`, `applied_to_invoice`, `credit_note`, `initial`, `invoice_overpaid`, `invoice_too_large`, `invoice_too_small`, `unspent_receiver_credit`, `unapplied_from_invoice`, `checkout_session_subscription_payment`, or `checkout_session_subscription_payment_canceled`. See the [Customer Balance page](https://stripe.com/docs/billing/customer/balance#types) to learn more about transaction types.
 	Type CustomerBalanceTransactionType `json:"type"`
 }
 

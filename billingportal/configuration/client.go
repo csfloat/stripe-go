@@ -4,46 +4,52 @@
 //
 //
 
-// Package configuration provides the /billing_portal/configurations APIs
+// Package configuration provides the /v1/billing_portal/configurations APIs
 package configuration
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /billing_portal/configurations APIs.
+// Client is used to invoke /v1/billing_portal/configurations APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// New creates a new billing portal configuration.
+// Creates a configuration that describes the functionality and behavior of a PortalSession
 func New(params *stripe.BillingPortalConfigurationParams) (*stripe.BillingPortalConfiguration, error) {
 	return getC().New(params)
 }
 
-// New creates a new billing portal configuration.
+// Creates a configuration that describes the functionality and behavior of a PortalSession
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) New(params *stripe.BillingPortalConfigurationParams) (*stripe.BillingPortalConfiguration, error) {
 	configuration := &stripe.BillingPortalConfiguration{}
 	err := c.B.Call(
-		http.MethodPost,
-		"/v1/billing_portal/configurations",
-		c.Key,
-		params,
-		configuration,
-	)
+		http.MethodPost, "/v1/billing_portal/configurations", c.Key, params, configuration)
 	return configuration, err
 }
 
-// Get returns the details of a billing portal configuration.
+// Retrieves a configuration that describes the functionality of the customer portal.
 func Get(id string, params *stripe.BillingPortalConfigurationParams) (*stripe.BillingPortalConfiguration, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a billing portal configuration.
+// Retrieves a configuration that describes the functionality of the customer portal.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.BillingPortalConfigurationParams) (*stripe.BillingPortalConfiguration, error) {
 	path := stripe.FormatURLPath("/v1/billing_portal/configurations/%s", id)
 	configuration := &stripe.BillingPortalConfiguration{}
@@ -51,12 +57,16 @@ func (c Client) Get(id string, params *stripe.BillingPortalConfigurationParams) 
 	return configuration, err
 }
 
-// Update updates a billing portal configuration's properties.
+// Updates a configuration that describes the functionality of the customer portal.
 func Update(id string, params *stripe.BillingPortalConfigurationParams) (*stripe.BillingPortalConfiguration, error) {
 	return getC().Update(id, params)
 }
 
-// Update updates a billing portal configuration's properties.
+// Updates a configuration that describes the functionality of the customer portal.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Update(id string, params *stripe.BillingPortalConfigurationParams) (*stripe.BillingPortalConfiguration, error) {
 	path := stripe.FormatURLPath("/v1/billing_portal/configurations/%s", id)
 	configuration := &stripe.BillingPortalConfiguration{}
@@ -64,17 +74,21 @@ func (c Client) Update(id string, params *stripe.BillingPortalConfigurationParam
 	return configuration, err
 }
 
-// List returns a list of billing portal configurations.
+// Returns a list of configurations that describe the functionality of the customer portal.
 func List(params *stripe.BillingPortalConfigurationListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of billing portal configurations.
+// Returns a list of configurations that describe the functionality of the customer portal.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.BillingPortalConfigurationListParams) *Iter {
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.BillingPortalConfigurationList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/billing_portal/configurations", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/billing_portal/configurations", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

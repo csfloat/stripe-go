@@ -4,28 +4,35 @@
 //
 //
 
-// Package countryspec provides the /country_specs APIs
+// Package countryspec provides the /v1/country_specs APIs
 package countryspec
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /country_specs APIs.
+// Client is used to invoke /v1/country_specs APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// Get returns the details of a country spec.
+// Returns a Country Spec for a given Country code.
 func Get(id string, params *stripe.CountrySpecParams) (*stripe.CountrySpec, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a country spec.
+// Returns a Country Spec for a given Country code.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.CountrySpecParams) (*stripe.CountrySpec, error) {
 	path := stripe.FormatURLPath("/v1/country_specs/%s", id)
 	countryspec := &stripe.CountrySpec{}
@@ -33,17 +40,21 @@ func (c Client) Get(id string, params *stripe.CountrySpecParams) (*stripe.Countr
 	return countryspec, err
 }
 
-// List returns a list of country specs.
+// Lists all Country Spec objects available in the API.
 func List(params *stripe.CountrySpecListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of country specs.
+// Lists all Country Spec objects available in the API.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.CountrySpecListParams) *Iter {
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.CountrySpecList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/country_specs", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/country_specs", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

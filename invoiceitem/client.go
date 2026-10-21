@@ -4,46 +4,52 @@
 //
 //
 
-// Package invoiceitem provides the /invoiceitems APIs
+// Package invoiceitem provides the /v1/invoiceitems APIs
 package invoiceitem
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /invoiceitems APIs.
+// Client is used to invoke /v1/invoiceitems APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// New creates a new invoice item.
+// Creates an item to be added to a draft invoice (up to 250 items per invoice). If no invoice is specified, the item will be on the next invoice created for the customer specified.
 func New(params *stripe.InvoiceItemParams) (*stripe.InvoiceItem, error) {
 	return getC().New(params)
 }
 
-// New creates a new invoice item.
+// Creates an item to be added to a draft invoice (up to 250 items per invoice). If no invoice is specified, the item will be on the next invoice created for the customer specified.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) New(params *stripe.InvoiceItemParams) (*stripe.InvoiceItem, error) {
 	invoiceitem := &stripe.InvoiceItem{}
 	err := c.B.Call(
-		http.MethodPost,
-		"/v1/invoiceitems",
-		c.Key,
-		params,
-		invoiceitem,
-	)
+		http.MethodPost, "/v1/invoiceitems", c.Key, params, invoiceitem)
 	return invoiceitem, err
 }
 
-// Get returns the details of an invoice item.
+// Retrieves the invoice item with the given ID.
 func Get(id string, params *stripe.InvoiceItemParams) (*stripe.InvoiceItem, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of an invoice item.
+// Retrieves the invoice item with the given ID.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.InvoiceItemParams) (*stripe.InvoiceItem, error) {
 	path := stripe.FormatURLPath("/v1/invoiceitems/%s", id)
 	invoiceitem := &stripe.InvoiceItem{}
@@ -51,12 +57,16 @@ func (c Client) Get(id string, params *stripe.InvoiceItemParams) (*stripe.Invoic
 	return invoiceitem, err
 }
 
-// Update updates an invoice item's properties.
+// Updates the amount or description of an invoice item on an upcoming invoice. Updating an invoice item is only possible before the invoice it's attached to is closed.
 func Update(id string, params *stripe.InvoiceItemParams) (*stripe.InvoiceItem, error) {
 	return getC().Update(id, params)
 }
 
-// Update updates an invoice item's properties.
+// Updates the amount or description of an invoice item on an upcoming invoice. Updating an invoice item is only possible before the invoice it's attached to is closed.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Update(id string, params *stripe.InvoiceItemParams) (*stripe.InvoiceItem, error) {
 	path := stripe.FormatURLPath("/v1/invoiceitems/%s", id)
 	invoiceitem := &stripe.InvoiceItem{}
@@ -64,12 +74,16 @@ func (c Client) Update(id string, params *stripe.InvoiceItemParams) (*stripe.Inv
 	return invoiceitem, err
 }
 
-// Del removes an invoice item.
+// Deletes an invoice item, removing it from an invoice. Deleting invoice items is only possible when they're not attached to invoices, or if it's attached to a draft invoice.
 func Del(id string, params *stripe.InvoiceItemParams) (*stripe.InvoiceItem, error) {
 	return getC().Del(id, params)
 }
 
-// Del removes an invoice item.
+// Deletes an invoice item, removing it from an invoice. Deleting invoice items is only possible when they're not attached to invoices, or if it's attached to a draft invoice.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Del(id string, params *stripe.InvoiceItemParams) (*stripe.InvoiceItem, error) {
 	path := stripe.FormatURLPath("/v1/invoiceitems/%s", id)
 	invoiceitem := &stripe.InvoiceItem{}
@@ -77,17 +91,21 @@ func (c Client) Del(id string, params *stripe.InvoiceItemParams) (*stripe.Invoic
 	return invoiceitem, err
 }
 
-// List returns a list of invoice items.
+// Returns a list of your invoice items. Invoice items are returned sorted by creation date, with the most recently created invoice items appearing first.
 func List(params *stripe.InvoiceItemListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of invoice items.
+// Returns a list of your invoice items. Invoice items are returned sorted by creation date, with the most recently created invoice items appearing first.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.InvoiceItemListParams) *Iter {
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.InvoiceItemList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/invoiceitems", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/invoiceitems", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

@@ -4,116 +4,112 @@
 //
 //
 
-// Package customerbalancetransaction provides the /customers/{customer}/balance_transactions APIs
+// Package customerbalancetransaction provides the /v1/customers/{customer}/balance_transactions APIs
 package customerbalancetransaction
 
 import (
 	"fmt"
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /customers/{customer}/balance_transactions APIs.
+// Client is used to invoke /v1/customers/{customer}/balance_transactions APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// New creates a new customer balance transaction.
+// Creates an immutable transaction that updates the customer's credit [balance](https://stripe.com/docs/billing/customer/balance).
 func New(params *stripe.CustomerBalanceTransactionParams) (*stripe.CustomerBalanceTransaction, error) {
 	return getC().New(params)
 }
 
-// New creates a new customer balance transaction.
+// Creates an immutable transaction that updates the customer's credit [balance](https://stripe.com/docs/billing/customer/balance).
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) New(params *stripe.CustomerBalanceTransactionParams) (*stripe.CustomerBalanceTransaction, error) {
 	if params == nil {
 		return nil, fmt.Errorf(
-			"params cannot be nil, and params.Customer must be set",
-		)
+			"params cannot be nil, and params.Customer must be set")
 	}
 	path := stripe.FormatURLPath(
-		"/v1/customers/%s/balance_transactions",
-		stripe.StringValue(params.Customer),
-	)
+		"/v1/customers/%s/balance_transactions", stripe.StringValue(
+			params.Customer))
 	customerbalancetransaction := &stripe.CustomerBalanceTransaction{}
 	err := c.B.Call(
-		http.MethodPost,
-		path,
-		c.Key,
-		params,
-		customerbalancetransaction,
-	)
+		http.MethodPost, path, c.Key, params, customerbalancetransaction)
 	return customerbalancetransaction, err
 }
 
-// Get returns the details of a customer balance transaction.
+// Retrieves a specific customer balance transaction that updated the customer's [balances](https://stripe.com/docs/billing/customer/balance).
 func Get(id string, params *stripe.CustomerBalanceTransactionParams) (*stripe.CustomerBalanceTransaction, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a customer balance transaction.
+// Retrieves a specific customer balance transaction that updated the customer's [balances](https://stripe.com/docs/billing/customer/balance).
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.CustomerBalanceTransactionParams) (*stripe.CustomerBalanceTransaction, error) {
 	if params == nil {
 		return nil, fmt.Errorf(
-			"params cannot be nil, and params.Customer must be set",
-		)
+			"params cannot be nil, and params.Customer must be set")
 	}
 	path := stripe.FormatURLPath(
-		"/v1/customers/%s/balance_transactions/%s",
-		stripe.StringValue(params.Customer),
-		id,
-	)
+		"/v1/customers/%s/balance_transactions/%s", stripe.StringValue(
+			params.Customer), id)
 	customerbalancetransaction := &stripe.CustomerBalanceTransaction{}
 	err := c.B.Call(
-		http.MethodGet,
-		path,
-		c.Key,
-		params,
-		customerbalancetransaction,
-	)
+		http.MethodGet, path, c.Key, params, customerbalancetransaction)
 	return customerbalancetransaction, err
 }
 
-// Update updates a customer balance transaction's properties.
+// Most credit balance transaction fields are immutable, but you may update its description and metadata.
 func Update(id string, params *stripe.CustomerBalanceTransactionParams) (*stripe.CustomerBalanceTransaction, error) {
 	return getC().Update(id, params)
 }
 
-// Update updates a customer balance transaction's properties.
+// Most credit balance transaction fields are immutable, but you may update its description and metadata.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Update(id string, params *stripe.CustomerBalanceTransactionParams) (*stripe.CustomerBalanceTransaction, error) {
 	path := stripe.FormatURLPath(
-		"/v1/customers/%s/balance_transactions/%s",
-		stripe.StringValue(params.Customer),
-		id,
-	)
+		"/v1/customers/%s/balance_transactions/%s", stripe.StringValue(
+			params.Customer), id)
 	customerbalancetransaction := &stripe.CustomerBalanceTransaction{}
 	err := c.B.Call(
-		http.MethodPost,
-		path,
-		c.Key,
-		params,
-		customerbalancetransaction,
-	)
+		http.MethodPost, path, c.Key, params, customerbalancetransaction)
 	return customerbalancetransaction, err
 }
 
-// List returns a list of customer balance transactions.
+// Returns a list of transactions that updated the customer's [balances](https://stripe.com/docs/billing/customer/balance).
 func List(params *stripe.CustomerBalanceTransactionListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of customer balance transactions.
+// Returns a list of transactions that updated the customer's [balances](https://stripe.com/docs/billing/customer/balance).
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.CustomerBalanceTransactionListParams) *Iter {
 	path := stripe.FormatURLPath(
-		"/v1/customers/%s/balance_transactions",
-		stripe.StringValue(listParams.Customer),
-	)
+		"/v1/customers/%s/balance_transactions", stripe.StringValue(
+			listParams.Customer))
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.CustomerBalanceTransactionList{}
-			err := c.B.CallRaw(http.MethodGet, path, c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, path, c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

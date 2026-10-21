@@ -6,6 +6,19 @@
 
 package stripe
 
+// Delete an apple pay domain.
+type ApplePayDomainParams struct {
+	Params     `form:"*"`
+	DomainName *string `form:"domain_name"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *ApplePayDomainParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 // List apple pay domains.
 type ApplePayDomainListParams struct {
 	ListParams `form:"*"`
@@ -19,8 +32,25 @@ func (p *ApplePayDomainListParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
+// Delete an apple pay domain.
+type ApplePayDomainDeleteParams struct {
+	Params `form:"*"`
+}
+
+// Retrieve an apple pay domain.
+type ApplePayDomainRetrieveParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *ApplePayDomainRetrieveParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 // Create an apple pay domain.
-type ApplePayDomainParams struct {
+type ApplePayDomainCreateParams struct {
 	Params     `form:"*"`
 	DomainName *string `form:"domain_name"`
 	// Specifies which fields in the response should be expanded.
@@ -28,7 +58,7 @@ type ApplePayDomainParams struct {
 }
 
 // AddExpand appends a new field to expand.
-func (p *ApplePayDomainParams) AddExpand(f string) {
+func (p *ApplePayDomainCreateParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 

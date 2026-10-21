@@ -8,12 +8,13 @@ package stripe
 
 import "encoding/json"
 
-// The reason the review was closed, or null if it has not yet been closed. One of `approved`, `refunded`, `refunded_as_fraud`, `disputed`, or `redacted`.
+// The reason the review was closed, or null if it has not yet been closed. One of `approved`, `refunded`, `refunded_as_fraud`, `disputed`, `redacted`, or `canceled`.
 type ReviewClosedReason string
 
 // List of values that ReviewClosedReason can take
 const (
 	ReviewClosedReasonApproved        ReviewClosedReason = "approved"
+	ReviewClosedReasonCanceled        ReviewClosedReason = "canceled"
 	ReviewClosedReasonDisputed        ReviewClosedReason = "disputed"
 	ReviewClosedReasonRedacted        ReviewClosedReason = "redacted"
 	ReviewClosedReasonRefunded        ReviewClosedReason = "refunded"
@@ -29,12 +30,13 @@ const (
 	ReviewOpenedReasonRule   ReviewOpenedReason = "rule"
 )
 
-// The reason the review is currently open or closed. One of `rule`, `manual`, `approved`, `refunded`, `refunded_as_fraud`, `disputed`, or `redacted`.
+// The reason the review is currently open or closed. One of `rule`, `manual`, `approved`, `refunded`, `refunded_as_fraud`, `disputed`, `redacted`, or `canceled`.
 type ReviewReason string
 
 // List of values that ReviewReason can take
 const (
 	ReviewReasonApproved        ReviewReason = "approved"
+	ReviewReasonCanceled        ReviewReason = "canceled"
 	ReviewReasonDisputed        ReviewReason = "disputed"
 	ReviewReasonManual          ReviewReason = "manual"
 	ReviewReasonRefunded        ReviewReason = "refunded"
@@ -45,8 +47,10 @@ const (
 
 // Returns a list of Review objects that have open set to true. The objects are sorted in descending order by creation date, with the most recently created object appearing first.
 type ReviewListParams struct {
-	ListParams   `form:"*"`
-	Created      *int64            `form:"created"`
+	ListParams `form:"*"`
+	// Only return reviews that were created during the given date interval.
+	Created *int64 `form:"created"`
+	// Only return reviews that were created during the given date interval.
 	CreatedRange *RangeQueryParams `form:"created"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
@@ -78,6 +82,18 @@ type ReviewApproveParams struct {
 
 // AddExpand appends a new field to expand.
 func (p *ReviewApproveParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Retrieves a Review object.
+type ReviewRetrieveParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *ReviewRetrieveParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
@@ -117,7 +133,7 @@ type Review struct {
 	BillingZip string `json:"billing_zip"`
 	// The charge associated with this review.
 	Charge *Charge `json:"charge"`
-	// The reason the review was closed, or null if it has not yet been closed. One of `approved`, `refunded`, `refunded_as_fraud`, `disputed`, or `redacted`.
+	// The reason the review was closed, or null if it has not yet been closed. One of `approved`, `refunded`, `refunded_as_fraud`, `disputed`, `redacted`, or `canceled`.
 	ClosedReason ReviewClosedReason `json:"closed_reason"`
 	// Time at which the object was created. Measured in seconds since the Unix epoch.
 	Created int64 `json:"created"`
@@ -137,7 +153,7 @@ type Review struct {
 	OpenedReason ReviewOpenedReason `json:"opened_reason"`
 	// The PaymentIntent ID associated with this review, if one exists.
 	PaymentIntent *PaymentIntent `json:"payment_intent"`
-	// The reason the review is currently open or closed. One of `rule`, `manual`, `approved`, `refunded`, `refunded_as_fraud`, `disputed`, or `redacted`.
+	// The reason the review is currently open or closed. One of `rule`, `manual`, `approved`, `refunded`, `refunded_as_fraud`, `disputed`, `redacted`, or `canceled`.
 	Reason ReviewReason `json:"reason"`
 	// Information related to the browsing session of the user who initiated the payment.
 	Session *ReviewSession `json:"session"`

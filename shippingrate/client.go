@@ -4,46 +4,52 @@
 //
 //
 
-// Package shippingrate provides the /shipping_rates APIs
+// Package shippingrate provides the /v1/shipping_rates APIs
 package shippingrate
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /shipping_rates APIs.
+// Client is used to invoke /v1/shipping_rates APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// New creates a new shipping rate.
+// Creates a new shipping rate object.
 func New(params *stripe.ShippingRateParams) (*stripe.ShippingRate, error) {
 	return getC().New(params)
 }
 
-// New creates a new shipping rate.
+// Creates a new shipping rate object.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) New(params *stripe.ShippingRateParams) (*stripe.ShippingRate, error) {
 	shippingrate := &stripe.ShippingRate{}
 	err := c.B.Call(
-		http.MethodPost,
-		"/v1/shipping_rates",
-		c.Key,
-		params,
-		shippingrate,
-	)
+		http.MethodPost, "/v1/shipping_rates", c.Key, params, shippingrate)
 	return shippingrate, err
 }
 
-// Get returns the details of a shipping rate.
+// Returns the shipping rate object with the given ID.
 func Get(id string, params *stripe.ShippingRateParams) (*stripe.ShippingRate, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a shipping rate.
+// Returns the shipping rate object with the given ID.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.ShippingRateParams) (*stripe.ShippingRate, error) {
 	path := stripe.FormatURLPath("/v1/shipping_rates/%s", id)
 	shippingrate := &stripe.ShippingRate{}
@@ -51,12 +57,16 @@ func (c Client) Get(id string, params *stripe.ShippingRateParams) (*stripe.Shipp
 	return shippingrate, err
 }
 
-// Update updates a shipping rate's properties.
+// Updates an existing shipping rate object.
 func Update(id string, params *stripe.ShippingRateParams) (*stripe.ShippingRate, error) {
 	return getC().Update(id, params)
 }
 
-// Update updates a shipping rate's properties.
+// Updates an existing shipping rate object.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Update(id string, params *stripe.ShippingRateParams) (*stripe.ShippingRate, error) {
 	path := stripe.FormatURLPath("/v1/shipping_rates/%s", id)
 	shippingrate := &stripe.ShippingRate{}
@@ -64,17 +74,21 @@ func (c Client) Update(id string, params *stripe.ShippingRateParams) (*stripe.Sh
 	return shippingrate, err
 }
 
-// List returns a list of shipping rates.
+// Returns a list of your shipping rates.
 func List(params *stripe.ShippingRateListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of shipping rates.
+// Returns a list of your shipping rates.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.ShippingRateListParams) *Iter {
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.ShippingRateList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/shipping_rates", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/shipping_rates", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

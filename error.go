@@ -1,27 +1,40 @@
 package stripe
 
-import "encoding/json"
+import (
+	"encoding/json"
+	"net/http"
+)
+
+// errorEnums: The beginning of the section generated from our OpenAPI spec
+
+// errorEnums: The end of the section generated from our OpenAPI spec
 
 // ErrorType is the list of allowed values for the error's type.
 type ErrorType string
 
 // List of values that ErrorType can take.
+// errorTypes: The beginning of the section generated from our OpenAPI spec
 const (
 	ErrorTypeAPI            ErrorType = "api_error"
 	ErrorTypeCard           ErrorType = "card_error"
 	ErrorTypeIdempotency    ErrorType = "idempotency_error"
 	ErrorTypeInvalidRequest ErrorType = "invalid_request_error"
+
+	// V2 error types
+	ErrorTypeTemporarySessionExpired ErrorType = "temporary_session_expired"
 )
 
-// ErrorCode is the list of allowed values for the error's code.
-type ErrorCode string
+// errorTypes: The end of the section generated from our OpenAPI spec
 
 // DeclineCode is the list of reasons provided by card issuers for decline of payment.
 type DeclineCode string
 
+// ErrorCode is the list of allowed values for the error's code.
+type ErrorCode string
+
 // List of values that ErrorCode can take.
 // For descriptions see https://stripe.com/docs/error-codes
-// The beginning of the section generated from our OpenAPI spec
+// v1ErrorCodes: The beginning of the section generated from our OpenAPI spec
 const (
 	ErrorCodeACSSDebitSessionIncomplete                                  ErrorCode = "acss_debit_session_incomplete"
 	ErrorCodeAPIKeyExpired                                               ErrorCode = "api_key_expired"
@@ -37,6 +50,7 @@ const (
 	ErrorCodeApplicationFeesNotAllowed                                   ErrorCode = "application_fees_not_allowed"
 	ErrorCodeAuthenticationRequired                                      ErrorCode = "authentication_required"
 	ErrorCodeBalanceInsufficient                                         ErrorCode = "balance_insufficient"
+	ErrorCodeBalanceInvalidParameter                                     ErrorCode = "balance_invalid_parameter"
 	ErrorCodeBankAccountBadRoutingNumbers                                ErrorCode = "bank_account_bad_routing_numbers"
 	ErrorCodeBankAccountDeclined                                         ErrorCode = "bank_account_declined"
 	ErrorCodeBankAccountExists                                           ErrorCode = "bank_account_exists"
@@ -55,6 +69,7 @@ const (
 	ErrorCodeChargeAlreadyRefunded                                       ErrorCode = "charge_already_refunded"
 	ErrorCodeChargeDisputed                                              ErrorCode = "charge_disputed"
 	ErrorCodeChargeExceedsSourceLimit                                    ErrorCode = "charge_exceeds_source_limit"
+	ErrorCodeChargeExceedsTransactionLimit                               ErrorCode = "charge_exceeds_transaction_limit"
 	ErrorCodeChargeExpiredForCapture                                     ErrorCode = "charge_expired_for_capture"
 	ErrorCodeChargeInvalidParameter                                      ErrorCode = "charge_invalid_parameter"
 	ErrorCodeChargeNotRefundable                                         ErrorCode = "charge_not_refundable"
@@ -64,9 +79,17 @@ const (
 	ErrorCodeCouponExpired                                               ErrorCode = "coupon_expired"
 	ErrorCodeCustomerMaxPaymentMethods                                   ErrorCode = "customer_max_payment_methods"
 	ErrorCodeCustomerMaxSubscriptions                                    ErrorCode = "customer_max_subscriptions"
+	ErrorCodeCustomerTaxLocationInvalid                                  ErrorCode = "customer_tax_location_invalid"
 	ErrorCodeDebitNotAuthorized                                          ErrorCode = "debit_not_authorized"
 	ErrorCodeEmailInvalid                                                ErrorCode = "email_invalid"
 	ErrorCodeExpiredCard                                                 ErrorCode = "expired_card"
+	ErrorCodeFinancialConnectionsAccountInactive                         ErrorCode = "financial_connections_account_inactive"
+	ErrorCodeFinancialConnectionsNoSuccessfulTransactionRefresh          ErrorCode = "financial_connections_no_successful_transaction_refresh"
+	ErrorCodeForwardingAPIInactive                                       ErrorCode = "forwarding_api_inactive"
+	ErrorCodeForwardingAPIInvalidParameter                               ErrorCode = "forwarding_api_invalid_parameter"
+	ErrorCodeForwardingAPIRetryableUpstreamError                         ErrorCode = "forwarding_api_retryable_upstream_error"
+	ErrorCodeForwardingAPIUpstreamConnectionError                        ErrorCode = "forwarding_api_upstream_connection_error"
+	ErrorCodeForwardingAPIUpstreamConnectionTimeout                      ErrorCode = "forwarding_api_upstream_connection_timeout"
 	ErrorCodeIdempotencyKeyInUse                                         ErrorCode = "idempotency_key_in_use"
 	ErrorCodeIncorrectAddress                                            ErrorCode = "incorrect_address"
 	ErrorCodeIncorrectCVC                                                ErrorCode = "incorrect_cvc"
@@ -85,6 +108,7 @@ const (
 	ErrorCodeInvalidChargeAmount                                         ErrorCode = "invalid_charge_amount"
 	ErrorCodeInvalidExpiryMonth                                          ErrorCode = "invalid_expiry_month"
 	ErrorCodeInvalidExpiryYear                                           ErrorCode = "invalid_expiry_year"
+	ErrorCodeInvalidMandateReferencePrefixFormat                         ErrorCode = "invalid_mandate_reference_prefix_format"
 	ErrorCodeInvalidNumber                                               ErrorCode = "invalid_number"
 	ErrorCodeInvalidSourceUsage                                          ErrorCode = "invalid_source_usage"
 	ErrorCodeInvalidTaxLocation                                          ErrorCode = "invalid_tax_location"
@@ -161,27 +185,35 @@ const (
 	ErrorCodeSetupIntentAuthenticationFailure                            ErrorCode = "setup_intent_authentication_failure"
 	ErrorCodeSetupIntentInvalidParameter                                 ErrorCode = "setup_intent_invalid_parameter"
 	ErrorCodeSetupIntentMandateInvalid                                   ErrorCode = "setup_intent_mandate_invalid"
+	ErrorCodeSetupIntentMobileWalletUnsupported                          ErrorCode = "setup_intent_mobile_wallet_unsupported"
 	ErrorCodeSetupIntentSetupAttemptExpired                              ErrorCode = "setup_intent_setup_attempt_expired"
 	ErrorCodeSetupIntentUnexpectedState                                  ErrorCode = "setup_intent_unexpected_state"
+	ErrorCodeShippingAddressInvalid                                      ErrorCode = "shipping_address_invalid"
 	ErrorCodeShippingCalculationFailed                                   ErrorCode = "shipping_calculation_failed"
 	ErrorCodeStateUnsupported                                            ErrorCode = "state_unsupported"
 	ErrorCodeStatusTransitionInvalid                                     ErrorCode = "status_transition_invalid"
+	ErrorCodeStripeTaxInactive                                           ErrorCode = "stripe_tax_inactive"
 	ErrorCodeTLSVersionUnsupported                                       ErrorCode = "tls_version_unsupported"
 	ErrorCodeTaxIDInvalid                                                ErrorCode = "tax_id_invalid"
+	ErrorCodeTaxIDProhibited                                             ErrorCode = "tax_id_prohibited"
 	ErrorCodeTaxesCalculationFailed                                      ErrorCode = "taxes_calculation_failed"
 	ErrorCodeTerminalLocationCountryUnsupported                          ErrorCode = "terminal_location_country_unsupported"
 	ErrorCodeTerminalReaderBusy                                          ErrorCode = "terminal_reader_busy"
+	ErrorCodeTerminalReaderHardwareFault                                 ErrorCode = "terminal_reader_hardware_fault"
+	ErrorCodeTerminalReaderInvalidLocationForActivation                  ErrorCode = "terminal_reader_invalid_location_for_activation"
+	ErrorCodeTerminalReaderInvalidLocationForPayment                     ErrorCode = "terminal_reader_invalid_location_for_payment"
 	ErrorCodeTerminalReaderOffline                                       ErrorCode = "terminal_reader_offline"
 	ErrorCodeTerminalReaderTimeout                                       ErrorCode = "terminal_reader_timeout"
 	ErrorCodeTestmodeChargesOnly                                         ErrorCode = "testmode_charges_only"
 	ErrorCodeTokenAlreadyUsed                                            ErrorCode = "token_already_used"
+	ErrorCodeTokenCardNetworkInvalid                                     ErrorCode = "token_card_network_invalid"
 	ErrorCodeTokenInUse                                                  ErrorCode = "token_in_use"
 	ErrorCodeTransferSourceBalanceParametersMismatch                     ErrorCode = "transfer_source_balance_parameters_mismatch"
 	ErrorCodeTransfersNotAllowed                                         ErrorCode = "transfers_not_allowed"
 	ErrorCodeURLInvalid                                                  ErrorCode = "url_invalid"
 )
 
-// The end of the section generated from our OpenAPI spec
+// v1ErrorCodes: The end of the section generated from our OpenAPI spec
 
 // List of DeclineCode values.
 // For descriptions see https://stripe.com/docs/declines/codes
@@ -235,6 +267,14 @@ const (
 	DeclineCodeWithdrawalCountLimitExceeded   DeclineCode = "withdrawal_count_limit_exceeded"
 )
 
+type retrier interface {
+	canRetry() bool
+}
+
+type redacter interface {
+	redact() error
+}
+
 // Error is the response returned when a call is unsuccessful.
 // For more details see https://stripe.com/docs/api#errors.
 type Error struct {
@@ -253,6 +293,7 @@ type Error struct {
 
 	HTTPStatusCode    int               `json:"status,omitempty"`
 	Msg               string            `json:"message"`
+	DeveloperMsg      string            `json:"developer_message,omitempty"`
 	Param             string            `json:"param,omitempty"`
 	PaymentIntent     *PaymentIntent    `json:"payment_intent,omitempty"`
 	PaymentMethod     *PaymentMethod    `json:"payment_method,omitempty"`
@@ -277,6 +318,48 @@ func (e *Error) Error() string {
 // Unwrap returns the wrapped typed error.
 func (e *Error) Unwrap() error {
 	return e.Err
+}
+
+// canRetry implements the retrier interface.
+func (e *Error) canRetry() bool {
+	if e == nil {
+		return false
+	}
+
+	// 429 Too Many Requests
+	//
+	// There are a few different problems that can lead to a 429. The most
+	// common is rate limiting, on which we *don't* want to retry because
+	// that'd likely contribute to more contention problems. However, some 429s
+	// are lock timeouts, which is when a request conflicted with another
+	// request or an internal process on some particular object. These 429s are
+	// safe to retry.
+	if e.HTTPStatusCode == http.StatusTooManyRequests && e.Code == ErrorCodeLockTimeout {
+		return true
+	}
+
+	return false
+}
+
+// redact returns a copy of the error object with sensitive fields replaced with
+// a placeholder value. This implements the redacter interface.
+func (e *Error) redact() error {
+	// Fast path, since this applies to most cases
+	if e.PaymentIntent == nil && e.SetupIntent == nil {
+		return e
+	}
+	errCopy := *e
+	if e.PaymentIntent != nil {
+		pi := *e.PaymentIntent
+		errCopy.PaymentIntent = &pi
+		errCopy.PaymentIntent.ClientSecret = "REDACTED"
+	}
+	if e.SetupIntent != nil {
+		si := *e.SetupIntent
+		errCopy.SetupIntent = &si
+		errCopy.SetupIntent.ClientSecret = "REDACTED"
+	}
+	return &errCopy
 }
 
 // APIError is a catch all for any errors not covered by other types (and
@@ -327,25 +410,56 @@ func (e *IdempotencyError) Error() string {
 	return e.stripeErr.Error()
 }
 
-// redact returns a copy of the error object with sensitive fields replaced with
-// a placeholder value.
-func (e *Error) redact() *Error {
-	// Fast path, since this applies to most cases
-	if e.PaymentIntent == nil && e.SetupIntent == nil {
-		return e
-	}
-	errCopy := *e
-	if e.PaymentIntent != nil {
-		pi := *e.PaymentIntent
-		errCopy.PaymentIntent = &pi
-		errCopy.PaymentIntent.ClientSecret = "REDACTED"
-	}
-	if e.SetupIntent != nil {
-		si := *e.SetupIntent
-		errCopy.SetupIntent = &si
-		errCopy.SetupIntent.ClientSecret = "REDACTED"
-	}
-	return &errCopy
+// errorStructs: The beginning of the section generated from our OpenAPI spec
+
+// TemporarySessionExpiredError is the Go struct corresponding to the error type "temporary_session_expired."
+// The temporary session token has expired.
+type TemporarySessionExpiredError struct {
+	APIResource
+	Code        string    `json:"code"`
+	DocURL      *string   `json:"doc_url,omitempty"`
+	Message     string    `json:"message"`
+	Type        ErrorType `json:"type"`
+	UserMessage *string   `json:"user_message,omitempty"`
+}
+
+// Error serializes the error object to JSON and returns it as a string.
+func (e *TemporarySessionExpiredError) Error() string {
+	ret, _ := json.Marshal(e)
+	return string(ret)
+}
+
+// redact implements the redacter interface.
+func (e *TemporarySessionExpiredError) redact() error {
+	return e
+}
+
+// canRetry implements the retrier interface.
+func (e *TemporarySessionExpiredError) canRetry() bool {
+	return false
+}
+
+// errorStructs: The end of the section generated from our OpenAPI spec
+
+// V2RawError is a catch-all for any errors not covered by other types
+type V2RawError struct {
+	Code       string     `json:"code"`
+	Type       *ErrorType `json:"type,omitempty"`
+	Message    string     `json:"message"`
+	UserMesage *string    `json:"user_message,omitempty"`
+}
+
+func (e *V2RawError) Error() string {
+	ret, _ := json.Marshal(e)
+	return string(ret)
+}
+
+func (e *V2RawError) redact() error {
+	return e
+}
+
+func (e *V2RawError) canRetry() bool {
+	return false
 }
 
 // rawError deserializes the outer JSON object returned in an error response

@@ -16,7 +16,7 @@ const (
 	TaxSettingsDefaultsTaxBehaviorInferredByCurrency TaxSettingsDefaultsTaxBehavior = "inferred_by_currency"
 )
 
-// The `active` status indicates you have all required settings to calculate tax. A status can transition out of `active` when new required settings are introduced.
+// The status of the Tax `Settings`.
 type TaxSettingsStatus string
 
 // List of values that TaxSettingsStatus can take
@@ -54,6 +54,49 @@ type TaxSettingsHeadOfficeParams struct {
 	// The location of the business for tax purposes.
 	Address *AddressParams `form:"address"`
 }
+
+// Retrieves Tax Settings for a merchant.
+type TaxSettingsRetrieveParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TaxSettingsRetrieveParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Default configuration to be used on Stripe Tax calculations.
+type TaxSettingsUpdateDefaultsParams struct {
+	// Specifies the default [tax behavior](https://stripe.com/docs/tax/products-prices-tax-categories-tax-behavior#tax-behavior) to be used when the item's price has unspecified tax behavior. One of inclusive, exclusive, or inferred_by_currency. Once specified, it cannot be changed back to null.
+	TaxBehavior *string `form:"tax_behavior"`
+	// A [tax code](https://stripe.com/docs/tax/tax-categories) ID.
+	TaxCode *string `form:"tax_code"`
+}
+
+// The place where your business is located.
+type TaxSettingsUpdateHeadOfficeParams struct {
+	// The location of the business for tax purposes.
+	Address *AddressParams `form:"address"`
+}
+
+// Updates Tax Settings parameters used in tax calculations. All parameters are editable but none can be removed once set.
+type TaxSettingsUpdateParams struct {
+	Params `form:"*"`
+	// Default configuration to be used on Stripe Tax calculations.
+	Defaults *TaxSettingsUpdateDefaultsParams `form:"defaults"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// The place where your business is located.
+	HeadOffice *TaxSettingsUpdateHeadOfficeParams `form:"head_office"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TaxSettingsUpdateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
 type TaxSettingsDefaults struct {
 	// Default [tax behavior](https://stripe.com/docs/tax/products-prices-tax-categories-tax-behavior#tax-behavior) used to specify whether the price is considered inclusive of taxes or exclusive of taxes. If the item's price has a tax behavior set, it will take precedence over the default tax behavior.
 	TaxBehavior TaxSettingsDefaultsTaxBehavior `json:"tax_behavior"`
@@ -87,7 +130,7 @@ type TaxSettings struct {
 	Livemode bool `json:"livemode"`
 	// String representing the object's type. Objects of the same type share the same value.
 	Object string `json:"object"`
-	// The `active` status indicates you have all required settings to calculate tax. A status can transition out of `active` when new required settings are introduced.
+	// The status of the Tax `Settings`.
 	Status        TaxSettingsStatus         `json:"status"`
 	StatusDetails *TaxSettingsStatusDetails `json:"status_details"`
 }

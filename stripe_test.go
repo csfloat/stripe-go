@@ -6,6 +6,7 @@ import (
 	"crypto/x509"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -41,17 +42,27 @@ func TestBearerAuth(t *testing.T) {
 	c := GetBackend(APIBackend).(*BackendImplementation)
 	key := "apiKey"
 
-	req, err := c.NewRequest("", "", key, "", nil)
+	req, err := c.NewRequest("", "/v1/hello", key, "", nil)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "Bearer "+key, req.Header.Get("Authorization"))
+}
+
+func TestApiVersion(t *testing.T) {
+	c := GetBackend(APIBackend).(*BackendImplementation)
+	key := "apiKey"
+
+	req, err := c.NewRequest("", "", key, "", nil)
+	assert.NoError(t, err)
+
+	assert.Equal(t, APIVersion, req.Header.Get("Stripe-Version"))
 }
 
 func TestContext(t *testing.T) {
 	c := GetBackend(APIBackend).(*BackendImplementation)
 	p := &Params{Context: context.Background()}
 
-	req, err := c.NewRequest("", "", "", "", p)
+	req, err := c.NewRequest("", "/v1/hello", "", "", p)
 	assert.NoError(t, err)
 
 	// We assume that contexts are sufficiently tested in the standard library
@@ -121,7 +132,7 @@ func TestDo_Retry(t *testing.T) {
 
 	request, err := backend.NewRequest(
 		http.MethodPost,
-		"/hello",
+		"/v1/hello",
 		"sk_test_123",
 		"application/x-www-form-urlencoded",
 		nil,
@@ -281,9 +292,9 @@ func TestShouldRetry(t *testing.T) {
 	// 429 Too Many Requests -- retry on lock timeout
 	t.Run("RetryOn429TooManyRequestsLockTimeout", func(t *testing.T) {
 		shouldRetry, _ := c.shouldRetry(
-			&Error{Code: ErrorCodeLockTimeout},
+			&Error{Code: ErrorCodeLockTimeout, HTTPStatusCode: http.StatusTooManyRequests},
 			&http.Request{},
-			&http.Response{StatusCode: http.StatusTooManyRequests},
+			&http.Response{},
 			0,
 		)
 		assert.True(t, shouldRetry)
@@ -300,7 +311,7 @@ func TestShouldRetry(t *testing.T) {
 		assert.False(t, shouldRetry)
 	})
 
-	// 500 Internal Server Error -- retry if non-POST
+	// 500 Internal Server Error -- retry
 	t.Run("RetryOn500NonPost", func(t *testing.T) {
 		shouldRetry, _ := c.shouldRetry(
 			nil,
@@ -309,17 +320,6 @@ func TestShouldRetry(t *testing.T) {
 			0,
 		)
 		assert.True(t, shouldRetry)
-	})
-
-	// 500 Internal Server Error -- don't retry POST
-	t.Run("DontRetryOn500Post", func(t *testing.T) {
-		shouldRetry, _ := c.shouldRetry(
-			nil,
-			&http.Request{Method: http.MethodPost},
-			&http.Response{StatusCode: http.StatusInternalServerError},
-			0,
-		)
-		assert.False(t, shouldRetry)
 	})
 
 	// 503 Service Unavailable
@@ -355,7 +355,7 @@ func TestDo_RetryOnTimeout(t *testing.T) {
 			LeveledLogger:     nullLeveledLogger,
 			MaxNetworkRetries: Int64(1),
 			URL:               String(testServer.URL),
-			HTTPClient:        &http.Client{Timeout: timeout},
+			HTTPClient:        &http.Client{Timeout: timeout / 2},
 		},
 	).(*BackendImplementation)
 
@@ -363,7 +363,7 @@ func TestDo_RetryOnTimeout(t *testing.T) {
 
 	request, err := backend.NewRequest(
 		http.MethodPost,
-		"/hello",
+		"/v1/hello",
 		"sk_test_123",
 		"application/x-www-form-urlencoded",
 		nil,
@@ -413,7 +413,7 @@ func TestDo_LastResponsePopulated(t *testing.T) {
 
 	request, err := backend.NewRequest(
 		http.MethodGet,
-		"/hello",
+		"/v1/hello",
 		"sk_test_123",
 		"application/x-www-form-urlencoded",
 		nil,
@@ -436,7 +436,7 @@ func TestDo_LastResponsePopulated(t *testing.T) {
 }
 
 // Test that telemetry metrics are not sent by default
-func TestDo_TelemetryDisabled(t *testing.T) {
+func TestCall_TelemetryDisabled(t *testing.T) {
 	type testServerResponse struct {
 		APIResource
 		Message string `json:"message"`
@@ -474,17 +474,8 @@ func TestDo_TelemetryDisabled(t *testing.T) {
 	// _next_ request via the `X-Stripe-Client-Telemetry header`. To test that
 	// metrics aren't being sent, we need to fire off two requests in sequence.
 	for i := 0; i < 2; i++ {
-		request, err := backend.NewRequest(
-			http.MethodGet,
-			"/hello",
-			"sk_test_123",
-			"application/x-www-form-urlencoded",
-			nil,
-		)
-		assert.NoError(t, err)
-
 		var response testServerResponse
-		err = backend.Do(request, nil, &response)
+		err := backend.Call(http.MethodGet, "/v1/hello", "sk_test_xyz", nil, &response)
 
 		assert.NoError(t, err)
 		assert.Equal(t, message, response.Message)
@@ -496,15 +487,10 @@ func TestDo_TelemetryDisabled(t *testing.T) {
 
 // Test that telemetry metrics are sent on subsequent requests when
 // EnableTelemetry = true.
-func TestDo_TelemetryEnabled(t *testing.T) {
+func TestCall_TelemetryEnabled(t *testing.T) {
 	type testServerResponse struct {
 		APIResource
 		Message string `json:"message"`
-	}
-
-	type requestMetrics struct {
-		RequestDurationMS int    `json:"request_duration_ms"`
-		RequestID         string `json:"request_id"`
 	}
 
 	type requestTelemetry struct {
@@ -526,15 +512,19 @@ func TestDo_TelemetryEnabled(t *testing.T) {
 		case 2:
 			assert.True(t, len(telemetryStr) > 0, "telemetryStr should not be empty")
 
-			// the telemetry should properly unmarshal into RequestTelemetry
 			var telemetry requestTelemetry
+			// the telemetry should properly unmarshal into RequestTelemetry
 			err := json.Unmarshal([]byte(telemetryStr), &telemetry)
 			assert.NoError(t, err)
 
 			// the second request should include the metrics for the first request
 			assert.Equal(t, telemetry.LastRequestMetrics.RequestID, "req_1")
-			assert.True(t, telemetry.LastRequestMetrics.RequestDurationMS > 20,
+			assert.True(t, *telemetry.LastRequestMetrics.RequestDurationMS > 20,
 				"request_duration_ms should be > 20ms")
+
+			// The telemetry in the second request should contain the
+			// expected usage
+			assert.Equal(t, telemetry.LastRequestMetrics.Usage, []string{"llama", "bufo"})
 		default:
 			assert.Fail(t, "Should not have reached request %v", requestNum)
 		}
@@ -560,18 +550,17 @@ func TestDo_TelemetryEnabled(t *testing.T) {
 		},
 	).(*BackendImplementation)
 
+	type myCreateParams struct {
+		Params `form:"*"`
+		Foo    string `form:"foo"`
+	}
+	params := &myCreateParams{
+		Foo: "bar",
+	}
+	params.InternalSetUsage([]string{"llama", "bufo"})
 	for i := 0; i < 2; i++ {
-		request, err := backend.NewRequest(
-			http.MethodGet,
-			"/hello",
-			"sk_test_123",
-			"application/x-www-form-urlencoded",
-			nil,
-		)
-		assert.NoError(t, err)
-
 		var response testServerResponse
-		err = backend.Do(request, nil, &response)
+		err := backend.Call(http.MethodGet, "/v1/hello", "sk_test_xyz", params, &response)
 
 		assert.NoError(t, err)
 		assert.Equal(t, message, response.Message)
@@ -585,7 +574,7 @@ func TestDo_TelemetryEnabled(t *testing.T) {
 // that our logic for buffering requestMetrics when EnableTelemetry = true does
 // not trigger any data races. This test should pass when the -race flag is
 // passed to `go test`.
-func TestDo_TelemetryEnabledNoDataRace(t *testing.T) {
+func TestCall_TelemetryEnabledNoDataRace(t *testing.T) {
 	type testServerResponse struct {
 		APIResource
 		Message string `json:"message"`
@@ -623,17 +612,8 @@ func TestDo_TelemetryEnabledNoDataRace(t *testing.T) {
 
 	for i := 0; i < times; i++ {
 		go func() {
-			request, err := backend.NewRequest(
-				http.MethodGet,
-				"/hello",
-				"sk_test_123",
-				"application/x-www-form-urlencoded",
-				nil,
-			)
-			assert.NoError(t, err)
-
 			var response testServerResponse
-			err = backend.Do(request, nil, &response)
+			err := backend.Call(http.MethodGet, "/v1/hello", "sk_test_xyz", nil, &response)
 
 			assert.NoError(t, err)
 			assert.Equal(t, message, response.Message)
@@ -647,6 +627,151 @@ func TestDo_TelemetryEnabledNoDataRace(t *testing.T) {
 	}
 
 	assert.Equal(t, int32(times), requestNum)
+}
+
+// Test that a GET to a v2 endpoint works and is sent with
+// the correct query parameters
+func TestCall_V2PathGet(t *testing.T) {
+	type testServerResponse struct {
+		APIResource
+		Message string `json:"message"`
+	}
+
+	message := "Hello, client."
+
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, r.Method, http.MethodGet)
+		assert.Equal(t, r.URL.Path, "/v2/hello")
+		assert.Equal(t, r.URL.Query().Get("foo"), "bar")
+
+		data, err := json.Marshal(testServerResponse{Message: message})
+		assert.NoError(t, err)
+
+		_, err = w.Write(data)
+		assert.NoError(t, err)
+	}))
+	defer testServer.Close()
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			EnableTelemetry:   Bool(true),
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	)
+
+	type myCreateParams struct {
+		Params `form:"*"`
+		Foo    string `form:"foo" json:"foo"`
+	}
+	params := &myCreateParams{
+		Foo: "bar",
+	}
+
+	var response testServerResponse
+	err := backend.Call(http.MethodGet, "/v2/hello", "sk_test_xyz", params, &response)
+
+	assert.NoError(t, err)
+	assert.Equal(t, message, response.Message)
+}
+
+// Test that a POST to a v2 endpoint works and is sent with
+// the correct JSON contentType
+func TestCall_V2PathPost(t *testing.T) {
+	type testServerResponse struct {
+		APIResource
+		Message string `json:"message"`
+	}
+
+	message := "Hello, client."
+
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, r.Method, http.MethodPost)
+		assert.Equal(t, r.URL.Path, "/v2/hello")
+		assert.Equal(t, r.Header.Get("Content-Type"), "application/json")
+
+		var p map[string]string
+		err := json.NewDecoder(r.Body).Decode(&p)
+		assert.NoError(t, err)
+		assert.Equal(t, p["foo"], "bar")
+
+		data, err := json.Marshal(testServerResponse{Message: message})
+		assert.NoError(t, err)
+
+		_, err = w.Write(data)
+		assert.NoError(t, err)
+	}))
+	defer testServer.Close()
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			EnableTelemetry:   Bool(true),
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	)
+
+	type myCreateParams struct {
+		Params `form:"*"`
+		Foo    string `form:"foo" json:"foo"`
+	}
+	params := &myCreateParams{
+		Foo: "bar",
+	}
+
+	var response testServerResponse
+	err := backend.Call(http.MethodPost, "/v2/hello", "sk_test_xyz", params, &response)
+
+	assert.NoError(t, err)
+	assert.Equal(t, message, response.Message)
+}
+
+// Test that a POST to a v2 endpoint works and is sent with an empty body
+// when params are nil
+func TestCall_V2PathPostNilParams(t *testing.T) {
+	type testServerResponse struct {
+		APIResource
+		Message string `json:"message"`
+	}
+
+	message := "Hello, client."
+
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, r.Method, http.MethodPost)
+		assert.Equal(t, r.URL.Path, "/v2/hello")
+		assert.Equal(t, r.Header.Get("Content-Type"), "application/json")
+
+		body, err := io.ReadAll(r.Body)
+		assert.NoError(t, err)
+		assert.Equal(t, body, []byte{})
+
+		data, err := json.Marshal(testServerResponse{Message: message})
+		assert.NoError(t, err)
+
+		_, err = w.Write(data)
+		assert.NoError(t, err)
+	}))
+	defer testServer.Close()
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			EnableTelemetry:   Bool(true),
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	)
+
+	var response testServerResponse
+	err := backend.Call(http.MethodPost, "/v2/hello", "sk_test_xyz", nil, &response)
+
+	assert.NoError(t, err)
+	assert.Equal(t, message, response.Message)
 }
 
 func TestDo_Redaction(t *testing.T) {
@@ -681,7 +806,7 @@ func TestDo_Redaction(t *testing.T) {
 
 	request, err := backend.NewRequest(
 		http.MethodGet,
-		"/hello",
+		"/v1/hello",
 		"sk_test_123",
 		"application/x-www-form-urlencoded",
 		nil,
@@ -727,7 +852,7 @@ func TestDoStreaming(t *testing.T) {
 	response := streamingResource{}
 	err := backend.CallStreaming(
 		http.MethodGet,
-		"/pdf",
+		"/v1/pdf",
 		"sk_test_123",
 		nil,
 		&response,
@@ -776,7 +901,7 @@ func TestDoStreaming_ParsableError(t *testing.T) {
 	response := streamingResource{}
 	err := backend.CallStreaming(
 		http.MethodGet,
-		"/pdf",
+		"/v1/pdf",
 		"sk_test_123",
 		nil,
 		&response,
@@ -819,7 +944,7 @@ func TestDoStreaming_UnparsableError(t *testing.T) {
 	response := streamingResource{}
 	err := backend.CallStreaming(
 		http.MethodGet,
-		"/pdf",
+		"/v1/pdf",
 		"sk_test_123",
 		nil,
 		&response,
@@ -837,6 +962,24 @@ func TestFormatURLPath(t *testing.T) {
 	// Tests that each parameter is escaped for use in URLs
 	assert.Equal(t, "/v1/resources/%25",
 		FormatURLPath("/v1/resources/%s", "%"))
+}
+
+func TestGetBackendWithConfig(t *testing.T) {
+	// No config overrides: https://github.com/stripe/stripe-go/issues/1894
+	{
+		config := &BackendConfig{}
+		_ = GetBackendWithConfig(
+			APIBackend,
+			config,
+		).(*BackendImplementation)
+
+		// Config properties left unchanged
+		assert.Nil(t, config.EnableTelemetry)
+		assert.Nil(t, config.HTTPClient)
+		assert.Nil(t, config.LeveledLogger)
+		assert.Nil(t, config.MaxNetworkRetries)
+		assert.Nil(t, config.URL)
+	}
 }
 
 func TestGetBackendWithConfig_Loggers(t *testing.T) {
@@ -931,7 +1074,7 @@ func TestMultipleAPICalls(t *testing.T) {
 			c := GetBackend(APIBackend).(*BackendImplementation)
 			key := "apiKey"
 
-			req, err := c.NewRequest("", "", key, "", nil)
+			req, err := c.NewRequest("", "/v1/hello", key, "", nil)
 			assert.NoError(t, err)
 
 			assert.Equal(t, "Bearer "+key, req.Header.Get("Authorization"))
@@ -944,7 +1087,7 @@ func TestIdempotencyKey(t *testing.T) {
 	c := GetBackend(APIBackend).(*BackendImplementation)
 	p := &Params{IdempotencyKey: String("idempotency-key")}
 
-	req, err := c.NewRequest("", "", "", "", p)
+	req, err := c.NewRequest("", "/v1/hello", "", "", p)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "idempotency-key", req.Header.Get("Idempotency-Key"))
@@ -962,7 +1105,7 @@ func TestStripeAccount(t *testing.T) {
 	p := &Params{}
 	p.SetStripeAccount("acct_123")
 
-	req, err := c.NewRequest("", "", "", "", p)
+	req, err := c.NewRequest("", "/v1/hello", "", "", p)
 	assert.NoError(t, err)
 
 	assert.Equal(t, "acct_123", req.Header.Get("Stripe-Account"))
@@ -1070,7 +1213,7 @@ func TestUnmarshalJSONVerbose(t *testing.T) {
 func TestUserAgent(t *testing.T) {
 	c := GetBackend(APIBackend).(*BackendImplementation)
 
-	req, err := c.NewRequest("", "", "", "", nil)
+	req, err := c.NewRequest("", "/v1/hello", "", "", nil)
 	assert.NoError(t, err)
 
 	// We keep out version constant private to the package, so use a regexp
@@ -1093,7 +1236,7 @@ func TestUserAgentWithAppInfo(t *testing.T) {
 
 	c := GetBackend(APIBackend).(*BackendImplementation)
 
-	req, err := c.NewRequest("", "", "", "", nil)
+	req, err := c.NewRequest("", "/v1/hello", "", "", nil)
 	assert.NoError(t, err)
 
 	//
@@ -1129,7 +1272,7 @@ func TestUserAgentWithAppInfo(t *testing.T) {
 func TestStripeClientUserAgent(t *testing.T) {
 	c := GetBackend(APIBackend).(*BackendImplementation)
 
-	req, err := c.NewRequest("", "", "", "", nil)
+	req, err := c.NewRequest("", "/v1/hello", "", "", nil)
 	assert.NoError(t, err)
 
 	encodedUserAgent := req.Header.Get("X-Stripe-Client-User-Agent")
@@ -1163,7 +1306,7 @@ func TestStripeClientUserAgentWithAppInfo(t *testing.T) {
 
 	c := GetBackend(APIBackend).(*BackendImplementation)
 
-	req, err := c.NewRequest("", "", "", "", nil)
+	req, err := c.NewRequest("", "/v1/hello", "", "", nil)
 	assert.NoError(t, err)
 
 	encodedUserAgent := req.Header.Get("X-Stripe-Client-User-Agent")
@@ -1293,6 +1436,281 @@ func TestBoolSlice(t *testing.T) {
 	assert.Equal(t, 0, len(BoolSlice(nil)))
 }
 
+func TestTimeValue_NilPointer(t *testing.T) {
+	var nilTime *time.Time
+	result := TimeValue(nilTime)
+	assert.Equal(t, time.Time{}, result)
+}
+
+func TestTime(t *testing.T) {
+	now := time.Now()
+	stripeNow := Time(now)
+	assert.Equal(t, &now, stripeNow)
+	result := TimeValue(stripeNow)
+	assert.Equal(t, now, result)
+}
+
+func TestString(t *testing.T) {
+	input := "foo"
+	result := String(input)
+	assert.Equal(t, "foo", *result)
+}
+
+func TestString_Enum(t *testing.T) {
+	type MyEnum string
+	const (
+		MyEnumFoo MyEnum = "foo"
+		MyEnumBar MyEnum = "bar"
+	)
+
+	assert.Equal(t, "foo", *String(MyEnumFoo))
+	assert.Equal(t, "foo", *String(string(MyEnumFoo)))
+}
+
+func TestRawRequestPreviewPost(t *testing.T) {
+	var body string
+	var path string
+	var method string
+	var contentType string
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		req, _ := ioutil.ReadAll(r.Body)
+		r.Body.Close()
+		body = string(req)
+		path = r.URL.RequestURI()
+		method = r.Method
+		contentType = r.Header.Get("Content-Type")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"object": "abc", "xyz": {"def": "jih"}}`))
+	}))
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	).(*BackendImplementation)
+
+	type MyXYZ struct {
+		DEF string `json:"def"`
+	}
+	type MyABC struct {
+		Object string `json:"object"`
+		XYZ    MyXYZ  `json:"xyz"`
+	}
+	params := &RawParams{Params: Params{}}
+	response, err := backend.RawRequest(http.MethodPost, "/v2/abcs", "sk_test_xyz", `{"foo":"myFoo","bar":{"baz":false}}`, params)
+	assert.NoError(t, err)
+	myABC := &MyABC{}
+	assert.Nil(t, params.Headers)
+	assert.Equal(t, `{"foo":"myFoo","bar":{"baz":false}}`, body)
+	assert.Equal(t, `/v2/abcs`, path)
+	assert.Equal(t, `POST`, method)
+	assert.Equal(t, `application/json`, contentType)
+	// assert.Equal(t, previewVersion, stripeVersion)
+	err = json.Unmarshal(response.RawJSON, myABC)
+	assert.NoError(t, err)
+	assert.Equal(t, "jih", myABC.XYZ.DEF)
+	assert.Equal(t, "abc", myABC.Object)
+	defer testServer.Close()
+}
+
+func TestRawRequestStandardGet(t *testing.T) {
+	var body string
+	var path string
+	var method string
+	var contentType string
+	var stripeVersion string
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		req, _ := ioutil.ReadAll(r.Body)
+		r.Body.Close()
+		body = string(req)
+		path = r.URL.RequestURI()
+		method = r.Method
+		contentType = r.Header.Get("Content-Type")
+		stripeVersion = r.Header.Get("Stripe-Version")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"object": "abc", "xyz": {"def": "jih"}}`))
+	}))
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	).(*BackendImplementation)
+
+	_, err := backend.RawRequest(http.MethodGet, "/v1/abc?foo=myFoo", "sk_test_xyz", ``, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, ``, body)
+	assert.Equal(t, `/v1/abc?foo=myFoo`, path)
+	assert.Equal(t, `GET`, method)
+	assert.Equal(t, `application/x-www-form-urlencoded`, contentType)
+	assert.Equal(t, apiVersion, stripeVersion)
+	assert.NoError(t, err)
+	defer testServer.Close()
+}
+
+func TestRawRequestStandardPost(t *testing.T) {
+	var body string
+	var path string
+	var method string
+	var contentType string
+	var stripeVersion string
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		req, _ := ioutil.ReadAll(r.Body)
+		r.Body.Close()
+		body = string(req)
+		path = r.URL.RequestURI()
+		method = r.Method
+		contentType = r.Header.Get("Content-Type")
+		stripeVersion = r.Header.Get("Stripe-Version")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"object": "abc", "xyz": {"def": "jih"}}`))
+	}))
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	).(*BackendImplementation)
+
+	_, err := backend.RawRequest(http.MethodPost, "/v1/abc", "sk_test_xyz", `foo=myFoo`, nil)
+	assert.NoError(t, err)
+	assert.Equal(t, `foo=myFoo`, body)
+	assert.Equal(t, `/v1/abc`, path)
+	assert.Equal(t, `POST`, method)
+	assert.Equal(t, `application/x-www-form-urlencoded`, contentType)
+	assert.Equal(t, apiVersion, stripeVersion)
+	assert.NoError(t, err)
+	defer testServer.Close()
+}
+
+func TestRawRequestPreviewGet(t *testing.T) {
+	var body string
+	var path string
+	var method string
+	var contentType string
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		req, _ := ioutil.ReadAll(r.Body)
+		r.Body.Close()
+		body = string(req)
+		path = r.URL.RequestURI()
+		method = r.Method
+		contentType = r.Header.Get("Content-Type")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"object": "abc", "xyz": {"def": "jih"}}`))
+	}))
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	).(*BackendImplementation)
+
+	params := &RawParams{Params: Params{}}
+	_, err := backend.RawRequest(http.MethodGet, "/v2/abc?foo=myFoo", "sk_test_xyz", ``, params)
+	assert.NoError(t, err)
+	assert.Equal(t, ``, body)
+	assert.Equal(t, `/v2/abc?foo=myFoo`, path)
+	assert.Equal(t, `GET`, method)
+	assert.Equal(t, `application/json`, contentType)
+	// assert.Equal(t, previewVersion, stripeVersion)
+	assert.NoError(t, err)
+	defer testServer.Close()
+}
+
+func TestRawRequestWithAdditionalHeaders(t *testing.T) {
+	var body string
+	var path string
+	var method string
+	var contentType string
+	var fooHeader string
+	var stripeContext string
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		req, _ := ioutil.ReadAll(r.Body)
+		r.Body.Close()
+		body = string(req)
+		path = r.URL.RequestURI()
+		method = r.Method
+		contentType = r.Header.Get("Content-Type")
+		fooHeader = r.Header.Get("foo")
+		stripeContext = r.Header.Get("Stripe-Context")
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"object": "abc", "xyz": {"def": "jih"}}`))
+	}))
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	).(*BackendImplementation)
+
+	headers := http.Header{}
+	headers.Set("foo", "bar")
+	params := &RawParams{Params: Params{Headers: headers}, StripeContext: "acct_123"}
+
+	_, err := backend.RawRequest(http.MethodPost, "/v2/abc", "sk_test_xyz", `{"foo":"myFoo"}`, params)
+	assert.NoError(t, err)
+	assert.Equal(t, `{"foo":"myFoo"}`, body)
+	assert.Equal(t, `/v2/abc`, path)
+	assert.Equal(t, `POST`, method)
+	assert.Equal(t, `application/json`, contentType)
+	assert.Equal(t, `bar`, fooHeader)
+	assert.Equal(t, `acct_123`, stripeContext)
+	assert.NoError(t, err)
+	defer testServer.Close()
+}
+
+func TestRawRequestTelemetry(t *testing.T) {
+	var telemetry []byte
+	i := 0
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		r.Body.Close()
+		telemetry = []byte(r.Header.Get("X-Stripe-Client-Telemetry"))
+		i += 1
+		w.Header().Add("Request-Id", fmt.Sprintf("req_%d", i))
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(`{"object": "abc", "xyz": {"def": "jih"}}`))
+	}))
+
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+			EnableTelemetry:   Bool(true),
+		},
+	).(*BackendImplementation)
+
+	params := &RawParams{Params: Params{}}
+	_, err := backend.RawRequest(http.MethodPost, "/v2/abcs", "sk_test_xyz", `{}`, params)
+	assert.Empty(t, telemetry)
+	assert.NoError(t, err)
+	// Again, for the telemetry.
+	_, err = backend.RawRequest(http.MethodPost, "/v2/abcs", "sk_test_xyz", `{}`, params)
+	assert.NoError(t, err)
+	metrics := struct {
+		LastRequestMetrics requestMetrics `json:"last_request_metrics"`
+	}{}
+	json.Unmarshal(telemetry, &metrics)
+	assert.Equal(t, []string{"raw_request"}, metrics.LastRequestMetrics.Usage)
+	defer testServer.Close()
+}
+
 //
 // ---
 //
@@ -1301,4 +1719,101 @@ func TestBoolSlice(t *testing.T) {
 // which comes wrapper in a JSON object with a single field of "error".
 func wrapError(serialized []byte) []byte {
 	return []byte(`{"error":` + string(serialized) + `}`)
+}
+
+func TestStripeContextWhenUnset(t *testing.T) {
+	c := GetBackend(APIBackend).(*BackendImplementation)
+	req, err := c.NewRequest("", "/v2/foo", "", "", nil)
+	assert.NoError(t, err)
+	assert.Empty(t, req.Header.Get("Stripe-Context"))
+}
+
+func TestStripeContextWhenSetWithV1(t *testing.T) {
+	c := GetBackend(APIBackend).(*BackendImplementation)
+	req, err := c.NewRequest("", "/v1/foo", "", "", nil)
+	assert.NoError(t, err)
+	assert.Empty(t, req.Header.Get("Stripe-Context"))
+}
+
+func TestStripeContextWhenSet(t *testing.T) {
+	c := GetBackendWithConfig(APIBackend, &BackendConfig{StripeContext: String("ctx")}).(*BackendImplementation)
+	req, err := c.NewRequest("", "/v2/foo", "", "", nil)
+	assert.NoError(t, err)
+	assert.Equal(t, "ctx", req.Header.Get("Stripe-Context"))
+}
+
+func TestStripeContextWhenSetInParams(t *testing.T) {
+	c := GetBackendWithConfig(APIBackend, &BackendConfig{StripeContext: String("ctx")}).(*BackendImplementation)
+	req, err := c.NewRequest("", "/v2/foo", "", "", &Params{StripeContext: String("requestCtx")})
+	assert.NoError(t, err)
+	assert.Equal(t, "requestCtx", req.Header.Get("Stripe-Context"))
+}
+
+func TestHandleV2ErrorWhenKnownError(t *testing.T) {
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(400)
+		_, err := w.Write([]byte(`{"error":{"type":"temporary_session_expired","message":"Temporary session expired"}}`))
+		assert.NoError(t, err)
+	}))
+	defer testServer.Close()
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			EnableTelemetry:   Bool(true),
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	)
+	err := backend.Call(http.MethodGet, "/v2/hello", "sk_test_xyz", &Params{}, &APIResource{})
+	assert.Error(t, err)
+	stripeErr, ok := err.(*TemporarySessionExpiredError)
+	assert.True(t, ok)
+	assert.Equal(t, "Temporary session expired", stripeErr.Message)
+}
+
+func TestHandleV2ErrorWhenUnknownError(t *testing.T) {
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(400)
+		_, err := w.Write([]byte(`{"error":{"type":"unknown_type","message":"Some message"}}`))
+		assert.NoError(t, err)
+	}))
+	defer testServer.Close()
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			EnableTelemetry:   Bool(true),
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	)
+	err := backend.Call(http.MethodGet, "/v2/hello", "sk_test_xyz", &Params{}, &APIResource{})
+	assert.Error(t, err)
+	stripeErr, ok := err.(*V2RawError)
+	assert.True(t, ok)
+	assert.Equal(t, "Some message", stripeErr.Message)
+}
+
+func TestHandleV2ErrorWhenUnknownErrorWithoutType(t *testing.T) {
+	testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(400)
+		_, err := w.Write([]byte(`{"error":{"message":"Some message"}}`))
+		assert.NoError(t, err)
+	}))
+	defer testServer.Close()
+	backend := GetBackendWithConfig(
+		APIBackend,
+		&BackendConfig{
+			EnableTelemetry:   Bool(true),
+			LeveledLogger:     debugLeveledLogger,
+			MaxNetworkRetries: Int64(0),
+			URL:               String(testServer.URL),
+		},
+	)
+	err := backend.Call(http.MethodGet, "/v2/hello", "sk_test_xyz", &Params{}, &APIResource{})
+	assert.Error(t, err)
+	stripeErr, ok := err.(*V2RawError)
+	assert.True(t, ok)
+	assert.Equal(t, "Some message", stripeErr.Message)
 }

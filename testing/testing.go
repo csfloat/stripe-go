@@ -2,14 +2,19 @@ package testing
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"strconv"
 	"strings"
+	"testing"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	"github.com/stretchr/testify/assert"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 	"golang.org/x/net/http2"
 )
 
@@ -30,6 +35,9 @@ const (
 	// TestMerchantID is a token that can be used to represent a merchant ID in
 	// simple tests.
 	TestMerchantID = "acct_123"
+
+	// TestAPIKey is an API key that can be used against stripe-mock in tests.
+	TestAPIKey = "sk_test_myTestKey"
 )
 
 func init() {
@@ -82,7 +90,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	stripe.Key = "sk_test_myTestKey"
+	stripe.Key = TestAPIKey
 
 	// Configure a backend for stripe-mock and set it for both the API and
 	// Uploads (unlike the real Stripe API, stripe-mock supports both these
@@ -97,6 +105,23 @@ func init() {
 	)
 	stripe.SetBackend(stripe.APIBackend, stripeMockBackend)
 	stripe.SetBackend(stripe.UploadsBackend, stripeMockBackend)
+}
+
+func MockServer(t *testing.T, method, path string, params interface{}, resp string) *httptest.Server {
+	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		assert.Equal(t, r.Method, method)
+		assert.Equal(t, r.URL.Path, path)
+		assert.Equal(t, r.Header.Get("Authorization"), "Bearer "+TestAPIKey)
+
+		body, err := io.ReadAll(r.Body)
+		assert.NoError(t, err)
+		if len(body) > 0 {
+			assert.NoError(t, json.Unmarshal(body, params))
+		}
+		data := []byte(resp)
+		_, err = w.Write(data)
+		assert.NoError(t, err)
+	}))
 }
 
 // compareVersions compares two semantic version strings. We need this because

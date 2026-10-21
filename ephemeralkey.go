@@ -8,7 +8,7 @@ package stripe
 
 import "encoding/json"
 
-// Creates a short-lived API key for a given resource.
+// Invalidates a short-lived API key for a given resource.
 type EphemeralKeyParams struct {
 	Params `form:"*"`
 	// The ID of the Customer you'd like to modify using the resulting ephemeral key.
@@ -17,6 +17,8 @@ type EphemeralKeyParams struct {
 	Expand []*string `form:"expand"`
 	// The ID of the Issuing Card you'd like to access using the resulting ephemeral key.
 	IssuingCard *string `form:"issuing_card"`
+	// A single-use token, created by Stripe.js, used for creating ephemeral keys for Issuing Cards without exchanging sensitive information.
+	Nonce *string `form:"nonce"`
 	// The ID of the Identity VerificationSession you'd like to access using the resulting ephemeral key
 	VerificationSession *string `form:"verification_session"`
 	StripeVersion       *string `form:"-"` // This goes in the `Stripe-Version` header
@@ -24,6 +26,39 @@ type EphemeralKeyParams struct {
 
 // AddExpand appends a new field to expand.
 func (p *EphemeralKeyParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Invalidates a short-lived API key for a given resource.
+type EphemeralKeyDeleteParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *EphemeralKeyDeleteParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Creates a short-lived API key for a given resource.
+type EphemeralKeyCreateParams struct {
+	Params `form:"*"`
+	// The ID of the Customer you'd like to modify using the resulting ephemeral key.
+	Customer *string `form:"customer"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// The ID of the Issuing Card you'd like to access using the resulting ephemeral key.
+	IssuingCard *string `form:"issuing_card"`
+	// A single-use token, created by Stripe.js, used for creating ephemeral keys for Issuing Cards without exchanging sensitive information.
+	Nonce *string `form:"nonce"`
+	// The ID of the Identity VerificationSession you'd like to access using the resulting ephemeral key
+	VerificationSession *string `form:"verification_session"`
+	StripeVersion       *string `form:"-"` // This goes in the `Stripe-Version` header
+}
+
+// AddExpand appends a new field to expand.
+func (p *EphemeralKeyCreateParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 

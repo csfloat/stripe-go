@@ -4,29 +4,52 @@
 //
 //
 
-// Package feerefund provides the /application_fees/{id}/refunds APIs
+// Package feerefund provides the /v1/application_fees/{id}/refunds APIs
 package feerefund
 
 import (
 	"fmt"
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /application_fees/{id}/refunds APIs.
+// Client is used to invoke /v1/application_fees/{id}/refunds APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// New creates a new fee refund.
+// Refunds an application fee that has previously been collected but not yet refunded.
+// Funds will be refunded to the Stripe account from which the fee was originally collected.
+//
+// You can optionally refund only part of an application fee.
+// You can do so multiple times, until the entire fee has been refunded.
+//
+// Once entirely refunded, an application fee can't be refunded again.
+// This method will raise an error when called on an already-refunded application fee,
+// or when trying to refund more money than is left on an application fee.
 func New(params *stripe.FeeRefundParams) (*stripe.FeeRefund, error) {
 	return getC().New(params)
 }
 
-// New creates a new fee refund.
+// Refunds an application fee that has previously been collected but not yet refunded.
+// Funds will be refunded to the Stripe account from which the fee was originally collected.
+//
+// You can optionally refund only part of an application fee.
+// You can do so multiple times, until the entire fee has been refunded.
+//
+// Once entirely refunded, an application fee can't be refunded again.
+// This method will raise an error when called on an already-refunded application fee,
+// or when trying to refund more money than is left on an application fee.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) New(params *stripe.FeeRefundParams) (*stripe.FeeRefund, error) {
 	if params == nil {
 		return nil, fmt.Errorf("params cannot be nil")
@@ -35,20 +58,22 @@ func (c Client) New(params *stripe.FeeRefundParams) (*stripe.FeeRefund, error) {
 		return nil, fmt.Errorf("params.ID must be set")
 	}
 	path := stripe.FormatURLPath(
-		"/v1/application_fees/%s/refunds",
-		stripe.StringValue(params.ID),
-	)
+		"/v1/application_fees/%s/refunds", stripe.StringValue(params.ID))
 	feerefund := &stripe.FeeRefund{}
 	err := c.B.Call(http.MethodPost, path, c.Key, params, feerefund)
 	return feerefund, err
 }
 
-// Get returns the details of a fee refund.
+// By default, you can see the 10 most recent refunds stored directly on the application fee object, but you can also retrieve details about a specific refund stored on the application fee.
 func Get(id string, params *stripe.FeeRefundParams) (*stripe.FeeRefund, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a fee refund.
+// By default, you can see the 10 most recent refunds stored directly on the application fee object, but you can also retrieve details about a specific refund stored on the application fee.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.FeeRefundParams) (*stripe.FeeRefund, error) {
 	if params == nil {
 		return nil, fmt.Errorf("params cannot be nil")
@@ -57,21 +82,26 @@ func (c Client) Get(id string, params *stripe.FeeRefundParams) (*stripe.FeeRefun
 		return nil, fmt.Errorf("params.Fee must be set")
 	}
 	path := stripe.FormatURLPath(
-		"/v1/application_fees/%s/refunds/%s",
-		stripe.StringValue(params.Fee),
-		id,
-	)
+		"/v1/application_fees/%s/refunds/%s", stripe.StringValue(params.Fee), id)
 	feerefund := &stripe.FeeRefund{}
 	err := c.B.Call(http.MethodGet, path, c.Key, params, feerefund)
 	return feerefund, err
 }
 
-// Update updates a fee refund's properties.
+// Updates the specified application fee refund by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
+//
+// This request only accepts metadata as an argument.
 func Update(id string, params *stripe.FeeRefundParams) (*stripe.FeeRefund, error) {
 	return getC().Update(id, params)
 }
 
-// Update updates a fee refund's properties.
+// Updates the specified application fee refund by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
+//
+// This request only accepts metadata as an argument.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Update(id string, params *stripe.FeeRefundParams) (*stripe.FeeRefund, error) {
 	if params == nil {
 		return nil, fmt.Errorf("params cannot be nil")
@@ -80,30 +110,29 @@ func (c Client) Update(id string, params *stripe.FeeRefundParams) (*stripe.FeeRe
 		return nil, fmt.Errorf("params.Fee must be set")
 	}
 	path := stripe.FormatURLPath(
-		"/v1/application_fees/%s/refunds/%s",
-		stripe.StringValue(params.Fee),
-		id,
-	)
+		"/v1/application_fees/%s/refunds/%s", stripe.StringValue(params.Fee), id)
 	feerefund := &stripe.FeeRefund{}
 	err := c.B.Call(http.MethodPost, path, c.Key, params, feerefund)
 	return feerefund, err
 }
 
-// List returns a list of fee refunds.
+// You can see a list of the refunds belonging to a specific application fee. Note that the 10 most recent refunds are always available by default on the application fee object. If you need more than those 10, you can use this API method and the limit and starting_after parameters to page through additional refunds.
 func List(params *stripe.FeeRefundListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of fee refunds.
+// You can see a list of the refunds belonging to a specific application fee. Note that the 10 most recent refunds are always available by default on the application fee object. If you need more than those 10, you can use this API method and the limit and starting_after parameters to page through additional refunds.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.FeeRefundListParams) *Iter {
 	path := stripe.FormatURLPath(
-		"/v1/application_fees/%s/refunds",
-		stripe.StringValue(listParams.ID),
-	)
+		"/v1/application_fees/%s/refunds", stripe.StringValue(listParams.ID))
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.FeeRefundList{}
-			err := c.B.CallRaw(http.MethodGet, path, c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, path, c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

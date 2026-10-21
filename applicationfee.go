@@ -8,12 +8,23 @@ package stripe
 
 import "encoding/json"
 
+// Type of object that created the application fee.
+type ApplicationFeeFeeSourceType string
+
+// List of values that ApplicationFeeFeeSourceType can take
+const (
+	ApplicationFeeFeeSourceTypeCharge ApplicationFeeFeeSourceType = "charge"
+	ApplicationFeeFeeSourceTypePayout ApplicationFeeFeeSourceType = "payout"
+)
+
 // Returns a list of application fees you've previously collected. The application fees are returned in sorted order, with the most recent fees appearing first.
 type ApplicationFeeListParams struct {
 	ListParams `form:"*"`
 	// Only return application fees for the charge specified by this charge ID.
-	Charge       *string           `form:"charge"`
-	Created      *int64            `form:"created"`
+	Charge *string `form:"charge"`
+	// Only return applications fees that were created during the given date interval.
+	Created *int64 `form:"created"`
+	// Only return applications fees that were created during the given date interval.
 	CreatedRange *RangeQueryParams `form:"created"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
@@ -36,6 +47,27 @@ func (p *ApplicationFeeParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
+// Retrieves the details of an application fee that your account has collected. The same information is returned when refunding the application fee.
+type ApplicationFeeRetrieveParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *ApplicationFeeRetrieveParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Polymorphic source of the application fee. Includes the ID of the object the application fee was created from.
+type ApplicationFeeFeeSource struct {
+	// Charge ID that created this application fee.
+	Charge string `json:"charge"`
+	// Payout ID that created this application fee.
+	Payout string `json:"payout"`
+	// Type of object that created the application fee.
+	Type ApplicationFeeFeeSourceType `json:"type"`
+}
 type ApplicationFee struct {
 	APIResource
 	// ID of the Stripe account this fee was taken from.
@@ -54,6 +86,8 @@ type ApplicationFee struct {
 	Created int64 `json:"created"`
 	// Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
 	Currency Currency `json:"currency"`
+	// Polymorphic source of the application fee. Includes the ID of the object the application fee was created from.
+	FeeSource *ApplicationFeeFeeSource `json:"fee_source"`
 	// Unique identifier for the object.
 	ID string `json:"id"`
 	// Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.

@@ -18,7 +18,7 @@ const (
 	TestHelpersTestClockStatusReady           TestHelpersTestClockStatus = "ready"
 )
 
-// Retrieves a test clock.
+// Deletes a test clock.
 type TestHelpersTestClockParams struct {
 	Params `form:"*"`
 	// Specifies which fields in the response should be expanded.
@@ -60,6 +60,47 @@ func (p *TestHelpersTestClockAdvanceParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
+// Deletes a test clock.
+type TestHelpersTestClockDeleteParams struct {
+	Params `form:"*"`
+}
+
+// Retrieves a test clock.
+type TestHelpersTestClockRetrieveParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TestHelpersTestClockRetrieveParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Creates a new test clock that can be attached to new customers and quotes.
+type TestHelpersTestClockCreateParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// The initial frozen time for this test clock.
+	FrozenTime *int64 `form:"frozen_time"`
+	// The name for this test clock.
+	Name *string `form:"name"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TestHelpersTestClockCreateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+type TestHelpersTestClockStatusDetailsAdvancing struct {
+	// The `frozen_time` that the Test Clock is advancing towards.
+	TargetFrozenTime int64 `json:"target_frozen_time"`
+}
+type TestHelpersTestClockStatusDetails struct {
+	Advancing *TestHelpersTestClockStatusDetailsAdvancing `json:"advancing"`
+}
+
 // A test clock enables deterministic control over objects in testmode. With a test clock, you can create
 // objects at a frozen time in the past or future, and advance to a specific future time to observe webhooks and state changes. After the clock advances,
 // you can either validate the current state of your scenario (and test your assumptions), change the current state of your scenario (and test more complex scenarios), or keep advancing forward in time.
@@ -81,7 +122,8 @@ type TestHelpersTestClock struct {
 	// String representing the object's type. Objects of the same type share the same value.
 	Object string `json:"object"`
 	// The status of the Test Clock.
-	Status TestHelpersTestClockStatus `json:"status"`
+	Status        TestHelpersTestClockStatus         `json:"status"`
+	StatusDetails *TestHelpersTestClockStatusDetails `json:"status_details"`
 }
 
 // TestHelpersTestClockList is a list of TestClocks as retrieved from a list endpoint.

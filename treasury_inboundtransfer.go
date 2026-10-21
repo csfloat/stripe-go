@@ -52,7 +52,7 @@ const (
 	TreasuryInboundTransferOriginPaymentMethodDetailsUSBankAccountAccountTypeSavings  TreasuryInboundTransferOriginPaymentMethodDetailsUSBankAccountAccountType = "savings"
 )
 
-// The US bank account network used to debit funds.
+// The network rails used. See the [docs](https://stripe.com/docs/treasury/money-movement/timelines) to learn more about money movement timelines for each network type.
 type TreasuryInboundTransferOriginPaymentMethodDetailsUSBankAccountNetwork string
 
 // List of values that TreasuryInboundTransferOriginPaymentMethodDetailsUSBankAccountNetwork can take
@@ -71,15 +71,19 @@ const (
 	TreasuryInboundTransferStatusSucceeded  TreasuryInboundTransferStatus = "succeeded"
 )
 
-// Cancels an InboundTransfer.
-type TreasuryInboundTransferCancelParams struct {
-	Params `form:"*"`
+// Returns a list of InboundTransfers sent from the specified FinancialAccount.
+type TreasuryInboundTransferListParams struct {
+	ListParams `form:"*"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
+	// Returns objects associated with this FinancialAccount.
+	FinancialAccount *string `form:"financial_account"`
+	// Only return InboundTransfers that have the given status: `processing`, `succeeded`, `failed` or `canceled`.
+	Status *string `form:"status"`
 }
 
 // AddExpand appends a new field to expand.
-func (p *TreasuryInboundTransferCancelParams) AddExpand(f string) {
+func (p *TreasuryInboundTransferListParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
@@ -118,19 +122,62 @@ func (p *TreasuryInboundTransferParams) AddMetadata(key string, value string) {
 	p.Metadata[key] = value
 }
 
-// Returns a list of InboundTransfers sent from the specified FinancialAccount.
-type TreasuryInboundTransferListParams struct {
-	ListParams `form:"*"`
+// Cancels an InboundTransfer.
+type TreasuryInboundTransferCancelParams struct {
+	Params `form:"*"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
-	// Returns objects associated with this FinancialAccount.
-	FinancialAccount *string `form:"financial_account"`
-	// Only return InboundTransfers that have the given status: `processing`, `succeeded`, `failed` or `canceled`.
-	Status *string `form:"status"`
 }
 
 // AddExpand appends a new field to expand.
-func (p *TreasuryInboundTransferListParams) AddExpand(f string) {
+func (p *TreasuryInboundTransferCancelParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Creates an InboundTransfer.
+type TreasuryInboundTransferCreateParams struct {
+	Params `form:"*"`
+	// Amount (in cents) to be transferred.
+	Amount *int64 `form:"amount"`
+	// Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies).
+	Currency *string `form:"currency"`
+	// An arbitrary string attached to the object. Often useful for displaying to users.
+	Description *string `form:"description"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// The FinancialAccount to send funds to.
+	FinancialAccount *string `form:"financial_account"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+	// The origin payment method to be debited for the InboundTransfer.
+	OriginPaymentMethod *string `form:"origin_payment_method"`
+	// The complete description that appears on your customers' statements. Maximum 10 characters.
+	StatementDescriptor *string `form:"statement_descriptor"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TreasuryInboundTransferCreateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *TreasuryInboundTransferCreateParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// Retrieves the details of an existing InboundTransfer.
+type TreasuryInboundTransferRetrieveParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TreasuryInboundTransferRetrieveParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
@@ -161,7 +208,9 @@ type TreasuryInboundTransferOriginPaymentMethodDetailsUSBankAccount struct {
 	Fingerprint string `json:"fingerprint"`
 	// Last four digits of the bank account number.
 	Last4 string `json:"last4"`
-	// The US bank account network used to debit funds.
+	// ID of the mandate used to make this payment.
+	Mandate *Mandate `json:"mandate"`
+	// The network rails used. See the [docs](https://stripe.com/docs/treasury/money-movement/timelines) to learn more about money movement timelines for each network type.
 	Network TreasuryInboundTransferOriginPaymentMethodDetailsUSBankAccountNetwork `json:"network"`
 	// Routing number of the bank account.
 	RoutingNumber string `json:"routing_number"`
@@ -183,7 +232,9 @@ type TreasuryInboundTransferStatusTransitions struct {
 	SucceededAt int64 `json:"succeeded_at"`
 }
 
-// Use [InboundTransfers](https://stripe.com/docs/treasury/moving-money/financial-accounts/into/inbound-transfers) to add funds to your [FinancialAccount](https://stripe.com/docs/api#financial_accounts) via a PaymentMethod that is owned by you. The funds will be transferred via an ACH debit.
+// Use [InboundTransfers](https://docs.stripe.com/docs/treasury/moving-money/financial-accounts/into/inbound-transfers) to add funds to your [FinancialAccount](https://stripe.com/docs/api#financial_accounts) via a PaymentMethod that is owned by you. The funds will be transferred via an ACH debit.
+//
+// Related guide: [Moving money with Treasury using InboundTransfer objects](https://docs.stripe.com/docs/treasury/moving-money/financial-accounts/into/inbound-transfers)
 type TreasuryInboundTransfer struct {
 	APIResource
 	// Amount (in cents) transferred.

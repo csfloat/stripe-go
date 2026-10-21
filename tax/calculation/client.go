@@ -4,55 +4,77 @@
 //
 //
 
-// Package calculation provides the /tax/calculations APIs
+// Package calculation provides the /v1/tax/calculations APIs
 package calculation
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /tax/calculations APIs.
+// Client is used to invoke /v1/tax/calculations APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// New creates a new tax calculation.
+// Calculates tax based on the input and returns a Tax Calculation object.
 func New(params *stripe.TaxCalculationParams) (*stripe.TaxCalculation, error) {
 	return getC().New(params)
 }
 
-// New creates a new tax calculation.
+// Calculates tax based on the input and returns a Tax Calculation object.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) New(params *stripe.TaxCalculationParams) (*stripe.TaxCalculation, error) {
 	calculation := &stripe.TaxCalculation{}
 	err := c.B.Call(
-		http.MethodPost,
-		"/v1/tax/calculations",
-		c.Key,
-		params,
-		calculation,
-	)
+		http.MethodPost, "/v1/tax/calculations", c.Key, params, calculation)
 	return calculation, err
 }
 
-// ListLineItems is the method for the `GET /v1/tax/calculations/{calculation}/line_items` API.
+// Retrieves a Tax Calculation object, if the calculation hasn't expired.
+func Get(id string, params *stripe.TaxCalculationParams) (*stripe.TaxCalculation, error) {
+	return getC().Get(id, params)
+}
+
+// Retrieves a Tax Calculation object, if the calculation hasn't expired.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
+func (c Client) Get(id string, params *stripe.TaxCalculationParams) (*stripe.TaxCalculation, error) {
+	path := stripe.FormatURLPath("/v1/tax/calculations/%s", id)
+	calculation := &stripe.TaxCalculation{}
+	err := c.B.Call(http.MethodGet, path, c.Key, params, calculation)
+	return calculation, err
+}
+
+// Retrieves the line items of a tax calculation as a collection, if the calculation hasn't expired.
 func ListLineItems(params *stripe.TaxCalculationListLineItemsParams) *LineItemIter {
 	return getC().ListLineItems(params)
 }
 
-// ListLineItems is the method for the `GET /v1/tax/calculations/{calculation}/line_items` API.
+// Retrieves the line items of a tax calculation as a collection, if the calculation hasn't expired.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) ListLineItems(listParams *stripe.TaxCalculationListLineItemsParams) *LineItemIter {
 	path := stripe.FormatURLPath(
-		"/v1/tax/calculations/%s/line_items",
-		stripe.StringValue(listParams.Calculation),
-	)
+		"/v1/tax/calculations/%s/line_items", stripe.StringValue(
+			listParams.Calculation))
 	return &LineItemIter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.TaxCalculationLineItemList{}
-			err := c.B.CallRaw(http.MethodGet, path, c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, path, c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

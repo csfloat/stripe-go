@@ -4,77 +4,83 @@
 //
 //
 
-// Package capability provides the /accounts/{account}/capabilities APIs
+// Package capability provides the /v1/accounts/{account}/capabilities APIs
 package capability
 
 import (
 	"fmt"
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /accounts/{account}/capabilities APIs.
+// Client is used to invoke /v1/accounts/{account}/capabilities APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// Get returns the details of a capability.
+// Retrieves information about the specified Account Capability.
 func Get(id string, params *stripe.CapabilityParams) (*stripe.Capability, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a capability.
+// Retrieves information about the specified Account Capability.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.CapabilityParams) (*stripe.Capability, error) {
 	if params == nil {
 		return nil, fmt.Errorf(
-			"params cannot be nil, and params.Account must be set",
-		)
+			"params cannot be nil, and params.Account must be set")
 	}
 	path := stripe.FormatURLPath(
-		"/v1/accounts/%s/capabilities/%s",
-		stripe.StringValue(params.Account),
-		id,
-	)
+		"/v1/accounts/%s/capabilities/%s", stripe.StringValue(params.Account), id)
 	capability := &stripe.Capability{}
 	err := c.B.Call(http.MethodGet, path, c.Key, params, capability)
 	return capability, err
 }
 
-// Update updates a capability's properties.
+// Updates an existing Account Capability. Request or remove a capability by updating its requested parameter.
 func Update(id string, params *stripe.CapabilityParams) (*stripe.Capability, error) {
 	return getC().Update(id, params)
 }
 
-// Update updates a capability's properties.
+// Updates an existing Account Capability. Request or remove a capability by updating its requested parameter.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Update(id string, params *stripe.CapabilityParams) (*stripe.Capability, error) {
 	path := stripe.FormatURLPath(
-		"/v1/accounts/%s/capabilities/%s",
-		stripe.StringValue(params.Account),
-		id,
-	)
+		"/v1/accounts/%s/capabilities/%s", stripe.StringValue(params.Account), id)
 	capability := &stripe.Capability{}
 	err := c.B.Call(http.MethodPost, path, c.Key, params, capability)
 	return capability, err
 }
 
-// List returns a list of capabilities.
+// Returns a list of capabilities associated with the account. The capabilities are returned sorted by creation date, with the most recent capability appearing first.
 func List(params *stripe.CapabilityListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of capabilities.
+// Returns a list of capabilities associated with the account. The capabilities are returned sorted by creation date, with the most recent capability appearing first.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.CapabilityListParams) *Iter {
 	path := stripe.FormatURLPath(
-		"/v1/accounts/%s/capabilities",
-		stripe.StringValue(listParams.Account),
-	)
+		"/v1/accounts/%s/capabilities", stripe.StringValue(listParams.Account))
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.CapabilityList{}
-			err := c.B.CallRaw(http.MethodGet, path, c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, path, c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

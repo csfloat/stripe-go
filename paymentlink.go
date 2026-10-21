@@ -17,13 +17,33 @@ const (
 	PaymentLinkAfterCompletionTypeRedirect           PaymentLinkAfterCompletionType = "redirect"
 )
 
-// Configuration for collecting the customer's billing address.
+// Type of the account referenced.
+type PaymentLinkAutomaticTaxLiabilityType string
+
+// List of values that PaymentLinkAutomaticTaxLiabilityType can take
+const (
+	PaymentLinkAutomaticTaxLiabilityTypeAccount PaymentLinkAutomaticTaxLiabilityType = "account"
+	PaymentLinkAutomaticTaxLiabilityTypeSelf    PaymentLinkAutomaticTaxLiabilityType = "self"
+)
+
+// Configuration for collecting the customer's billing address. Defaults to `auto`.
 type PaymentLinkBillingAddressCollection string
 
 // List of values that PaymentLinkBillingAddressCollection can take
 const (
 	PaymentLinkBillingAddressCollectionAuto     PaymentLinkBillingAddressCollection = "auto"
 	PaymentLinkBillingAddressCollectionRequired PaymentLinkBillingAddressCollection = "required"
+)
+
+// Determines the position and visibility of the payment method reuse agreement in the UI. When set to `auto`, Stripe's defaults will be used.
+//
+// When set to `hidden`, the payment method reuse agreement text will always be hidden in the UI.
+type PaymentLinkConsentCollectionPaymentMethodReuseAgreementPosition string
+
+// List of values that PaymentLinkConsentCollectionPaymentMethodReuseAgreementPosition can take
+const (
+	PaymentLinkConsentCollectionPaymentMethodReuseAgreementPositionAuto   PaymentLinkConsentCollectionPaymentMethodReuseAgreementPosition = "auto"
+	PaymentLinkConsentCollectionPaymentMethodReuseAgreementPositionHidden PaymentLinkConsentCollectionPaymentMethodReuseAgreementPosition = "hidden"
 )
 
 // If set to `auto`, enables the collection of customer consent for promotional communications.
@@ -71,6 +91,15 @@ const (
 	PaymentLinkCustomerCreationIfRequired PaymentLinkCustomerCreation = "if_required"
 )
 
+// Type of the account referenced.
+type PaymentLinkInvoiceCreationInvoiceDataIssuerType string
+
+// List of values that PaymentLinkInvoiceCreationInvoiceDataIssuerType can take
+const (
+	PaymentLinkInvoiceCreationInvoiceDataIssuerTypeAccount PaymentLinkInvoiceCreationInvoiceDataIssuerType = "account"
+	PaymentLinkInvoiceCreationInvoiceDataIssuerTypeSelf    PaymentLinkInvoiceCreationInvoiceDataIssuerType = "self"
+)
+
 // Indicates when the funds will be captured from the customer's account.
 type PaymentLinkPaymentIntentDataCaptureMethod string
 
@@ -90,7 +119,7 @@ const (
 	PaymentLinkPaymentIntentDataSetupFutureUsageOnSession  PaymentLinkPaymentIntentDataSetupFutureUsage = "on_session"
 )
 
-// Configuration for collecting a payment method during checkout.
+// Configuration for collecting a payment method during checkout. Defaults to `always`.
 type PaymentLinkPaymentMethodCollection string
 
 // List of values that PaymentLinkPaymentMethodCollection can take
@@ -107,9 +136,11 @@ const (
 	PaymentLinkPaymentMethodTypeAffirm           PaymentLinkPaymentMethodType = "affirm"
 	PaymentLinkPaymentMethodTypeAfterpayClearpay PaymentLinkPaymentMethodType = "afterpay_clearpay"
 	PaymentLinkPaymentMethodTypeAlipay           PaymentLinkPaymentMethodType = "alipay"
+	PaymentLinkPaymentMethodTypeAlma             PaymentLinkPaymentMethodType = "alma"
 	PaymentLinkPaymentMethodTypeAUBECSDebit      PaymentLinkPaymentMethodType = "au_becs_debit"
 	PaymentLinkPaymentMethodTypeBACSDebit        PaymentLinkPaymentMethodType = "bacs_debit"
 	PaymentLinkPaymentMethodTypeBancontact       PaymentLinkPaymentMethodType = "bancontact"
+	PaymentLinkPaymentMethodTypeBillie           PaymentLinkPaymentMethodType = "billie"
 	PaymentLinkPaymentMethodTypeBLIK             PaymentLinkPaymentMethodType = "blik"
 	PaymentLinkPaymentMethodTypeBoleto           PaymentLinkPaymentMethodType = "boleto"
 	PaymentLinkPaymentMethodTypeCard             PaymentLinkPaymentMethodType = "card"
@@ -122,16 +153,23 @@ const (
 	PaymentLinkPaymentMethodTypeKlarna           PaymentLinkPaymentMethodType = "klarna"
 	PaymentLinkPaymentMethodTypeKonbini          PaymentLinkPaymentMethodType = "konbini"
 	PaymentLinkPaymentMethodTypeLink             PaymentLinkPaymentMethodType = "link"
+	PaymentLinkPaymentMethodTypeMobilepay        PaymentLinkPaymentMethodType = "mobilepay"
+	PaymentLinkPaymentMethodTypeMultibanco       PaymentLinkPaymentMethodType = "multibanco"
 	PaymentLinkPaymentMethodTypeOXXO             PaymentLinkPaymentMethodType = "oxxo"
 	PaymentLinkPaymentMethodTypeP24              PaymentLinkPaymentMethodType = "p24"
+	PaymentLinkPaymentMethodTypePayByBank        PaymentLinkPaymentMethodType = "pay_by_bank"
 	PaymentLinkPaymentMethodTypePayNow           PaymentLinkPaymentMethodType = "paynow"
 	PaymentLinkPaymentMethodTypePaypal           PaymentLinkPaymentMethodType = "paypal"
 	PaymentLinkPaymentMethodTypePix              PaymentLinkPaymentMethodType = "pix"
 	PaymentLinkPaymentMethodTypePromptPay        PaymentLinkPaymentMethodType = "promptpay"
+	PaymentLinkPaymentMethodTypeSatispay         PaymentLinkPaymentMethodType = "satispay"
 	PaymentLinkPaymentMethodTypeSEPADebit        PaymentLinkPaymentMethodType = "sepa_debit"
 	PaymentLinkPaymentMethodTypeSofort           PaymentLinkPaymentMethodType = "sofort"
+	PaymentLinkPaymentMethodTypeSwish            PaymentLinkPaymentMethodType = "swish"
+	PaymentLinkPaymentMethodTypeTWINT            PaymentLinkPaymentMethodType = "twint"
 	PaymentLinkPaymentMethodTypeUSBankAccount    PaymentLinkPaymentMethodType = "us_bank_account"
 	PaymentLinkPaymentMethodTypeWeChatPay        PaymentLinkPaymentMethodType = "wechat_pay"
+	PaymentLinkPaymentMethodTypeZip              PaymentLinkPaymentMethodType = "zip"
 )
 
 // Indicates the type of transaction being performed which customizes relevant text on the page, such as the submit button.
@@ -139,10 +177,38 @@ type PaymentLinkSubmitType string
 
 // List of values that PaymentLinkSubmitType can take
 const (
-	PaymentLinkSubmitTypeAuto   PaymentLinkSubmitType = "auto"
-	PaymentLinkSubmitTypeBook   PaymentLinkSubmitType = "book"
-	PaymentLinkSubmitTypeDonate PaymentLinkSubmitType = "donate"
-	PaymentLinkSubmitTypePay    PaymentLinkSubmitType = "pay"
+	PaymentLinkSubmitTypeAuto      PaymentLinkSubmitType = "auto"
+	PaymentLinkSubmitTypeBook      PaymentLinkSubmitType = "book"
+	PaymentLinkSubmitTypeDonate    PaymentLinkSubmitType = "donate"
+	PaymentLinkSubmitTypePay       PaymentLinkSubmitType = "pay"
+	PaymentLinkSubmitTypeSubscribe PaymentLinkSubmitType = "subscribe"
+)
+
+// Type of the account referenced.
+type PaymentLinkSubscriptionDataInvoiceSettingsIssuerType string
+
+// List of values that PaymentLinkSubscriptionDataInvoiceSettingsIssuerType can take
+const (
+	PaymentLinkSubscriptionDataInvoiceSettingsIssuerTypeAccount PaymentLinkSubscriptionDataInvoiceSettingsIssuerType = "account"
+	PaymentLinkSubscriptionDataInvoiceSettingsIssuerTypeSelf    PaymentLinkSubscriptionDataInvoiceSettingsIssuerType = "self"
+)
+
+// Indicates how the subscription should change when the trial ends if the user did not provide a payment method.
+type PaymentLinkSubscriptionDataTrialSettingsEndBehaviorMissingPaymentMethod string
+
+// List of values that PaymentLinkSubscriptionDataTrialSettingsEndBehaviorMissingPaymentMethod can take
+const (
+	PaymentLinkSubscriptionDataTrialSettingsEndBehaviorMissingPaymentMethodCancel        PaymentLinkSubscriptionDataTrialSettingsEndBehaviorMissingPaymentMethod = "cancel"
+	PaymentLinkSubscriptionDataTrialSettingsEndBehaviorMissingPaymentMethodCreateInvoice PaymentLinkSubscriptionDataTrialSettingsEndBehaviorMissingPaymentMethod = "create_invoice"
+	PaymentLinkSubscriptionDataTrialSettingsEndBehaviorMissingPaymentMethodPause         PaymentLinkSubscriptionDataTrialSettingsEndBehaviorMissingPaymentMethod = "pause"
+)
+
+type PaymentLinkTaxIDCollectionRequired string
+
+// List of values that PaymentLinkTaxIDCollectionRequired can take
+const (
+	PaymentLinkTaxIDCollectionRequiredIfSupported PaymentLinkTaxIDCollectionRequired = "if_supported"
+	PaymentLinkTaxIDCollectionRequiredNever       PaymentLinkTaxIDCollectionRequired = "never"
 )
 
 // Returns a list of your payment links.
@@ -181,14 +247,35 @@ type PaymentLinkAfterCompletionParams struct {
 	Type *string `form:"type"`
 }
 
+// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+type PaymentLinkAutomaticTaxLiabilityParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
+}
+
 // Configuration for automatic tax collection.
 type PaymentLinkAutomaticTaxParams struct {
-	// If `true`, tax will be calculated automatically using the customer's location.
+	// Set to `true` to [calculate tax automatically](https://docs.stripe.com/tax) using the customer's location.
+	//
+	// Enabling this parameter causes the payment link to collect any billing address information necessary for tax calculation.
 	Enabled *bool `form:"enabled"`
+	// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+	Liability *PaymentLinkAutomaticTaxLiabilityParams `form:"liability"`
+}
+
+// Determines the display of payment method reuse agreement text in the UI. If set to `hidden`, it will hide legal text related to the reuse of a payment method.
+type PaymentLinkConsentCollectionPaymentMethodReuseAgreementParams struct {
+	// Determines the position and visibility of the payment method reuse agreement in the UI. When set to `auto`, Stripe's
+	// defaults will be used. When set to `hidden`, the payment method reuse agreement text will always be hidden in the UI.
+	Position *string `form:"position"`
 }
 
 // Configure fields to gather active consent from customers.
 type PaymentLinkConsentCollectionParams struct {
+	// Determines the display of payment method reuse agreement text in the UI. If set to `hidden`, it will hide legal text related to the reuse of a payment method.
+	PaymentMethodReuseAgreement *PaymentLinkConsentCollectionPaymentMethodReuseAgreementParams `form:"payment_method_reuse_agreement"`
 	// If set to `auto`, enables the collection of customer consent for promotional communications. The Checkout
 	// Session will determine whether to display an option to opt into promotional communication
 	// from the merchant depending on the customer's locale. Only available to US merchants.
@@ -208,6 +295,8 @@ type PaymentLinkCustomFieldDropdownOptionParams struct {
 
 // Configuration for `type=dropdown` fields.
 type PaymentLinkCustomFieldDropdownParams struct {
+	// The value that will pre-fill the field on the payment page.Must match a `value` in the `options` array.
+	DefaultValue *string `form:"default_value"`
 	// The options available for the customer to select. Up to 200 options allowed.
 	Options []*PaymentLinkCustomFieldDropdownOptionParams `form:"options"`
 }
@@ -222,6 +311,8 @@ type PaymentLinkCustomFieldLabelParams struct {
 
 // Configuration for `type=numeric` fields.
 type PaymentLinkCustomFieldNumericParams struct {
+	// The value that will pre-fill the field on the payment page.
+	DefaultValue *string `form:"default_value"`
 	// The maximum character length constraint for the customer's input.
 	MaximumLength *int64 `form:"maximum_length"`
 	// The minimum character length requirement for the customer's input.
@@ -230,13 +321,15 @@ type PaymentLinkCustomFieldNumericParams struct {
 
 // Configuration for `type=text` fields.
 type PaymentLinkCustomFieldTextParams struct {
+	// The value that will pre-fill the field on the payment page.
+	DefaultValue *string `form:"default_value"`
 	// The maximum character length constraint for the customer's input.
 	MaximumLength *int64 `form:"maximum_length"`
 	// The minimum character length requirement for the customer's input.
 	MinimumLength *int64 `form:"minimum_length"`
 }
 
-// Collect additional information from your customer using custom fields. Up to 2 fields are supported.
+// Collect additional information from your customer using custom fields. Up to 3 fields are supported.
 type PaymentLinkCustomFieldParams struct {
 	// Configuration for `type=dropdown` fields.
 	Dropdown *PaymentLinkCustomFieldDropdownParams `form:"dropdown"`
@@ -254,32 +347,56 @@ type PaymentLinkCustomFieldParams struct {
 	Type *string `form:"type"`
 }
 
+// Custom text that should be displayed after the payment confirmation button.
+type PaymentLinkCustomTextAfterSubmitParams struct {
+	// Text may be up to 1200 characters in length.
+	Message *string `form:"message"`
+}
+
 // Custom text that should be displayed alongside shipping address collection.
 type PaymentLinkCustomTextShippingAddressParams struct {
-	// Text may be up to 1000 characters in length.
+	// Text may be up to 1200 characters in length.
 	Message *string `form:"message"`
 }
 
 // Custom text that should be displayed alongside the payment confirmation button.
 type PaymentLinkCustomTextSubmitParams struct {
-	// Text may be up to 1000 characters in length.
+	// Text may be up to 1200 characters in length.
+	Message *string `form:"message"`
+}
+
+// Custom text that should be displayed in place of the default terms of service agreement text.
+type PaymentLinkCustomTextTermsOfServiceAcceptanceParams struct {
+	// Text may be up to 1200 characters in length.
 	Message *string `form:"message"`
 }
 
 // Display additional text for your customers using custom text.
 type PaymentLinkCustomTextParams struct {
+	// Custom text that should be displayed after the payment confirmation button.
+	AfterSubmit *PaymentLinkCustomTextAfterSubmitParams `form:"after_submit"`
 	// Custom text that should be displayed alongside shipping address collection.
 	ShippingAddress *PaymentLinkCustomTextShippingAddressParams `form:"shipping_address"`
 	// Custom text that should be displayed alongside the payment confirmation button.
 	Submit *PaymentLinkCustomTextSubmitParams `form:"submit"`
+	// Custom text that should be displayed in place of the default terms of service agreement text.
+	TermsOfServiceAcceptance *PaymentLinkCustomTextTermsOfServiceAcceptanceParams `form:"terms_of_service_acceptance"`
 }
 
 // Default custom fields to be displayed on invoices for this customer.
 type PaymentLinkInvoiceCreationInvoiceDataCustomFieldParams struct {
-	// The name of the custom field. This may be up to 30 characters.
+	// The name of the custom field. This may be up to 40 characters.
 	Name *string `form:"name"`
-	// The value of the custom field. This may be up to 30 characters.
+	// The value of the custom field. This may be up to 140 characters.
 	Value *string `form:"value"`
+}
+
+// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+type PaymentLinkInvoiceCreationInvoiceDataIssuerParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
 }
 
 // Default options for invoice PDF rendering for this customer.
@@ -298,6 +415,8 @@ type PaymentLinkInvoiceCreationInvoiceDataParams struct {
 	Description *string `form:"description"`
 	// Default footer to be displayed on invoices for this customer.
 	Footer *string `form:"footer"`
+	// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+	Issuer *PaymentLinkInvoiceCreationInvoiceDataIssuerParams `form:"issuer"`
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
 	Metadata map[string]string `form:"metadata"`
 	// Default options for invoice PDF rendering for this customer.
@@ -343,10 +462,36 @@ type PaymentLinkLineItemParams struct {
 	Quantity *int64 `form:"quantity"`
 }
 
+// When set, provides configuration for the customer to adjust the quantity of the line item created when a customer chooses to add this optional item to their order.
+type PaymentLinkOptionalItemAdjustableQuantityParams struct {
+	// Set to true if the quantity can be adjusted to any non-negative integer.
+	Enabled *bool `form:"enabled"`
+	// The maximum quantity of this item the customer can purchase. By default this value is 99.
+	Maximum *int64 `form:"maximum"`
+	// The minimum quantity of this item the customer must purchase, if they choose to purchase it. Because this item is optional, the customer will always be able to remove it from their order, even if the `minimum` configured here is greater than 0. By default this value is 0.
+	Minimum *int64 `form:"minimum"`
+}
+
+// A list of optional items the customer can add to their order at checkout. Use this parameter to pass one-time or recurring [Prices](https://stripe.com/docs/api/prices).
+// There is a maximum of 10 optional items allowed on a payment link, and the existing limits on the number of line items allowed on a payment link apply to the combined number of line items and optional items.
+// There is a maximum of 20 combined line items and optional items.
+type PaymentLinkOptionalItemParams struct {
+	// When set, provides configuration for the customer to adjust the quantity of the line item created when a customer chooses to add this optional item to their order.
+	AdjustableQuantity *PaymentLinkOptionalItemAdjustableQuantityParams `form:"adjustable_quantity"`
+	// The ID of the [Price](https://stripe.com/docs/api/prices) or [Plan](https://stripe.com/docs/api/plans) object.
+	Price *string `form:"price"`
+	// The initial quantity of the line item created when a customer chooses to add this optional item to their order.
+	Quantity *int64 `form:"quantity"`
+}
+
 // A subset of parameters to be passed to PaymentIntent creation for Checkout Sessions in `payment` mode.
 type PaymentLinkPaymentIntentDataParams struct {
 	// Controls when the funds will be captured from the customer's account.
 	CaptureMethod *string `form:"capture_method"`
+	// An arbitrary string attached to the object. Often useful for displaying to users.
+	Description *string `form:"description"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that will declaratively set metadata on [Payment Intents](https://stripe.com/docs/api/payment_intents) generated from this payment link. Unlike object-level metadata, this field is declarative. Updates will clear prior values.
+	Metadata map[string]string `form:"metadata"`
 	// Indicates that you intend to [make future payments](https://stripe.com/docs/payments/payment-intents#future-usage) with the payment method collected by this Checkout Session.
 	//
 	// When setting this to `on_session`, Checkout will show a notice to the customer that their payment details will be saved.
@@ -359,6 +504,23 @@ type PaymentLinkPaymentIntentDataParams struct {
 	//
 	// When processing card payments, Checkout also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as SCA.
 	SetupFutureUsage *string `form:"setup_future_usage"`
+	// Text that appears on the customer's statement as the statement descriptor for a non-card charge. This value overrides the account's default statement descriptor. For information about requirements, including the 22-character limit, see [the Statement Descriptor docs](https://docs.stripe.com/get-started/account/statement-descriptors).
+	//
+	// Setting this value for a card charge returns an error. For card charges, set the [statement_descriptor_suffix](https://docs.stripe.com/get-started/account/statement-descriptors#dynamic) instead.
+	StatementDescriptor *string `form:"statement_descriptor"`
+	// Provides information about a card charge. Concatenated to the account's [statement descriptor prefix](https://docs.stripe.com/get-started/account/statement-descriptors#static) to form the complete statement descriptor that appears on the customer's statement.
+	StatementDescriptorSuffix *string `form:"statement_descriptor_suffix"`
+	// A string that identifies the resulting payment as part of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/connect/separate-charges-and-transfers) for details.
+	TransferGroup *string `form:"transfer_group"`
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *PaymentLinkPaymentIntentDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // Controls phone number collection settings during checkout.
@@ -369,10 +531,22 @@ type PaymentLinkPhoneNumberCollectionParams struct {
 	Enabled *bool `form:"enabled"`
 }
 
+// Configuration for the `completed_sessions` restriction type.
+type PaymentLinkRestrictionsCompletedSessionsParams struct {
+	// The maximum number of checkout sessions that can be completed for the `completed_sessions` restriction to be met.
+	Limit *int64 `form:"limit"`
+}
+
+// Settings that restrict the usage of a payment link.
+type PaymentLinkRestrictionsParams struct {
+	// Configuration for the `completed_sessions` restriction type.
+	CompletedSessions *PaymentLinkRestrictionsCompletedSessionsParams `form:"completed_sessions"`
+}
+
 // Configuration for collecting the customer's shipping address.
 type PaymentLinkShippingAddressCollectionParams struct {
 	// An array of two-letter ISO country codes representing which countries Checkout should provide as options for
-	// shipping locations. Unsupported country codes: `AS, CX, CC, CU, HM, IR, KP, MH, FM, NF, MP, PW, SD, SY, UM, VI`.
+	// shipping locations.
 	AllowedCountries []*string `form:"allowed_countries"`
 }
 
@@ -382,18 +556,61 @@ type PaymentLinkShippingOptionParams struct {
 	ShippingRate *string `form:"shipping_rate"`
 }
 
+// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+type PaymentLinkSubscriptionDataInvoiceSettingsIssuerParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
+}
+
+// All invoices will be billed using the specified settings.
+type PaymentLinkSubscriptionDataInvoiceSettingsParams struct {
+	// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+	Issuer *PaymentLinkSubscriptionDataInvoiceSettingsIssuerParams `form:"issuer"`
+}
+
+// Defines how the subscription should behave when the user's free trial ends.
+type PaymentLinkSubscriptionDataTrialSettingsEndBehaviorParams struct {
+	// Indicates how the subscription should change when the trial ends if the user did not provide a payment method.
+	MissingPaymentMethod *string `form:"missing_payment_method"`
+}
+
+// Settings related to subscription trials.
+type PaymentLinkSubscriptionDataTrialSettingsParams struct {
+	// Defines how the subscription should behave when the user's free trial ends.
+	EndBehavior *PaymentLinkSubscriptionDataTrialSettingsEndBehaviorParams `form:"end_behavior"`
+}
+
 // When creating a subscription, the specified configuration data will be used. There must be at least one line item with a recurring price to use `subscription_data`.
 type PaymentLinkSubscriptionDataParams struct {
-	// The subscription's description, meant to be displayable to the customer. Use this field to optionally store an explanation of the subscription.
+	// The subscription's description, meant to be displayable to the customer. Use this field to optionally store an explanation of the subscription for rendering in Stripe surfaces and certain local payment methods UIs.
 	Description *string `form:"description"`
+	// All invoices will be billed using the specified settings.
+	InvoiceSettings *PaymentLinkSubscriptionDataInvoiceSettingsParams `form:"invoice_settings"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that will declaratively set metadata on [Subscriptions](https://stripe.com/docs/api/subscriptions) generated from this payment link. Unlike object-level metadata, this field is declarative. Updates will clear prior values.
+	Metadata map[string]string `form:"metadata"`
 	// Integer representing the number of trial period days before the customer is charged for the first time. Has to be at least 1.
 	TrialPeriodDays *int64 `form:"trial_period_days"`
+	// Settings related to subscription trials.
+	TrialSettings *PaymentLinkSubscriptionDataTrialSettingsParams `form:"trial_settings"`
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *PaymentLinkSubscriptionDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // Controls tax ID collection during checkout.
 type PaymentLinkTaxIDCollectionParams struct {
-	// Set to `true` to enable tax ID collection.
+	// Enable tax ID collection during checkout. Defaults to `false`.
 	Enabled *bool `form:"enabled"`
+	// Describes whether a tax ID is required during checkout. Defaults to `never`.
+	Required *string `form:"required"`
 }
 
 // The account (if any) the payments will be attributed to for tax reporting, and where funds from each payment will be transferred to.
@@ -422,7 +639,7 @@ type PaymentLinkParams struct {
 	ApplicationFeePercent *float64 `form:"application_fee_percent"`
 	// Configuration for automatic tax collection.
 	AutomaticTax *PaymentLinkAutomaticTaxParams `form:"automatic_tax"`
-	// Configuration for collecting the customer's billing address.
+	// Configuration for collecting the customer's billing address. Defaults to `auto`.
 	BillingAddressCollection *string `form:"billing_address_collection"`
 	// Configure fields to gather active consent from customers.
 	ConsentCollection *PaymentLinkConsentCollectionParams `form:"consent_collection"`
@@ -430,12 +647,14 @@ type PaymentLinkParams struct {
 	Currency *string `form:"currency"`
 	// Configures whether [checkout sessions](https://stripe.com/docs/api/checkout/sessions) created by this payment link create a [Customer](https://stripe.com/docs/api/customers).
 	CustomerCreation *string `form:"customer_creation"`
-	// Collect additional information from your customer using custom fields. Up to 2 fields are supported.
+	// Collect additional information from your customer using custom fields. Up to 3 fields are supported.
 	CustomFields []*PaymentLinkCustomFieldParams `form:"custom_fields"`
 	// Display additional text for your customers using custom text.
 	CustomText *PaymentLinkCustomTextParams `form:"custom_text"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
+	// The custom message to be displayed to a customer when a payment link is no longer active.
+	InactiveMessage *string `form:"inactive_message"`
 	// Generate a post-purchase Invoice for one-time payments.
 	InvoiceCreation *PaymentLinkInvoiceCreationParams `form:"invoice_creation"`
 	// The line items representing what is being sold. Each line item represents an item being sold. Up to 20 line items are supported.
@@ -444,11 +663,15 @@ type PaymentLinkParams struct {
 	Metadata map[string]string `form:"metadata"`
 	// The account on behalf of which to charge.
 	OnBehalfOf *string `form:"on_behalf_of"`
+	// A list of optional items the customer can add to their order at checkout. Use this parameter to pass one-time or recurring [Prices](https://stripe.com/docs/api/prices).
+	// There is a maximum of 10 optional items allowed on a payment link, and the existing limits on the number of line items allowed on a payment link apply to the combined number of line items and optional items.
+	// There is a maximum of 20 combined line items and optional items.
+	OptionalItems []*PaymentLinkOptionalItemParams `form:"optional_items"`
 	// A subset of parameters to be passed to PaymentIntent creation for Checkout Sessions in `payment` mode.
 	PaymentIntentData *PaymentLinkPaymentIntentDataParams `form:"payment_intent_data"`
 	// Specify whether Checkout should collect a payment method. When set to `if_required`, Checkout will not collect a payment method when the total due for the session is 0.This may occur if the Checkout Session includes a free trial or a discount.
 	//
-	// Can only be set in `subscription` mode.
+	// Can only be set in `subscription` mode. Defaults to `always`.
 	//
 	// If you'd like information on how to collect a payment method outside of Checkout, read the guide on [configuring subscriptions with a free trial](https://stripe.com/docs/payments/checkout/free-trials).
 	PaymentMethodCollection *string `form:"payment_method_collection"`
@@ -458,6 +681,8 @@ type PaymentLinkParams struct {
 	//
 	// We recommend that you review your privacy policy and check with your legal contacts.
 	PhoneNumberCollection *PaymentLinkPhoneNumberCollectionParams `form:"phone_number_collection"`
+	// Settings that restrict the usage of a payment link.
+	Restrictions *PaymentLinkRestrictionsParams `form:"restrictions"`
 	// Configuration for collecting the customer's shipping address.
 	ShippingAddressCollection *PaymentLinkShippingAddressCollectionParams `form:"shipping_address_collection"`
 	// The shipping rate options to apply to [checkout sessions](https://stripe.com/docs/api/checkout/sessions) created by this payment link.
@@ -499,6 +724,891 @@ func (p *PaymentLinkListLineItemsParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
+// Configuration when `type=hosted_confirmation`.
+type PaymentLinkCreateAfterCompletionHostedConfirmationParams struct {
+	// A custom message to display to the customer after the purchase is complete.
+	CustomMessage *string `form:"custom_message"`
+}
+
+// Configuration when `type=redirect`.
+type PaymentLinkCreateAfterCompletionRedirectParams struct {
+	// The URL the customer will be redirected to after the purchase is complete. You can embed `{CHECKOUT_SESSION_ID}` into the URL to have the `id` of the completed [checkout session](https://stripe.com/docs/api/checkout/sessions/object#checkout_session_object-id) included.
+	URL *string `form:"url"`
+}
+
+// Behavior after the purchase is complete.
+type PaymentLinkCreateAfterCompletionParams struct {
+	// Configuration when `type=hosted_confirmation`.
+	HostedConfirmation *PaymentLinkCreateAfterCompletionHostedConfirmationParams `form:"hosted_confirmation"`
+	// Configuration when `type=redirect`.
+	Redirect *PaymentLinkCreateAfterCompletionRedirectParams `form:"redirect"`
+	// The specified behavior after the purchase is complete. Either `redirect` or `hosted_confirmation`.
+	Type *string `form:"type"`
+}
+
+// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+type PaymentLinkCreateAutomaticTaxLiabilityParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
+}
+
+// Configuration for automatic tax collection.
+type PaymentLinkCreateAutomaticTaxParams struct {
+	// Set to `true` to [calculate tax automatically](https://docs.stripe.com/tax) using the customer's location.
+	//
+	// Enabling this parameter causes the payment link to collect any billing address information necessary for tax calculation.
+	Enabled *bool `form:"enabled"`
+	// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+	Liability *PaymentLinkCreateAutomaticTaxLiabilityParams `form:"liability"`
+}
+
+// Determines the display of payment method reuse agreement text in the UI. If set to `hidden`, it will hide legal text related to the reuse of a payment method.
+type PaymentLinkCreateConsentCollectionPaymentMethodReuseAgreementParams struct {
+	// Determines the position and visibility of the payment method reuse agreement in the UI. When set to `auto`, Stripe's
+	// defaults will be used. When set to `hidden`, the payment method reuse agreement text will always be hidden in the UI.
+	Position *string `form:"position"`
+}
+
+// Configure fields to gather active consent from customers.
+type PaymentLinkCreateConsentCollectionParams struct {
+	// Determines the display of payment method reuse agreement text in the UI. If set to `hidden`, it will hide legal text related to the reuse of a payment method.
+	PaymentMethodReuseAgreement *PaymentLinkCreateConsentCollectionPaymentMethodReuseAgreementParams `form:"payment_method_reuse_agreement"`
+	// If set to `auto`, enables the collection of customer consent for promotional communications. The Checkout
+	// Session will determine whether to display an option to opt into promotional communication
+	// from the merchant depending on the customer's locale. Only available to US merchants.
+	Promotions *string `form:"promotions"`
+	// If set to `required`, it requires customers to check a terms of service checkbox before being able to pay.
+	// There must be a valid terms of service URL set in your [Dashboard settings](https://dashboard.stripe.com/settings/public).
+	TermsOfService *string `form:"terms_of_service"`
+}
+
+// The options available for the customer to select. Up to 200 options allowed.
+type PaymentLinkCreateCustomFieldDropdownOptionParams struct {
+	// The label for the option, displayed to the customer. Up to 100 characters.
+	Label *string `form:"label"`
+	// The value for this option, not displayed to the customer, used by your integration to reconcile the option selected by the customer. Must be unique to this option, alphanumeric, and up to 100 characters.
+	Value *string `form:"value"`
+}
+
+// Configuration for `type=dropdown` fields.
+type PaymentLinkCreateCustomFieldDropdownParams struct {
+	// The value that will pre-fill the field on the payment page.Must match a `value` in the `options` array.
+	DefaultValue *string `form:"default_value"`
+	// The options available for the customer to select. Up to 200 options allowed.
+	Options []*PaymentLinkCreateCustomFieldDropdownOptionParams `form:"options"`
+}
+
+// The label for the field, displayed to the customer.
+type PaymentLinkCreateCustomFieldLabelParams struct {
+	// Custom text for the label, displayed to the customer. Up to 50 characters.
+	Custom *string `form:"custom"`
+	// The type of the label.
+	Type *string `form:"type"`
+}
+
+// Configuration for `type=numeric` fields.
+type PaymentLinkCreateCustomFieldNumericParams struct {
+	// The value that will pre-fill the field on the payment page.
+	DefaultValue *string `form:"default_value"`
+	// The maximum character length constraint for the customer's input.
+	MaximumLength *int64 `form:"maximum_length"`
+	// The minimum character length requirement for the customer's input.
+	MinimumLength *int64 `form:"minimum_length"`
+}
+
+// Configuration for `type=text` fields.
+type PaymentLinkCreateCustomFieldTextParams struct {
+	// The value that will pre-fill the field on the payment page.
+	DefaultValue *string `form:"default_value"`
+	// The maximum character length constraint for the customer's input.
+	MaximumLength *int64 `form:"maximum_length"`
+	// The minimum character length requirement for the customer's input.
+	MinimumLength *int64 `form:"minimum_length"`
+}
+
+// Collect additional information from your customer using custom fields. Up to 3 fields are supported.
+type PaymentLinkCreateCustomFieldParams struct {
+	// Configuration for `type=dropdown` fields.
+	Dropdown *PaymentLinkCreateCustomFieldDropdownParams `form:"dropdown"`
+	// String of your choice that your integration can use to reconcile this field. Must be unique to this field, alphanumeric, and up to 200 characters.
+	Key *string `form:"key"`
+	// The label for the field, displayed to the customer.
+	Label *PaymentLinkCreateCustomFieldLabelParams `form:"label"`
+	// Configuration for `type=numeric` fields.
+	Numeric *PaymentLinkCreateCustomFieldNumericParams `form:"numeric"`
+	// Whether the customer is required to complete the field before completing the Checkout Session. Defaults to `false`.
+	Optional *bool `form:"optional"`
+	// Configuration for `type=text` fields.
+	Text *PaymentLinkCreateCustomFieldTextParams `form:"text"`
+	// The type of the field.
+	Type *string `form:"type"`
+}
+
+// Custom text that should be displayed after the payment confirmation button.
+type PaymentLinkCreateCustomTextAfterSubmitParams struct {
+	// Text may be up to 1200 characters in length.
+	Message *string `form:"message"`
+}
+
+// Custom text that should be displayed alongside shipping address collection.
+type PaymentLinkCreateCustomTextShippingAddressParams struct {
+	// Text may be up to 1200 characters in length.
+	Message *string `form:"message"`
+}
+
+// Custom text that should be displayed alongside the payment confirmation button.
+type PaymentLinkCreateCustomTextSubmitParams struct {
+	// Text may be up to 1200 characters in length.
+	Message *string `form:"message"`
+}
+
+// Custom text that should be displayed in place of the default terms of service agreement text.
+type PaymentLinkCreateCustomTextTermsOfServiceAcceptanceParams struct {
+	// Text may be up to 1200 characters in length.
+	Message *string `form:"message"`
+}
+
+// Display additional text for your customers using custom text.
+type PaymentLinkCreateCustomTextParams struct {
+	// Custom text that should be displayed after the payment confirmation button.
+	AfterSubmit *PaymentLinkCreateCustomTextAfterSubmitParams `form:"after_submit"`
+	// Custom text that should be displayed alongside shipping address collection.
+	ShippingAddress *PaymentLinkCreateCustomTextShippingAddressParams `form:"shipping_address"`
+	// Custom text that should be displayed alongside the payment confirmation button.
+	Submit *PaymentLinkCreateCustomTextSubmitParams `form:"submit"`
+	// Custom text that should be displayed in place of the default terms of service agreement text.
+	TermsOfServiceAcceptance *PaymentLinkCreateCustomTextTermsOfServiceAcceptanceParams `form:"terms_of_service_acceptance"`
+}
+
+// Default custom fields to be displayed on invoices for this customer.
+type PaymentLinkCreateInvoiceCreationInvoiceDataCustomFieldParams struct {
+	// The name of the custom field. This may be up to 40 characters.
+	Name *string `form:"name"`
+	// The value of the custom field. This may be up to 140 characters.
+	Value *string `form:"value"`
+}
+
+// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+type PaymentLinkCreateInvoiceCreationInvoiceDataIssuerParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
+}
+
+// Default options for invoice PDF rendering for this customer.
+type PaymentLinkCreateInvoiceCreationInvoiceDataRenderingOptionsParams struct {
+	// How line-item prices and amounts will be displayed with respect to tax on invoice PDFs. One of `exclude_tax` or `include_inclusive_tax`. `include_inclusive_tax` will include inclusive tax (and exclude exclusive tax) in invoice PDF amounts. `exclude_tax` will exclude all tax (inclusive and exclusive alike) from invoice PDF amounts.
+	AmountTaxDisplay *string `form:"amount_tax_display"`
+}
+
+// Invoice PDF configuration.
+type PaymentLinkCreateInvoiceCreationInvoiceDataParams struct {
+	// The account tax IDs associated with the invoice.
+	AccountTaxIDs []*string `form:"account_tax_ids"`
+	// Default custom fields to be displayed on invoices for this customer.
+	CustomFields []*PaymentLinkCreateInvoiceCreationInvoiceDataCustomFieldParams `form:"custom_fields"`
+	// An arbitrary string attached to the object. Often useful for displaying to users.
+	Description *string `form:"description"`
+	// Default footer to be displayed on invoices for this customer.
+	Footer *string `form:"footer"`
+	// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+	Issuer *PaymentLinkCreateInvoiceCreationInvoiceDataIssuerParams `form:"issuer"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+	// Default options for invoice PDF rendering for this customer.
+	RenderingOptions *PaymentLinkCreateInvoiceCreationInvoiceDataRenderingOptionsParams `form:"rendering_options"`
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *PaymentLinkCreateInvoiceCreationInvoiceDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// Generate a post-purchase Invoice for one-time payments.
+type PaymentLinkCreateInvoiceCreationParams struct {
+	// Whether the feature is enabled
+	Enabled *bool `form:"enabled"`
+	// Invoice PDF configuration.
+	InvoiceData *PaymentLinkCreateInvoiceCreationInvoiceDataParams `form:"invoice_data"`
+}
+
+// When set, provides configuration for this item's quantity to be adjusted by the customer during checkout.
+type PaymentLinkCreateLineItemAdjustableQuantityParams struct {
+	// Set to true if the quantity can be adjusted to any non-negative Integer.
+	Enabled *bool `form:"enabled"`
+	// The maximum quantity the customer can purchase. By default this value is 99. You can specify a value up to 999.
+	Maximum *int64 `form:"maximum"`
+	// The minimum quantity the customer can purchase. By default this value is 0. If there is only one item in the cart then that item's quantity cannot go down to 0.
+	Minimum *int64 `form:"minimum"`
+}
+
+// The line items representing what is being sold. Each line item represents an item being sold. Up to 20 line items are supported.
+type PaymentLinkCreateLineItemParams struct {
+	// When set, provides configuration for this item's quantity to be adjusted by the customer during checkout.
+	AdjustableQuantity *PaymentLinkCreateLineItemAdjustableQuantityParams `form:"adjustable_quantity"`
+	// The ID of the [Price](https://stripe.com/docs/api/prices) or [Plan](https://stripe.com/docs/api/plans) object.
+	Price *string `form:"price"`
+	// The quantity of the line item being purchased.
+	Quantity *int64 `form:"quantity"`
+}
+
+// When set, provides configuration for the customer to adjust the quantity of the line item created when a customer chooses to add this optional item to their order.
+type PaymentLinkCreateOptionalItemAdjustableQuantityParams struct {
+	// Set to true if the quantity can be adjusted to any non-negative integer.
+	Enabled *bool `form:"enabled"`
+	// The maximum quantity of this item the customer can purchase. By default this value is 99.
+	Maximum *int64 `form:"maximum"`
+	// The minimum quantity of this item the customer must purchase, if they choose to purchase it. Because this item is optional, the customer will always be able to remove it from their order, even if the `minimum` configured here is greater than 0. By default this value is 0.
+	Minimum *int64 `form:"minimum"`
+}
+
+// A list of optional items the customer can add to their order at checkout. Use this parameter to pass one-time or recurring [Prices](https://stripe.com/docs/api/prices).
+// There is a maximum of 10 optional items allowed on a payment link, and the existing limits on the number of line items allowed on a payment link apply to the combined number of line items and optional items.
+// There is a maximum of 20 combined line items and optional items.
+type PaymentLinkCreateOptionalItemParams struct {
+	// When set, provides configuration for the customer to adjust the quantity of the line item created when a customer chooses to add this optional item to their order.
+	AdjustableQuantity *PaymentLinkCreateOptionalItemAdjustableQuantityParams `form:"adjustable_quantity"`
+	// The ID of the [Price](https://stripe.com/docs/api/prices) or [Plan](https://stripe.com/docs/api/plans) object.
+	Price *string `form:"price"`
+	// The initial quantity of the line item created when a customer chooses to add this optional item to their order.
+	Quantity *int64 `form:"quantity"`
+}
+
+// A subset of parameters to be passed to PaymentIntent creation for Checkout Sessions in `payment` mode.
+type PaymentLinkCreatePaymentIntentDataParams struct {
+	// Controls when the funds will be captured from the customer's account.
+	CaptureMethod *string `form:"capture_method"`
+	// An arbitrary string attached to the object. Often useful for displaying to users.
+	Description *string `form:"description"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that will declaratively set metadata on [Payment Intents](https://stripe.com/docs/api/payment_intents) generated from this payment link. Unlike object-level metadata, this field is declarative. Updates will clear prior values.
+	Metadata map[string]string `form:"metadata"`
+	// Indicates that you intend to [make future payments](https://stripe.com/docs/payments/payment-intents#future-usage) with the payment method collected by this Checkout Session.
+	//
+	// When setting this to `on_session`, Checkout will show a notice to the customer that their payment details will be saved.
+	//
+	// When setting this to `off_session`, Checkout will show a notice to the customer that their payment details will be saved and used for future payments.
+	//
+	// If a Customer has been provided or Checkout creates a new Customer,Checkout will attach the payment method to the Customer.
+	//
+	// If Checkout does not create a Customer, the payment method is not attached to a Customer. To reuse the payment method, you can retrieve it from the Checkout Session's PaymentIntent.
+	//
+	// When processing card payments, Checkout also uses `setup_future_usage` to dynamically optimize your payment flow and comply with regional legislation and network rules, such as SCA.
+	SetupFutureUsage *string `form:"setup_future_usage"`
+	// Text that appears on the customer's statement as the statement descriptor for a non-card charge. This value overrides the account's default statement descriptor. For information about requirements, including the 22-character limit, see [the Statement Descriptor docs](https://docs.stripe.com/get-started/account/statement-descriptors).
+	//
+	// Setting this value for a card charge returns an error. For card charges, set the [statement_descriptor_suffix](https://docs.stripe.com/get-started/account/statement-descriptors#dynamic) instead.
+	StatementDescriptor *string `form:"statement_descriptor"`
+	// Provides information about a card charge. Concatenated to the account's [statement descriptor prefix](https://docs.stripe.com/get-started/account/statement-descriptors#static) to form the complete statement descriptor that appears on the customer's statement.
+	StatementDescriptorSuffix *string `form:"statement_descriptor_suffix"`
+	// A string that identifies the resulting payment as part of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/connect/separate-charges-and-transfers) for details.
+	TransferGroup *string `form:"transfer_group"`
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *PaymentLinkCreatePaymentIntentDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// Controls phone number collection settings during checkout.
+//
+// We recommend that you review your privacy policy and check with your legal contacts.
+type PaymentLinkCreatePhoneNumberCollectionParams struct {
+	// Set to `true` to enable phone number collection.
+	Enabled *bool `form:"enabled"`
+}
+
+// Configuration for the `completed_sessions` restriction type.
+type PaymentLinkCreateRestrictionsCompletedSessionsParams struct {
+	// The maximum number of checkout sessions that can be completed for the `completed_sessions` restriction to be met.
+	Limit *int64 `form:"limit"`
+}
+
+// Settings that restrict the usage of a payment link.
+type PaymentLinkCreateRestrictionsParams struct {
+	// Configuration for the `completed_sessions` restriction type.
+	CompletedSessions *PaymentLinkCreateRestrictionsCompletedSessionsParams `form:"completed_sessions"`
+}
+
+// Configuration for collecting the customer's shipping address.
+type PaymentLinkCreateShippingAddressCollectionParams struct {
+	// An array of two-letter ISO country codes representing which countries Checkout should provide as options for
+	// shipping locations.
+	AllowedCountries []*string `form:"allowed_countries"`
+}
+
+// The shipping rate options to apply to [checkout sessions](https://stripe.com/docs/api/checkout/sessions) created by this payment link.
+type PaymentLinkCreateShippingOptionParams struct {
+	// The ID of the Shipping Rate to use for this shipping option.
+	ShippingRate *string `form:"shipping_rate"`
+}
+
+// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+type PaymentLinkCreateSubscriptionDataInvoiceSettingsIssuerParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
+}
+
+// All invoices will be billed using the specified settings.
+type PaymentLinkCreateSubscriptionDataInvoiceSettingsParams struct {
+	// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+	Issuer *PaymentLinkCreateSubscriptionDataInvoiceSettingsIssuerParams `form:"issuer"`
+}
+
+// Defines how the subscription should behave when the user's free trial ends.
+type PaymentLinkCreateSubscriptionDataTrialSettingsEndBehaviorParams struct {
+	// Indicates how the subscription should change when the trial ends if the user did not provide a payment method.
+	MissingPaymentMethod *string `form:"missing_payment_method"`
+}
+
+// Settings related to subscription trials.
+type PaymentLinkCreateSubscriptionDataTrialSettingsParams struct {
+	// Defines how the subscription should behave when the user's free trial ends.
+	EndBehavior *PaymentLinkCreateSubscriptionDataTrialSettingsEndBehaviorParams `form:"end_behavior"`
+}
+
+// When creating a subscription, the specified configuration data will be used. There must be at least one line item with a recurring price to use `subscription_data`.
+type PaymentLinkCreateSubscriptionDataParams struct {
+	// The subscription's description, meant to be displayable to the customer. Use this field to optionally store an explanation of the subscription for rendering in Stripe surfaces and certain local payment methods UIs.
+	Description *string `form:"description"`
+	// All invoices will be billed using the specified settings.
+	InvoiceSettings *PaymentLinkCreateSubscriptionDataInvoiceSettingsParams `form:"invoice_settings"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that will declaratively set metadata on [Subscriptions](https://stripe.com/docs/api/subscriptions) generated from this payment link. Unlike object-level metadata, this field is declarative. Updates will clear prior values.
+	Metadata map[string]string `form:"metadata"`
+	// Integer representing the number of trial period days before the customer is charged for the first time. Has to be at least 1.
+	TrialPeriodDays *int64 `form:"trial_period_days"`
+	// Settings related to subscription trials.
+	TrialSettings *PaymentLinkCreateSubscriptionDataTrialSettingsParams `form:"trial_settings"`
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *PaymentLinkCreateSubscriptionDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// Controls tax ID collection during checkout.
+type PaymentLinkCreateTaxIDCollectionParams struct {
+	// Enable tax ID collection during checkout. Defaults to `false`.
+	Enabled *bool `form:"enabled"`
+	// Describes whether a tax ID is required during checkout. Defaults to `never`.
+	Required *string `form:"required"`
+}
+
+// The account (if any) the payments will be attributed to for tax reporting, and where funds from each payment will be transferred to.
+type PaymentLinkCreateTransferDataParams struct {
+	// The amount that will be transferred automatically when a charge succeeds.
+	Amount *int64 `form:"amount"`
+	// If specified, successful charges will be attributed to the destination
+	// account for tax reporting, and the funds from charges will be transferred
+	// to the destination account. The ID of the resulting transfer will be
+	// returned on the successful charge's `transfer` field.
+	Destination *string `form:"destination"`
+}
+
+// Creates a payment link.
+type PaymentLinkCreateParams struct {
+	Params `form:"*"`
+	// Behavior after the purchase is complete.
+	AfterCompletion *PaymentLinkCreateAfterCompletionParams `form:"after_completion"`
+	// Enables user redeemable promotion codes.
+	AllowPromotionCodes *bool `form:"allow_promotion_codes"`
+	// The amount of the application fee (if any) that will be requested to be applied to the payment and transferred to the application owner's Stripe account. Can only be applied when there are no line items with recurring prices.
+	ApplicationFeeAmount *int64 `form:"application_fee_amount"`
+	// A non-negative decimal between 0 and 100, with at most two decimal places. This represents the percentage of the subscription invoice total that will be transferred to the application owner's Stripe account. There must be at least 1 line item with a recurring price to use this field.
+	ApplicationFeePercent *float64 `form:"application_fee_percent"`
+	// Configuration for automatic tax collection.
+	AutomaticTax *PaymentLinkCreateAutomaticTaxParams `form:"automatic_tax"`
+	// Configuration for collecting the customer's billing address. Defaults to `auto`.
+	BillingAddressCollection *string `form:"billing_address_collection"`
+	// Configure fields to gather active consent from customers.
+	ConsentCollection *PaymentLinkCreateConsentCollectionParams `form:"consent_collection"`
+	// Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase. Must be a [supported currency](https://stripe.com/docs/currencies) and supported by each line item's price.
+	Currency *string `form:"currency"`
+	// Configures whether [checkout sessions](https://stripe.com/docs/api/checkout/sessions) created by this payment link create a [Customer](https://stripe.com/docs/api/customers).
+	CustomerCreation *string `form:"customer_creation"`
+	// Collect additional information from your customer using custom fields. Up to 3 fields are supported.
+	CustomFields []*PaymentLinkCreateCustomFieldParams `form:"custom_fields"`
+	// Display additional text for your customers using custom text.
+	CustomText *PaymentLinkCreateCustomTextParams `form:"custom_text"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// The custom message to be displayed to a customer when a payment link is no longer active.
+	InactiveMessage *string `form:"inactive_message"`
+	// Generate a post-purchase Invoice for one-time payments.
+	InvoiceCreation *PaymentLinkCreateInvoiceCreationParams `form:"invoice_creation"`
+	// The line items representing what is being sold. Each line item represents an item being sold. Up to 20 line items are supported.
+	LineItems []*PaymentLinkCreateLineItemParams `form:"line_items"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`. Metadata associated with this Payment Link will automatically be copied to [checkout sessions](https://stripe.com/docs/api/checkout/sessions) created by this payment link.
+	Metadata map[string]string `form:"metadata"`
+	// The account on behalf of which to charge.
+	OnBehalfOf *string `form:"on_behalf_of"`
+	// A list of optional items the customer can add to their order at checkout. Use this parameter to pass one-time or recurring [Prices](https://stripe.com/docs/api/prices).
+	// There is a maximum of 10 optional items allowed on a payment link, and the existing limits on the number of line items allowed on a payment link apply to the combined number of line items and optional items.
+	// There is a maximum of 20 combined line items and optional items.
+	OptionalItems []*PaymentLinkCreateOptionalItemParams `form:"optional_items"`
+	// A subset of parameters to be passed to PaymentIntent creation for Checkout Sessions in `payment` mode.
+	PaymentIntentData *PaymentLinkCreatePaymentIntentDataParams `form:"payment_intent_data"`
+	// Specify whether Checkout should collect a payment method. When set to `if_required`, Checkout will not collect a payment method when the total due for the session is 0.This may occur if the Checkout Session includes a free trial or a discount.
+	//
+	// Can only be set in `subscription` mode. Defaults to `always`.
+	//
+	// If you'd like information on how to collect a payment method outside of Checkout, read the guide on [configuring subscriptions with a free trial](https://stripe.com/docs/payments/checkout/free-trials).
+	PaymentMethodCollection *string `form:"payment_method_collection"`
+	// The list of payment method types that customers can use. If no value is passed, Stripe will dynamically show relevant payment methods from your [payment method settings](https://dashboard.stripe.com/settings/payment_methods) (20+ payment methods [supported](https://stripe.com/docs/payments/payment-methods/integration-options#payment-method-product-support)).
+	PaymentMethodTypes []*string `form:"payment_method_types"`
+	// Controls phone number collection settings during checkout.
+	//
+	// We recommend that you review your privacy policy and check with your legal contacts.
+	PhoneNumberCollection *PaymentLinkCreatePhoneNumberCollectionParams `form:"phone_number_collection"`
+	// Settings that restrict the usage of a payment link.
+	Restrictions *PaymentLinkCreateRestrictionsParams `form:"restrictions"`
+	// Configuration for collecting the customer's shipping address.
+	ShippingAddressCollection *PaymentLinkCreateShippingAddressCollectionParams `form:"shipping_address_collection"`
+	// The shipping rate options to apply to [checkout sessions](https://stripe.com/docs/api/checkout/sessions) created by this payment link.
+	ShippingOptions []*PaymentLinkCreateShippingOptionParams `form:"shipping_options"`
+	// Describes the type of transaction being performed in order to customize relevant text on the page, such as the submit button. Changing this value will also affect the hostname in the [url](https://stripe.com/docs/api/payment_links/payment_links/object#url) property (example: `donate.stripe.com`).
+	SubmitType *string `form:"submit_type"`
+	// When creating a subscription, the specified configuration data will be used. There must be at least one line item with a recurring price to use `subscription_data`.
+	SubscriptionData *PaymentLinkCreateSubscriptionDataParams `form:"subscription_data"`
+	// Controls tax ID collection during checkout.
+	TaxIDCollection *PaymentLinkCreateTaxIDCollectionParams `form:"tax_id_collection"`
+	// The account (if any) the payments will be attributed to for tax reporting, and where funds from each payment will be transferred to.
+	TransferData *PaymentLinkCreateTransferDataParams `form:"transfer_data"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *PaymentLinkCreateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *PaymentLinkCreateParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// Retrieve a payment link.
+type PaymentLinkRetrieveParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *PaymentLinkRetrieveParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Configuration when `type=hosted_confirmation`.
+type PaymentLinkUpdateAfterCompletionHostedConfirmationParams struct {
+	// A custom message to display to the customer after the purchase is complete.
+	CustomMessage *string `form:"custom_message"`
+}
+
+// Configuration when `type=redirect`.
+type PaymentLinkUpdateAfterCompletionRedirectParams struct {
+	// The URL the customer will be redirected to after the purchase is complete. You can embed `{CHECKOUT_SESSION_ID}` into the URL to have the `id` of the completed [checkout session](https://stripe.com/docs/api/checkout/sessions/object#checkout_session_object-id) included.
+	URL *string `form:"url"`
+}
+
+// Behavior after the purchase is complete.
+type PaymentLinkUpdateAfterCompletionParams struct {
+	// Configuration when `type=hosted_confirmation`.
+	HostedConfirmation *PaymentLinkUpdateAfterCompletionHostedConfirmationParams `form:"hosted_confirmation"`
+	// Configuration when `type=redirect`.
+	Redirect *PaymentLinkUpdateAfterCompletionRedirectParams `form:"redirect"`
+	// The specified behavior after the purchase is complete. Either `redirect` or `hosted_confirmation`.
+	Type *string `form:"type"`
+}
+
+// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+type PaymentLinkUpdateAutomaticTaxLiabilityParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
+}
+
+// Configuration for automatic tax collection.
+type PaymentLinkUpdateAutomaticTaxParams struct {
+	// Set to `true` to [calculate tax automatically](https://docs.stripe.com/tax) using the customer's location.
+	//
+	// Enabling this parameter causes the payment link to collect any billing address information necessary for tax calculation.
+	Enabled *bool `form:"enabled"`
+	// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+	Liability *PaymentLinkUpdateAutomaticTaxLiabilityParams `form:"liability"`
+}
+
+// The options available for the customer to select. Up to 200 options allowed.
+type PaymentLinkUpdateCustomFieldDropdownOptionParams struct {
+	// The label for the option, displayed to the customer. Up to 100 characters.
+	Label *string `form:"label"`
+	// The value for this option, not displayed to the customer, used by your integration to reconcile the option selected by the customer. Must be unique to this option, alphanumeric, and up to 100 characters.
+	Value *string `form:"value"`
+}
+
+// Configuration for `type=dropdown` fields.
+type PaymentLinkUpdateCustomFieldDropdownParams struct {
+	// The value that will pre-fill the field on the payment page.Must match a `value` in the `options` array.
+	DefaultValue *string `form:"default_value"`
+	// The options available for the customer to select. Up to 200 options allowed.
+	Options []*PaymentLinkUpdateCustomFieldDropdownOptionParams `form:"options"`
+}
+
+// The label for the field, displayed to the customer.
+type PaymentLinkUpdateCustomFieldLabelParams struct {
+	// Custom text for the label, displayed to the customer. Up to 50 characters.
+	Custom *string `form:"custom"`
+	// The type of the label.
+	Type *string `form:"type"`
+}
+
+// Configuration for `type=numeric` fields.
+type PaymentLinkUpdateCustomFieldNumericParams struct {
+	// The value that will pre-fill the field on the payment page.
+	DefaultValue *string `form:"default_value"`
+	// The maximum character length constraint for the customer's input.
+	MaximumLength *int64 `form:"maximum_length"`
+	// The minimum character length requirement for the customer's input.
+	MinimumLength *int64 `form:"minimum_length"`
+}
+
+// Configuration for `type=text` fields.
+type PaymentLinkUpdateCustomFieldTextParams struct {
+	// The value that will pre-fill the field on the payment page.
+	DefaultValue *string `form:"default_value"`
+	// The maximum character length constraint for the customer's input.
+	MaximumLength *int64 `form:"maximum_length"`
+	// The minimum character length requirement for the customer's input.
+	MinimumLength *int64 `form:"minimum_length"`
+}
+
+// Collect additional information from your customer using custom fields. Up to 3 fields are supported.
+type PaymentLinkUpdateCustomFieldParams struct {
+	// Configuration for `type=dropdown` fields.
+	Dropdown *PaymentLinkUpdateCustomFieldDropdownParams `form:"dropdown"`
+	// String of your choice that your integration can use to reconcile this field. Must be unique to this field, alphanumeric, and up to 200 characters.
+	Key *string `form:"key"`
+	// The label for the field, displayed to the customer.
+	Label *PaymentLinkUpdateCustomFieldLabelParams `form:"label"`
+	// Configuration for `type=numeric` fields.
+	Numeric *PaymentLinkUpdateCustomFieldNumericParams `form:"numeric"`
+	// Whether the customer is required to complete the field before completing the Checkout Session. Defaults to `false`.
+	Optional *bool `form:"optional"`
+	// Configuration for `type=text` fields.
+	Text *PaymentLinkUpdateCustomFieldTextParams `form:"text"`
+	// The type of the field.
+	Type *string `form:"type"`
+}
+
+// Custom text that should be displayed after the payment confirmation button.
+type PaymentLinkUpdateCustomTextAfterSubmitParams struct {
+	// Text may be up to 1200 characters in length.
+	Message *string `form:"message"`
+}
+
+// Custom text that should be displayed alongside shipping address collection.
+type PaymentLinkUpdateCustomTextShippingAddressParams struct {
+	// Text may be up to 1200 characters in length.
+	Message *string `form:"message"`
+}
+
+// Custom text that should be displayed alongside the payment confirmation button.
+type PaymentLinkUpdateCustomTextSubmitParams struct {
+	// Text may be up to 1200 characters in length.
+	Message *string `form:"message"`
+}
+
+// Custom text that should be displayed in place of the default terms of service agreement text.
+type PaymentLinkUpdateCustomTextTermsOfServiceAcceptanceParams struct {
+	// Text may be up to 1200 characters in length.
+	Message *string `form:"message"`
+}
+
+// Display additional text for your customers using custom text.
+type PaymentLinkUpdateCustomTextParams struct {
+	// Custom text that should be displayed after the payment confirmation button.
+	AfterSubmit *PaymentLinkUpdateCustomTextAfterSubmitParams `form:"after_submit"`
+	// Custom text that should be displayed alongside shipping address collection.
+	ShippingAddress *PaymentLinkUpdateCustomTextShippingAddressParams `form:"shipping_address"`
+	// Custom text that should be displayed alongside the payment confirmation button.
+	Submit *PaymentLinkUpdateCustomTextSubmitParams `form:"submit"`
+	// Custom text that should be displayed in place of the default terms of service agreement text.
+	TermsOfServiceAcceptance *PaymentLinkUpdateCustomTextTermsOfServiceAcceptanceParams `form:"terms_of_service_acceptance"`
+}
+
+// Default custom fields to be displayed on invoices for this customer.
+type PaymentLinkUpdateInvoiceCreationInvoiceDataCustomFieldParams struct {
+	// The name of the custom field. This may be up to 40 characters.
+	Name *string `form:"name"`
+	// The value of the custom field. This may be up to 140 characters.
+	Value *string `form:"value"`
+}
+
+// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+type PaymentLinkUpdateInvoiceCreationInvoiceDataIssuerParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
+}
+
+// Default options for invoice PDF rendering for this customer.
+type PaymentLinkUpdateInvoiceCreationInvoiceDataRenderingOptionsParams struct {
+	// How line-item prices and amounts will be displayed with respect to tax on invoice PDFs. One of `exclude_tax` or `include_inclusive_tax`. `include_inclusive_tax` will include inclusive tax (and exclude exclusive tax) in invoice PDF amounts. `exclude_tax` will exclude all tax (inclusive and exclusive alike) from invoice PDF amounts.
+	AmountTaxDisplay *string `form:"amount_tax_display"`
+}
+
+// Invoice PDF configuration.
+type PaymentLinkUpdateInvoiceCreationInvoiceDataParams struct {
+	// The account tax IDs associated with the invoice.
+	AccountTaxIDs []*string `form:"account_tax_ids"`
+	// Default custom fields to be displayed on invoices for this customer.
+	CustomFields []*PaymentLinkUpdateInvoiceCreationInvoiceDataCustomFieldParams `form:"custom_fields"`
+	// An arbitrary string attached to the object. Often useful for displaying to users.
+	Description *string `form:"description"`
+	// Default footer to be displayed on invoices for this customer.
+	Footer *string `form:"footer"`
+	// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+	Issuer *PaymentLinkUpdateInvoiceCreationInvoiceDataIssuerParams `form:"issuer"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+	// Default options for invoice PDF rendering for this customer.
+	RenderingOptions *PaymentLinkUpdateInvoiceCreationInvoiceDataRenderingOptionsParams `form:"rendering_options"`
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *PaymentLinkUpdateInvoiceCreationInvoiceDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// Generate a post-purchase Invoice for one-time payments.
+type PaymentLinkUpdateInvoiceCreationParams struct {
+	// Whether the feature is enabled
+	Enabled *bool `form:"enabled"`
+	// Invoice PDF configuration.
+	InvoiceData *PaymentLinkUpdateInvoiceCreationInvoiceDataParams `form:"invoice_data"`
+}
+
+// When set, provides configuration for this item's quantity to be adjusted by the customer during checkout.
+type PaymentLinkUpdateLineItemAdjustableQuantityParams struct {
+	// Set to true if the quantity can be adjusted to any non-negative Integer.
+	Enabled *bool `form:"enabled"`
+	// The maximum quantity the customer can purchase. By default this value is 99. You can specify a value up to 999.
+	Maximum *int64 `form:"maximum"`
+	// The minimum quantity the customer can purchase. By default this value is 0. If there is only one item in the cart then that item's quantity cannot go down to 0.
+	Minimum *int64 `form:"minimum"`
+}
+
+// The line items representing what is being sold. Each line item represents an item being sold. Up to 20 line items are supported.
+type PaymentLinkUpdateLineItemParams struct {
+	// When set, provides configuration for this item's quantity to be adjusted by the customer during checkout.
+	AdjustableQuantity *PaymentLinkUpdateLineItemAdjustableQuantityParams `form:"adjustable_quantity"`
+	// The ID of an existing line item on the payment link.
+	ID *string `form:"id"`
+	// The quantity of the line item being purchased.
+	Quantity *int64 `form:"quantity"`
+}
+
+// A subset of parameters to be passed to PaymentIntent creation for Checkout Sessions in `payment` mode.
+type PaymentLinkUpdatePaymentIntentDataParams struct {
+	// An arbitrary string attached to the object. Often useful for displaying to users.
+	Description *string `form:"description"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that will declaratively set metadata on [Payment Intents](https://stripe.com/docs/api/payment_intents) generated from this payment link. Unlike object-level metadata, this field is declarative. Updates will clear prior values.
+	Metadata map[string]string `form:"metadata"`
+	// Text that appears on the customer's statement as the statement descriptor for a non-card charge. This value overrides the account's default statement descriptor. For information about requirements, including the 22-character limit, see [the Statement Descriptor docs](https://docs.stripe.com/get-started/account/statement-descriptors).
+	//
+	// Setting this value for a card charge returns an error. For card charges, set the [statement_descriptor_suffix](https://docs.stripe.com/get-started/account/statement-descriptors#dynamic) instead.
+	StatementDescriptor *string `form:"statement_descriptor"`
+	// Provides information about a card charge. Concatenated to the account's [statement descriptor prefix](https://docs.stripe.com/get-started/account/statement-descriptors#static) to form the complete statement descriptor that appears on the customer's statement.
+	StatementDescriptorSuffix *string `form:"statement_descriptor_suffix"`
+	// A string that identifies the resulting payment as part of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/connect/separate-charges-and-transfers) for details.
+	TransferGroup *string `form:"transfer_group"`
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *PaymentLinkUpdatePaymentIntentDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// Controls phone number collection settings during checkout.
+//
+// We recommend that you review your privacy policy and check with your legal contacts.
+type PaymentLinkUpdatePhoneNumberCollectionParams struct {
+	// Set to `true` to enable phone number collection.
+	Enabled *bool `form:"enabled"`
+}
+
+// Configuration for the `completed_sessions` restriction type.
+type PaymentLinkUpdateRestrictionsCompletedSessionsParams struct {
+	// The maximum number of checkout sessions that can be completed for the `completed_sessions` restriction to be met.
+	Limit *int64 `form:"limit"`
+}
+
+// Settings that restrict the usage of a payment link.
+type PaymentLinkUpdateRestrictionsParams struct {
+	// Configuration for the `completed_sessions` restriction type.
+	CompletedSessions *PaymentLinkUpdateRestrictionsCompletedSessionsParams `form:"completed_sessions"`
+}
+
+// Configuration for collecting the customer's shipping address.
+type PaymentLinkUpdateShippingAddressCollectionParams struct {
+	// An array of two-letter ISO country codes representing which countries Checkout should provide as options for
+	// shipping locations.
+	AllowedCountries []*string `form:"allowed_countries"`
+}
+
+// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+type PaymentLinkUpdateSubscriptionDataInvoiceSettingsIssuerParams struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *string `form:"account"`
+	// Type of the account referenced in the request.
+	Type *string `form:"type"`
+}
+
+// All invoices will be billed using the specified settings.
+type PaymentLinkUpdateSubscriptionDataInvoiceSettingsParams struct {
+	// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+	Issuer *PaymentLinkUpdateSubscriptionDataInvoiceSettingsIssuerParams `form:"issuer"`
+}
+
+// Defines how the subscription should behave when the user's free trial ends.
+type PaymentLinkUpdateSubscriptionDataTrialSettingsEndBehaviorParams struct {
+	// Indicates how the subscription should change when the trial ends if the user did not provide a payment method.
+	MissingPaymentMethod *string `form:"missing_payment_method"`
+}
+
+// Settings related to subscription trials.
+type PaymentLinkUpdateSubscriptionDataTrialSettingsParams struct {
+	// Defines how the subscription should behave when the user's free trial ends.
+	EndBehavior *PaymentLinkUpdateSubscriptionDataTrialSettingsEndBehaviorParams `form:"end_behavior"`
+}
+
+// When creating a subscription, the specified configuration data will be used. There must be at least one line item with a recurring price to use `subscription_data`.
+type PaymentLinkUpdateSubscriptionDataParams struct {
+	// All invoices will be billed using the specified settings.
+	InvoiceSettings *PaymentLinkUpdateSubscriptionDataInvoiceSettingsParams `form:"invoice_settings"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that will declaratively set metadata on [Subscriptions](https://stripe.com/docs/api/subscriptions) generated from this payment link. Unlike object-level metadata, this field is declarative. Updates will clear prior values.
+	Metadata map[string]string `form:"metadata"`
+	// Integer representing the number of trial period days before the customer is charged for the first time. Has to be at least 1.
+	TrialPeriodDays *int64 `form:"trial_period_days"`
+	// Settings related to subscription trials.
+	TrialSettings *PaymentLinkUpdateSubscriptionDataTrialSettingsParams `form:"trial_settings"`
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *PaymentLinkUpdateSubscriptionDataParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// Controls tax ID collection during checkout.
+type PaymentLinkUpdateTaxIDCollectionParams struct {
+	// Enable tax ID collection during checkout. Defaults to `false`.
+	Enabled *bool `form:"enabled"`
+	// Describes whether a tax ID is required during checkout. Defaults to `never`.
+	Required *string `form:"required"`
+}
+
+// Updates a payment link.
+type PaymentLinkUpdateParams struct {
+	Params `form:"*"`
+	// Whether the payment link's `url` is active. If `false`, customers visiting the URL will be shown a page saying that the link has been deactivated.
+	Active *bool `form:"active"`
+	// Behavior after the purchase is complete.
+	AfterCompletion *PaymentLinkUpdateAfterCompletionParams `form:"after_completion"`
+	// Enables user redeemable promotion codes.
+	AllowPromotionCodes *bool `form:"allow_promotion_codes"`
+	// Configuration for automatic tax collection.
+	AutomaticTax *PaymentLinkUpdateAutomaticTaxParams `form:"automatic_tax"`
+	// Configuration for collecting the customer's billing address. Defaults to `auto`.
+	BillingAddressCollection *string `form:"billing_address_collection"`
+	// Configures whether [checkout sessions](https://stripe.com/docs/api/checkout/sessions) created by this payment link create a [Customer](https://stripe.com/docs/api/customers).
+	CustomerCreation *string `form:"customer_creation"`
+	// Collect additional information from your customer using custom fields. Up to 3 fields are supported.
+	CustomFields []*PaymentLinkUpdateCustomFieldParams `form:"custom_fields"`
+	// Display additional text for your customers using custom text.
+	CustomText *PaymentLinkUpdateCustomTextParams `form:"custom_text"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// The custom message to be displayed to a customer when a payment link is no longer active.
+	InactiveMessage *string `form:"inactive_message"`
+	// Generate a post-purchase Invoice for one-time payments.
+	InvoiceCreation *PaymentLinkUpdateInvoiceCreationParams `form:"invoice_creation"`
+	// The line items representing what is being sold. Each line item represents an item being sold. Up to 20 line items are supported.
+	LineItems []*PaymentLinkUpdateLineItemParams `form:"line_items"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`. Metadata associated with this Payment Link will automatically be copied to [checkout sessions](https://stripe.com/docs/api/checkout/sessions) created by this payment link.
+	Metadata map[string]string `form:"metadata"`
+	// A subset of parameters to be passed to PaymentIntent creation for Checkout Sessions in `payment` mode.
+	PaymentIntentData *PaymentLinkUpdatePaymentIntentDataParams `form:"payment_intent_data"`
+	// Specify whether Checkout should collect a payment method. When set to `if_required`, Checkout will not collect a payment method when the total due for the session is 0.This may occur if the Checkout Session includes a free trial or a discount.
+	//
+	// Can only be set in `subscription` mode. Defaults to `always`.
+	//
+	// If you'd like information on how to collect a payment method outside of Checkout, read the guide on [configuring subscriptions with a free trial](https://stripe.com/docs/payments/checkout/free-trials).
+	PaymentMethodCollection *string `form:"payment_method_collection"`
+	// The list of payment method types that customers can use. Pass an empty string to enable dynamic payment methods that use your [payment method settings](https://dashboard.stripe.com/settings/payment_methods).
+	PaymentMethodTypes []*string `form:"payment_method_types"`
+	// Controls phone number collection settings during checkout.
+	//
+	// We recommend that you review your privacy policy and check with your legal contacts.
+	PhoneNumberCollection *PaymentLinkUpdatePhoneNumberCollectionParams `form:"phone_number_collection"`
+	// Settings that restrict the usage of a payment link.
+	Restrictions *PaymentLinkUpdateRestrictionsParams `form:"restrictions"`
+	// Configuration for collecting the customer's shipping address.
+	ShippingAddressCollection *PaymentLinkUpdateShippingAddressCollectionParams `form:"shipping_address_collection"`
+	// Describes the type of transaction being performed in order to customize relevant text on the page, such as the submit button. Changing this value will also affect the hostname in the [url](https://stripe.com/docs/api/payment_links/payment_links/object#url) property (example: `donate.stripe.com`).
+	SubmitType *string `form:"submit_type"`
+	// When creating a subscription, the specified configuration data will be used. There must be at least one line item with a recurring price to use `subscription_data`.
+	SubscriptionData *PaymentLinkUpdateSubscriptionDataParams `form:"subscription_data"`
+	// Controls tax ID collection during checkout.
+	TaxIDCollection *PaymentLinkUpdateTaxIDCollectionParams `form:"tax_id_collection"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *PaymentLinkUpdateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *PaymentLinkUpdateParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
 type PaymentLinkAfterCompletionHostedConfirmation struct {
 	// The custom message that is displayed to the customer after the purchase is complete.
 	CustomMessage string `json:"custom_message"`
@@ -513,13 +1623,33 @@ type PaymentLinkAfterCompletion struct {
 	// The specified behavior after the purchase is complete.
 	Type PaymentLinkAfterCompletionType `json:"type"`
 }
+
+// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+type PaymentLinkAutomaticTaxLiability struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *Account `json:"account"`
+	// Type of the account referenced.
+	Type PaymentLinkAutomaticTaxLiabilityType `json:"type"`
+}
 type PaymentLinkAutomaticTax struct {
 	// If `true`, tax will be calculated automatically using the customer's location.
 	Enabled bool `json:"enabled"`
+	// The account that's liable for tax. If set, the business address and tax registrations required to perform the tax calculation are loaded from this account. The tax transaction is returned in the report of the connected account.
+	Liability *PaymentLinkAutomaticTaxLiability `json:"liability"`
+}
+
+// Settings related to the payment method reuse text shown in the Checkout UI.
+type PaymentLinkConsentCollectionPaymentMethodReuseAgreement struct {
+	// Determines the position and visibility of the payment method reuse agreement in the UI. When set to `auto`, Stripe's defaults will be used.
+	//
+	// When set to `hidden`, the payment method reuse agreement text will always be hidden in the UI.
+	Position PaymentLinkConsentCollectionPaymentMethodReuseAgreementPosition `json:"position"`
 }
 
 // When set, provides configuration to gather active consent from customers.
 type PaymentLinkConsentCollection struct {
+	// Settings related to the payment method reuse text shown in the Checkout UI.
+	PaymentMethodReuseAgreement *PaymentLinkConsentCollectionPaymentMethodReuseAgreement `json:"payment_method_reuse_agreement"`
 	// If set to `auto`, enables the collection of customer consent for promotional communications.
 	Promotions PaymentLinkConsentCollectionPromotions `json:"promotions"`
 	// If set to `required`, it requires cutomers to accept the terms of service before being able to pay. If set to `none`, customers won't be shown a checkbox to accept the terms of service.
@@ -533,9 +1663,9 @@ type PaymentLinkCustomFieldDropdownOption struct {
 	// The value for this option, not displayed to the customer, used by your integration to reconcile the option selected by the customer. Must be unique to this option, alphanumeric, and up to 100 characters.
 	Value string `json:"value"`
 }
-
-// Configuration for `type=dropdown` fields.
 type PaymentLinkCustomFieldDropdown struct {
+	// The value that will pre-fill on the payment page.
+	DefaultValue string `json:"default_value"`
 	// The options available for the customer to select. Up to 200 options allowed.
 	Options []*PaymentLinkCustomFieldDropdownOption `json:"options"`
 }
@@ -545,56 +1675,69 @@ type PaymentLinkCustomFieldLabel struct {
 	// The type of the label.
 	Type PaymentLinkCustomFieldLabelType `json:"type"`
 }
-
-// Configuration for `type=numeric` fields.
 type PaymentLinkCustomFieldNumeric struct {
+	// The value that will pre-fill the field on the payment page.
+	DefaultValue string `json:"default_value"`
 	// The maximum character length constraint for the customer's input.
 	MaximumLength int64 `json:"maximum_length"`
 	// The minimum character length requirement for the customer's input.
 	MinimumLength int64 `json:"minimum_length"`
 }
-
-// Configuration for `type=text` fields.
 type PaymentLinkCustomFieldText struct {
+	// The value that will pre-fill the field on the payment page.
+	DefaultValue string `json:"default_value"`
 	// The maximum character length constraint for the customer's input.
 	MaximumLength int64 `json:"maximum_length"`
 	// The minimum character length requirement for the customer's input.
 	MinimumLength int64 `json:"minimum_length"`
 }
 
-// Collect additional information from your customer using custom fields. Up to 2 fields are supported.
+// Collect additional information from your customer using custom fields. Up to 3 fields are supported.
 type PaymentLinkCustomField struct {
-	// Configuration for `type=dropdown` fields.
 	Dropdown *PaymentLinkCustomFieldDropdown `json:"dropdown"`
 	// String of your choice that your integration can use to reconcile this field. Must be unique to this field, alphanumeric, and up to 200 characters.
-	Key   string                       `json:"key"`
-	Label *PaymentLinkCustomFieldLabel `json:"label"`
-	// Configuration for `type=numeric` fields.
+	Key     string                         `json:"key"`
+	Label   *PaymentLinkCustomFieldLabel   `json:"label"`
 	Numeric *PaymentLinkCustomFieldNumeric `json:"numeric"`
 	// Whether the customer is required to complete the field before completing the Checkout Session. Defaults to `false`.
-	Optional bool `json:"optional"`
-	// Configuration for `type=text` fields.
-	Text *PaymentLinkCustomFieldText `json:"text"`
+	Optional bool                        `json:"optional"`
+	Text     *PaymentLinkCustomFieldText `json:"text"`
 	// The type of the field.
 	Type PaymentLinkCustomFieldType `json:"type"`
 }
 
+// Custom text that should be displayed after the payment confirmation button.
+type PaymentLinkCustomTextAfterSubmit struct {
+	// Text may be up to 1200 characters in length.
+	Message string `json:"message"`
+}
+
 // Custom text that should be displayed alongside shipping address collection.
 type PaymentLinkCustomTextShippingAddress struct {
-	// Text may be up to 1000 characters in length.
+	// Text may be up to 1200 characters in length.
 	Message string `json:"message"`
 }
 
 // Custom text that should be displayed alongside the payment confirmation button.
 type PaymentLinkCustomTextSubmit struct {
-	// Text may be up to 1000 characters in length.
+	// Text may be up to 1200 characters in length.
+	Message string `json:"message"`
+}
+
+// Custom text that should be displayed in place of the default terms of service agreement text.
+type PaymentLinkCustomTextTermsOfServiceAcceptance struct {
+	// Text may be up to 1200 characters in length.
 	Message string `json:"message"`
 }
 type PaymentLinkCustomText struct {
+	// Custom text that should be displayed after the payment confirmation button.
+	AfterSubmit *PaymentLinkCustomTextAfterSubmit `json:"after_submit"`
 	// Custom text that should be displayed alongside shipping address collection.
 	ShippingAddress *PaymentLinkCustomTextShippingAddress `json:"shipping_address"`
 	// Custom text that should be displayed alongside the payment confirmation button.
 	Submit *PaymentLinkCustomTextSubmit `json:"submit"`
+	// Custom text that should be displayed in place of the default terms of service agreement text.
+	TermsOfServiceAcceptance *PaymentLinkCustomTextTermsOfServiceAcceptance `json:"terms_of_service_acceptance"`
 }
 
 // A list of up to 4 custom fields to be displayed on the invoice.
@@ -603,6 +1746,14 @@ type PaymentLinkInvoiceCreationInvoiceDataCustomField struct {
 	Name string `json:"name"`
 	// The value of the custom field.
 	Value string `json:"value"`
+}
+
+// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+type PaymentLinkInvoiceCreationInvoiceDataIssuer struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *Account `json:"account"`
+	// Type of the account referenced.
+	Type PaymentLinkInvoiceCreationInvoiceDataIssuerType `json:"type"`
 }
 
 // Options for invoice PDF rendering.
@@ -621,6 +1772,8 @@ type PaymentLinkInvoiceCreationInvoiceData struct {
 	Description string `json:"description"`
 	// Footer to be displayed on the invoice.
 	Footer string `json:"footer"`
+	// The connected account that issues the invoice. The invoice is presented with the branding and support information of the specified account.
+	Issuer *PaymentLinkInvoiceCreationInvoiceDataIssuer `json:"issuer"`
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
 	Metadata map[string]string `json:"metadata"`
 	// Options for invoice PDF rendering.
@@ -634,17 +1787,53 @@ type PaymentLinkInvoiceCreation struct {
 	// Configuration for the invoice. Default invoice values will be used if unspecified.
 	InvoiceData *PaymentLinkInvoiceCreationInvoiceData `json:"invoice_data"`
 }
+type PaymentLinkOptionalItemAdjustableQuantity struct {
+	// Set to true if the quantity can be adjusted to any non-negative integer.
+	Enabled bool `json:"enabled"`
+	// The maximum quantity of this item the customer can purchase. By default this value is 99.
+	Maximum int64 `json:"maximum"`
+	// The minimum quantity of this item the customer must purchase, if they choose to purchase it. Because this item is optional, the customer will always be able to remove it from their order, even if the `minimum` configured here is greater than 0. By default this value is 0.
+	Minimum int64 `json:"minimum"`
+}
+
+// The optional items presented to the customer at checkout.
+type PaymentLinkOptionalItem struct {
+	AdjustableQuantity *PaymentLinkOptionalItemAdjustableQuantity `json:"adjustable_quantity"`
+	Price              string                                     `json:"price"`
+	Quantity           int64                                      `json:"quantity"`
+}
 
 // Indicates the parameters to be passed to PaymentIntent creation during checkout.
 type PaymentLinkPaymentIntentData struct {
 	// Indicates when the funds will be captured from the customer's account.
 	CaptureMethod PaymentLinkPaymentIntentDataCaptureMethod `json:"capture_method"`
+	// An arbitrary string attached to the object. Often useful for displaying to users.
+	Description string `json:"description"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that will set metadata on [Payment Intents](https://stripe.com/docs/api/payment_intents) generated from this payment link.
+	Metadata map[string]string `json:"metadata"`
 	// Indicates that you intend to make future payments with the payment method collected during checkout.
 	SetupFutureUsage PaymentLinkPaymentIntentDataSetupFutureUsage `json:"setup_future_usage"`
+	// For a non-card payment, information about the charge that appears on the customer's statement when this payment succeeds in creating a charge.
+	StatementDescriptor string `json:"statement_descriptor"`
+	// For a card payment, information about the charge that appears on the customer's statement when this payment succeeds in creating a charge. Concatenated with the account's statement descriptor prefix to form the complete statement descriptor.
+	StatementDescriptorSuffix string `json:"statement_descriptor_suffix"`
+	// A string that identifies the resulting payment as part of a group. See the PaymentIntents [use case for connected accounts](https://stripe.com/docs/connect/separate-charges-and-transfers) for details.
+	TransferGroup string `json:"transfer_group"`
 }
 type PaymentLinkPhoneNumberCollection struct {
 	// If `true`, a phone number will be collected during checkout.
 	Enabled bool `json:"enabled"`
+}
+type PaymentLinkRestrictionsCompletedSessions struct {
+	// The current number of checkout sessions that have been completed on the payment link which count towards the `completed_sessions` restriction to be met.
+	Count int64 `json:"count"`
+	// The maximum number of checkout sessions that can be completed for the `completed_sessions` restriction to be met.
+	Limit int64 `json:"limit"`
+}
+
+// Settings that restrict the usage of a payment link.
+type PaymentLinkRestrictions struct {
+	CompletedSessions *PaymentLinkRestrictionsCompletedSessions `json:"completed_sessions"`
 }
 
 // Configuration for collecting the customer's shipping address.
@@ -660,17 +1849,44 @@ type PaymentLinkShippingOption struct {
 	// The ID of the Shipping Rate to use for this shipping option.
 	ShippingRate *ShippingRate `json:"shipping_rate"`
 }
+type PaymentLinkSubscriptionDataInvoiceSettingsIssuer struct {
+	// The connected account being referenced when `type` is `account`.
+	Account *Account `json:"account"`
+	// Type of the account referenced.
+	Type PaymentLinkSubscriptionDataInvoiceSettingsIssuerType `json:"type"`
+}
+type PaymentLinkSubscriptionDataInvoiceSettings struct {
+	Issuer *PaymentLinkSubscriptionDataInvoiceSettingsIssuer `json:"issuer"`
+}
+
+// Defines how a subscription behaves when a free trial ends.
+type PaymentLinkSubscriptionDataTrialSettingsEndBehavior struct {
+	// Indicates how the subscription should change when the trial ends if the user did not provide a payment method.
+	MissingPaymentMethod PaymentLinkSubscriptionDataTrialSettingsEndBehaviorMissingPaymentMethod `json:"missing_payment_method"`
+}
+
+// Settings related to subscription trials.
+type PaymentLinkSubscriptionDataTrialSettings struct {
+	// Defines how a subscription behaves when a free trial ends.
+	EndBehavior *PaymentLinkSubscriptionDataTrialSettingsEndBehavior `json:"end_behavior"`
+}
 
 // When creating a subscription, the specified configuration data will be used. There must be at least one line item with a recurring price to use `subscription_data`.
 type PaymentLinkSubscriptionData struct {
-	// The subscription's description, meant to be displayable to the customer. Use this field to optionally store an explanation of the subscription.
-	Description string `json:"description"`
+	// The subscription's description, meant to be displayable to the customer. Use this field to optionally store an explanation of the subscription for rendering in Stripe surfaces and certain local payment methods UIs.
+	Description     string                                      `json:"description"`
+	InvoiceSettings *PaymentLinkSubscriptionDataInvoiceSettings `json:"invoice_settings"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that will set metadata on [Subscriptions](https://stripe.com/docs/api/subscriptions) generated from this payment link.
+	Metadata map[string]string `json:"metadata"`
 	// Integer representing the number of trial period days before the customer is charged for the first time.
 	TrialPeriodDays int64 `json:"trial_period_days"`
+	// Settings related to subscription trials.
+	TrialSettings *PaymentLinkSubscriptionDataTrialSettings `json:"trial_settings"`
 }
 type PaymentLinkTaxIDCollection struct {
 	// Indicates whether tax ID collection is enabled for the session.
-	Enabled bool `json:"enabled"`
+	Enabled  bool                               `json:"enabled"`
+	Required PaymentLinkTaxIDCollectionRequired `json:"required"`
 }
 
 // The account (if any) the payments will be attributed to for tax reporting, and where funds from each payment will be transferred to.
@@ -700,7 +1916,7 @@ type PaymentLink struct {
 	// This represents the percentage of the subscription invoice total that will be transferred to the application owner's Stripe account.
 	ApplicationFeePercent float64                  `json:"application_fee_percent"`
 	AutomaticTax          *PaymentLinkAutomaticTax `json:"automatic_tax"`
-	// Configuration for collecting the customer's billing address.
+	// Configuration for collecting the customer's billing address. Defaults to `auto`.
 	BillingAddressCollection PaymentLinkBillingAddressCollection `json:"billing_address_collection"`
 	// When set, provides configuration to gather active consent from customers.
 	ConsentCollection *PaymentLinkConsentCollection `json:"consent_collection"`
@@ -708,11 +1924,13 @@ type PaymentLink struct {
 	Currency Currency `json:"currency"`
 	// Configuration for Customer creation during checkout.
 	CustomerCreation PaymentLinkCustomerCreation `json:"customer_creation"`
-	// Collect additional information from your customer using custom fields. Up to 2 fields are supported.
+	// Collect additional information from your customer using custom fields. Up to 3 fields are supported.
 	CustomFields []*PaymentLinkCustomField `json:"custom_fields"`
 	CustomText   *PaymentLinkCustomText    `json:"custom_text"`
 	// Unique identifier for the object.
 	ID string `json:"id"`
+	// The custom message to be displayed to a customer when a payment link is no longer active.
+	InactiveMessage string `json:"inactive_message"`
 	// Configuration for creating invoice for payment mode payment links.
 	InvoiceCreation *PaymentLinkInvoiceCreation `json:"invoice_creation"`
 	// The line items representing what is being sold.
@@ -725,13 +1943,17 @@ type PaymentLink struct {
 	Object string `json:"object"`
 	// The account on behalf of which to charge. See the [Connect documentation](https://support.stripe.com/questions/sending-invoices-on-behalf-of-connected-accounts) for details.
 	OnBehalfOf *Account `json:"on_behalf_of"`
+	// The optional items presented to the customer at checkout.
+	OptionalItems []*PaymentLinkOptionalItem `json:"optional_items"`
 	// Indicates the parameters to be passed to PaymentIntent creation during checkout.
 	PaymentIntentData *PaymentLinkPaymentIntentData `json:"payment_intent_data"`
-	// Configuration for collecting a payment method during checkout.
+	// Configuration for collecting a payment method during checkout. Defaults to `always`.
 	PaymentMethodCollection PaymentLinkPaymentMethodCollection `json:"payment_method_collection"`
 	// The list of payment method types that customers can use. When `null`, Stripe will dynamically show relevant payment methods you've enabled in your [payment method settings](https://dashboard.stripe.com/settings/payment_methods).
 	PaymentMethodTypes    []PaymentLinkPaymentMethodType    `json:"payment_method_types"`
 	PhoneNumberCollection *PaymentLinkPhoneNumberCollection `json:"phone_number_collection"`
+	// Settings that restrict the usage of a payment link.
+	Restrictions *PaymentLinkRestrictions `json:"restrictions"`
 	// Configuration for collecting the customer's shipping address.
 	ShippingAddressCollection *PaymentLinkShippingAddressCollection `json:"shipping_address_collection"`
 	// The shipping rate options applied to the session.

@@ -45,7 +45,7 @@ const (
 	TerminalReaderActionTypeSetReaderDisplay     TerminalReaderActionType = "set_reader_display"
 )
 
-// Type of reader, one of `bbpos_wisepad3`, `stripe_m2`, `bbpos_chipper2x`, `bbpos_wisepos_e`, `verifone_P400`, or `simulated_wisepos_e`.
+// Type of reader, one of `bbpos_wisepad3`, `stripe_m2`, `stripe_s700`, `bbpos_chipper2x`, `bbpos_wisepos_e`, `verifone_P400`, `simulated_wisepos_e`, or `mobile_phone_reader`.
 type TerminalReaderDeviceType string
 
 // List of values that TerminalReaderDeviceType can take
@@ -53,12 +53,23 @@ const (
 	TerminalReaderDeviceTypeBBPOSChipper2X    TerminalReaderDeviceType = "bbpos_chipper2x"
 	TerminalReaderDeviceTypeBBPOSWisePad3     TerminalReaderDeviceType = "bbpos_wisepad3"
 	TerminalReaderDeviceTypeBBPOSWisePOSE     TerminalReaderDeviceType = "bbpos_wisepos_e"
+	TerminalReaderDeviceTypeMobilePhoneReader TerminalReaderDeviceType = "mobile_phone_reader"
 	TerminalReaderDeviceTypeSimulatedWisePOSE TerminalReaderDeviceType = "simulated_wisepos_e"
 	TerminalReaderDeviceTypeStripeM2          TerminalReaderDeviceType = "stripe_m2"
+	TerminalReaderDeviceTypeStripeS700        TerminalReaderDeviceType = "stripe_s700"
 	TerminalReaderDeviceTypeVerifoneP400      TerminalReaderDeviceType = "verifone_P400"
 )
 
-// Updates a Reader object by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
+// The networking status of the reader. We do not recommend using this field in flows that may block taking payments.
+type TerminalReaderStatus string
+
+// List of values that TerminalReaderStatus can take
+const (
+	TerminalReaderStatusOffline TerminalReaderStatus = "offline"
+	TerminalReaderStatusOnline  TerminalReaderStatus = "online"
+)
+
+// Deletes a Reader object.
 type TerminalReaderParams struct {
 	Params `form:"*"`
 	// Specifies which fields in the response should be expanded.
@@ -96,12 +107,26 @@ type TerminalReaderListParams struct {
 	Expand []*string `form:"expand"`
 	// A location ID to filter the response list to only readers at the specific location
 	Location *string `form:"location"`
+	// Filters readers by serial number
+	SerialNumber *string `form:"serial_number"`
 	// A status filter to filter readers to only offline or online readers
 	Status *string `form:"status"`
 }
 
 // AddExpand appends a new field to expand.
 func (p *TerminalReaderListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Cancels the current reader action.
+type TerminalReaderCancelActionParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TerminalReaderCancelActionParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
@@ -113,6 +138,10 @@ type TerminalReaderProcessPaymentIntentProcessConfigTippingParams struct {
 
 // Configuration overrides
 type TerminalReaderProcessPaymentIntentProcessConfigParams struct {
+	// This field indicates whether this payment method can be shown again to its customer in a checkout flow. Stripe products such as Checkout and Elements use this field to determine whether a payment method can be shown as a saved payment method in a checkout flow.
+	AllowRedisplay *string `form:"allow_redisplay"`
+	// Enables cancel button on transaction screens.
+	EnableCustomerCancellation *bool `form:"enable_customer_cancellation"`
 	// Override showing a tipping selection screen on this transaction.
 	SkipTipping *bool `form:"skip_tipping"`
 	// Tipping configuration for this transaction.
@@ -136,13 +165,16 @@ func (p *TerminalReaderProcessPaymentIntentParams) AddExpand(f string) {
 }
 
 // Configuration overrides
-type TerminalReaderProcessSetupIntentProcessConfigParams struct{}
+type TerminalReaderProcessSetupIntentProcessConfigParams struct {
+	// Enables cancel button on transaction screens.
+	EnableCustomerCancellation *bool `form:"enable_customer_cancellation"`
+}
 
 // Initiates a setup intent flow on a Reader.
 type TerminalReaderProcessSetupIntentParams struct {
 	Params `form:"*"`
-	// Customer Consent Collected
-	CustomerConsentCollected *bool `form:"customer_consent_collected"`
+	// This field indicates whether this payment method can be shown again to its customer in a checkout flow. Stripe products such as Checkout and Elements use this field to determine whether a payment method can be shown as a saved payment method in a checkout flow.
+	AllowRedisplay *string `form:"allow_redisplay"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
 	// Configuration overrides
@@ -156,16 +188,45 @@ func (p *TerminalReaderProcessSetupIntentParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
-// Cancels the current reader action.
-type TerminalReaderCancelActionParams struct {
+// Configuration overrides
+type TerminalReaderRefundPaymentRefundPaymentConfigParams struct {
+	// Enables cancel button on transaction screens.
+	EnableCustomerCancellation *bool `form:"enable_customer_cancellation"`
+}
+
+// Initiates a refund on a Reader
+type TerminalReaderRefundPaymentParams struct {
 	Params `form:"*"`
+	// A positive integer in __cents__ representing how much of this charge to refund.
+	Amount *int64 `form:"amount"`
+	// ID of the Charge to refund.
+	Charge *string `form:"charge"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+	// ID of the PaymentIntent to refund.
+	PaymentIntent *string `form:"payment_intent"`
+	// Boolean indicating whether the application fee should be refunded when refunding this charge. If a full charge refund is given, the full application fee will be refunded. Otherwise, the application fee will be refunded in an amount proportional to the amount of the charge refunded. An application fee can be refunded only by the application that created the charge.
+	RefundApplicationFee *bool `form:"refund_application_fee"`
+	// Configuration overrides
+	RefundPaymentConfig *TerminalReaderRefundPaymentRefundPaymentConfigParams `form:"refund_payment_config"`
+	// Boolean indicating whether the transfer should be reversed when refunding this charge. The transfer will be reversed proportionally to the amount being refunded (either the entire or partial amount). A transfer can be reversed only by the application that created the charge.
+	ReverseTransfer *bool `form:"reverse_transfer"`
 }
 
 // AddExpand appends a new field to expand.
-func (p *TerminalReaderCancelActionParams) AddExpand(f string) {
+func (p *TerminalReaderRefundPaymentParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *TerminalReaderRefundPaymentParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // Array of line items that were purchased.
@@ -206,32 +267,70 @@ func (p *TerminalReaderSetReaderDisplayParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
-// Initiates a refund on a Reader
-type TerminalReaderRefundPaymentParams struct {
+// Deletes a Reader object.
+type TerminalReaderDeleteParams struct {
 	Params `form:"*"`
-	// A positive integer in __cents__ representing how much of this charge to refund.
-	Amount *int64 `form:"amount"`
-	// ID of the Charge to refund.
-	Charge *string `form:"charge"`
+}
+
+// Retrieves a Reader object.
+type TerminalReaderRetrieveParams struct {
+	Params `form:"*"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
-	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
-	Metadata map[string]string `form:"metadata"`
-	// ID of the PaymentIntent to refund.
-	PaymentIntent *string `form:"payment_intent"`
-	// Boolean indicating whether the application fee should be refunded when refunding this charge. If a full charge refund is given, the full application fee will be refunded. Otherwise, the application fee will be refunded in an amount proportional to the amount of the charge refunded. An application fee can be refunded only by the application that created the charge.
-	RefundApplicationFee *bool `form:"refund_application_fee"`
-	// Boolean indicating whether the transfer should be reversed when refunding this charge. The transfer will be reversed proportionally to the amount being refunded (either the entire or partial amount). A transfer can be reversed only by the application that created the charge.
-	ReverseTransfer *bool `form:"reverse_transfer"`
 }
 
 // AddExpand appends a new field to expand.
-func (p *TerminalReaderRefundPaymentParams) AddExpand(f string) {
+func (p *TerminalReaderRetrieveParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Updates a Reader object by setting the values of the parameters passed. Any parameters not provided will be left unchanged.
+type TerminalReaderUpdateParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// The new label of the reader.
+	Label *string `form:"label"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TerminalReaderUpdateParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
 // AddMetadata adds a new key-value pair to the Metadata.
-func (p *TerminalReaderRefundPaymentParams) AddMetadata(key string, value string) {
+func (p *TerminalReaderUpdateParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// Creates a new Reader object.
+type TerminalReaderCreateParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Custom label given to the reader for easier identification. If no label is specified, the registration code will be used.
+	Label *string `form:"label"`
+	// The location to assign the reader to.
+	Location *string `form:"location"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+	// A code generated by the reader used for registering to an account.
+	RegistrationCode *string `form:"registration_code"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TerminalReaderCreateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *TerminalReaderCreateParams) AddMetadata(key string, value string) {
 	if p.Metadata == nil {
 		p.Metadata = make(map[string]string)
 	}
@@ -247,6 +346,8 @@ type TerminalReaderActionProcessPaymentIntentProcessConfigTipping struct {
 
 // Represents a per-transaction override of a reader configuration
 type TerminalReaderActionProcessPaymentIntentProcessConfig struct {
+	// Enable customer initiated cancellation when processing this payment.
+	EnableCustomerCancellation bool `json:"enable_customer_cancellation"`
 	// Override showing a tipping selection screen on this transaction.
 	SkipTipping bool `json:"skip_tipping"`
 	// Represents a per-transaction tipping configuration
@@ -262,7 +363,10 @@ type TerminalReaderActionProcessPaymentIntent struct {
 }
 
 // Represents a per-setup override of a reader configuration
-type TerminalReaderActionProcessSetupIntentProcessConfig struct{}
+type TerminalReaderActionProcessSetupIntentProcessConfig struct {
+	// Enable customer initiated cancellation when processing this SetupIntent.
+	EnableCustomerCancellation bool `json:"enable_customer_cancellation"`
+}
 
 // Represents a reader action to process a setup intent
 type TerminalReaderActionProcessSetupIntent struct {
@@ -272,6 +376,12 @@ type TerminalReaderActionProcessSetupIntent struct {
 	ProcessConfig *TerminalReaderActionProcessSetupIntentProcessConfig `json:"process_config"`
 	// Most recent SetupIntent processed by the reader.
 	SetupIntent *SetupIntent `json:"setup_intent"`
+}
+
+// Represents a per-transaction override of a reader configuration
+type TerminalReaderActionRefundPaymentRefundPaymentConfig struct {
+	// Enable customer initiated cancellation when refunding this payment.
+	EnableCustomerCancellation bool `json:"enable_customer_cancellation"`
 }
 
 // Represents a reader action to refund a payment
@@ -290,6 +400,8 @@ type TerminalReaderActionRefundPayment struct {
 	Refund *Refund `json:"refund"`
 	// Boolean indicating whether the application fee should be refunded when refunding this charge. If a full charge refund is given, the full application fee will be refunded. Otherwise, the application fee will be refunded in an amount proportional to the amount of the charge refunded. An application fee can be refunded only by the application that created the charge.
 	RefundApplicationFee bool `json:"refund_application_fee"`
+	// Represents a per-transaction override of a reader configuration
+	RefundPaymentConfig *TerminalReaderActionRefundPaymentRefundPaymentConfig `json:"refund_payment_config"`
 	// Boolean indicating whether the transfer should be reversed when refunding this charge. The transfer will be reversed proportionally to the amount being refunded (either the entire or partial amount). A transfer can be reversed only by the application that created the charge.
 	ReverseTransfer bool `json:"reverse_transfer"`
 }
@@ -354,7 +466,7 @@ type TerminalReader struct {
 	Deleted bool                  `json:"deleted"`
 	// The current software version of the reader.
 	DeviceSwVersion string `json:"device_sw_version"`
-	// Type of reader, one of `bbpos_wisepad3`, `stripe_m2`, `bbpos_chipper2x`, `bbpos_wisepos_e`, `verifone_P400`, or `simulated_wisepos_e`.
+	// Type of reader, one of `bbpos_wisepad3`, `stripe_m2`, `stripe_s700`, `bbpos_chipper2x`, `bbpos_wisepos_e`, `verifone_P400`, `simulated_wisepos_e`, or `mobile_phone_reader`.
 	DeviceType TerminalReaderDeviceType `json:"device_type"`
 	// Unique identifier for the object.
 	ID string `json:"id"`
@@ -372,8 +484,8 @@ type TerminalReader struct {
 	Object string `json:"object"`
 	// Serial number of the reader.
 	SerialNumber string `json:"serial_number"`
-	// The networking status of the reader.
-	Status string `json:"status"`
+	// The networking status of the reader. We do not recommend using this field in flows that may block taking payments.
+	Status TerminalReaderStatus `json:"status"`
 }
 
 // TerminalReaderList is a list of Readers as retrieved from a list endpoint.

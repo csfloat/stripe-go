@@ -4,40 +4,51 @@
 //
 //
 
-// Package topup provides the /topups APIs
+// Package topup provides the /v1/topups APIs
 package topup
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /topups APIs.
+// Client is used to invoke /v1/topups APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// New creates a new topup.
+// Top up the balance of an account
 func New(params *stripe.TopupParams) (*stripe.Topup, error) {
 	return getC().New(params)
 }
 
-// New creates a new topup.
+// Top up the balance of an account
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) New(params *stripe.TopupParams) (*stripe.Topup, error) {
 	topup := &stripe.Topup{}
 	err := c.B.Call(http.MethodPost, "/v1/topups", c.Key, params, topup)
 	return topup, err
 }
 
-// Get returns the details of a topup.
+// Retrieves the details of a top-up that has previously been created. Supply the unique top-up ID that was returned from your previous request, and Stripe will return the corresponding top-up information.
 func Get(id string, params *stripe.TopupParams) (*stripe.Topup, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a topup.
+// Retrieves the details of a top-up that has previously been created. Supply the unique top-up ID that was returned from your previous request, and Stripe will return the corresponding top-up information.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.TopupParams) (*stripe.Topup, error) {
 	path := stripe.FormatURLPath("/v1/topups/%s", id)
 	topup := &stripe.Topup{}
@@ -45,12 +56,16 @@ func (c Client) Get(id string, params *stripe.TopupParams) (*stripe.Topup, error
 	return topup, err
 }
 
-// Update updates a topup's properties.
+// Updates the metadata of a top-up. Other top-up details are not editable by design.
 func Update(id string, params *stripe.TopupParams) (*stripe.Topup, error) {
 	return getC().Update(id, params)
 }
 
-// Update updates a topup's properties.
+// Updates the metadata of a top-up. Other top-up details are not editable by design.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Update(id string, params *stripe.TopupParams) (*stripe.Topup, error) {
 	path := stripe.FormatURLPath("/v1/topups/%s", id)
 	topup := &stripe.Topup{}
@@ -58,12 +73,16 @@ func (c Client) Update(id string, params *stripe.TopupParams) (*stripe.Topup, er
 	return topup, err
 }
 
-// Cancel is the method for the `POST /v1/topups/{topup}/cancel` API.
+// Cancels a top-up. Only pending top-ups can be canceled.
 func Cancel(id string, params *stripe.TopupParams) (*stripe.Topup, error) {
 	return getC().Cancel(id, params)
 }
 
-// Cancel is the method for the `POST /v1/topups/{topup}/cancel` API.
+// Cancels a top-up. Only pending top-ups can be canceled.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Cancel(id string, params *stripe.TopupParams) (*stripe.Topup, error) {
 	path := stripe.FormatURLPath("/v1/topups/%s/cancel", id)
 	topup := &stripe.Topup{}
@@ -71,17 +90,21 @@ func (c Client) Cancel(id string, params *stripe.TopupParams) (*stripe.Topup, er
 	return topup, err
 }
 
-// List returns a list of topups.
+// Returns a list of top-ups.
 func List(params *stripe.TopupListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of topups.
+// Returns a list of top-ups.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.TopupListParams) *Iter {
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.TopupList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/topups", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/topups", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

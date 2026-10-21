@@ -4,46 +4,52 @@
 //
 //
 
-// Package paymentmethoddomain provides the /payment_method_domains APIs
+// Package paymentmethoddomain provides the /v1/payment_method_domains APIs
 package paymentmethoddomain
 
 import (
 	"net/http"
 
-	stripe "github.com/stripe/stripe-go/v75"
-	"github.com/stripe/stripe-go/v75/form"
+	stripe "github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/form"
 )
 
-// Client is used to invoke /payment_method_domains APIs.
+// Client is used to invoke /v1/payment_method_domains APIs.
+// Deprecated: Use [stripe.Client] instead. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 type Client struct {
 	B   stripe.Backend
 	Key string
 }
 
-// New creates a new payment method domain.
+// Creates a payment method domain.
 func New(params *stripe.PaymentMethodDomainParams) (*stripe.PaymentMethodDomain, error) {
 	return getC().New(params)
 }
 
-// New creates a new payment method domain.
+// Creates a payment method domain.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) New(params *stripe.PaymentMethodDomainParams) (*stripe.PaymentMethodDomain, error) {
 	paymentmethoddomain := &stripe.PaymentMethodDomain{}
 	err := c.B.Call(
-		http.MethodPost,
-		"/v1/payment_method_domains",
-		c.Key,
-		params,
-		paymentmethoddomain,
-	)
+		http.MethodPost, "/v1/payment_method_domains", c.Key, params, paymentmethoddomain)
 	return paymentmethoddomain, err
 }
 
-// Get returns the details of a payment method domain.
+// Retrieves the details of an existing payment method domain.
 func Get(id string, params *stripe.PaymentMethodDomainParams) (*stripe.PaymentMethodDomain, error) {
 	return getC().Get(id, params)
 }
 
-// Get returns the details of a payment method domain.
+// Retrieves the details of an existing payment method domain.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Get(id string, params *stripe.PaymentMethodDomainParams) (*stripe.PaymentMethodDomain, error) {
 	path := stripe.FormatURLPath("/v1/payment_method_domains/%s", id)
 	paymentmethoddomain := &stripe.PaymentMethodDomain{}
@@ -51,12 +57,16 @@ func (c Client) Get(id string, params *stripe.PaymentMethodDomainParams) (*strip
 	return paymentmethoddomain, err
 }
 
-// Update updates a payment method domain's properties.
+// Updates an existing payment method domain.
 func Update(id string, params *stripe.PaymentMethodDomainParams) (*stripe.PaymentMethodDomain, error) {
 	return getC().Update(id, params)
 }
 
-// Update updates a payment method domain's properties.
+// Updates an existing payment method domain.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Update(id string, params *stripe.PaymentMethodDomainParams) (*stripe.PaymentMethodDomain, error) {
 	path := stripe.FormatURLPath("/v1/payment_method_domains/%s", id)
 	paymentmethoddomain := &stripe.PaymentMethodDomain{}
@@ -64,12 +74,26 @@ func (c Client) Update(id string, params *stripe.PaymentMethodDomainParams) (*st
 	return paymentmethoddomain, err
 }
 
-// Validate is the method for the `POST /v1/payment_method_domains/{payment_method_domain}/validate` API.
+// Some payment methods might require additional steps to register a domain. If the requirements weren't satisfied when the domain was created, the payment method will be inactive on the domain.
+// The payment method doesn't appear in Elements or Embedded Checkout for this domain until it is active.
+//
+// To activate a payment method on an existing payment method domain, complete the required registration steps specific to the payment method, and then validate the payment method domain with this endpoint.
+//
+// Related guides: [Payment method domains](https://stripe.com/docs/payments/payment-methods/pmd-registration).
 func Validate(id string, params *stripe.PaymentMethodDomainValidateParams) (*stripe.PaymentMethodDomain, error) {
 	return getC().Validate(id, params)
 }
 
-// Validate is the method for the `POST /v1/payment_method_domains/{payment_method_domain}/validate` API.
+// Some payment methods might require additional steps to register a domain. If the requirements weren't satisfied when the domain was created, the payment method will be inactive on the domain.
+// The payment method doesn't appear in Elements or Embedded Checkout for this domain until it is active.
+//
+// To activate a payment method on an existing payment method domain, complete the required registration steps specific to the payment method, and then validate the payment method domain with this endpoint.
+//
+// Related guides: [Payment method domains](https://stripe.com/docs/payments/payment-methods/pmd-registration).
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) Validate(id string, params *stripe.PaymentMethodDomainValidateParams) (*stripe.PaymentMethodDomain, error) {
 	path := stripe.FormatURLPath("/v1/payment_method_domains/%s/validate", id)
 	paymentmethoddomain := &stripe.PaymentMethodDomain{}
@@ -77,17 +101,21 @@ func (c Client) Validate(id string, params *stripe.PaymentMethodDomainValidatePa
 	return paymentmethoddomain, err
 }
 
-// List returns a list of payment method domains.
+// Lists the details of existing payment method domains.
 func List(params *stripe.PaymentMethodDomainListParams) *Iter {
 	return getC().List(params)
 }
 
-// List returns a list of payment method domains.
+// Lists the details of existing payment method domains.
+//
+// Deprecated: Client methods are deprecated. This should be accessed instead through [stripe.Client]. See the [migration guide] for more info.
+//
+// [migration guide]: https://github.com/stripe/stripe-go/wiki/Migration-guide-for-Stripe-Client
 func (c Client) List(listParams *stripe.PaymentMethodDomainListParams) *Iter {
 	return &Iter{
 		Iter: stripe.GetIter(listParams, func(p *stripe.Params, b *form.Values) ([]interface{}, stripe.ListContainer, error) {
 			list := &stripe.PaymentMethodDomainList{}
-			err := c.B.CallRaw(http.MethodGet, "/v1/payment_method_domains", c.Key, b, p, list)
+			err := c.B.CallRaw(http.MethodGet, "/v1/payment_method_domains", c.Key, []byte(b.Encode()), p, list)
 
 			ret := make([]interface{}, len(list.Data))
 			for i, v := range list.Data {

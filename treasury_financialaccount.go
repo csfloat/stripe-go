@@ -14,6 +14,7 @@ const (
 	TreasuryFinancialAccountActiveFeatureCardIssuing                     TreasuryFinancialAccountActiveFeature = "card_issuing"
 	TreasuryFinancialAccountActiveFeatureDepositInsurance                TreasuryFinancialAccountActiveFeature = "deposit_insurance"
 	TreasuryFinancialAccountActiveFeatureFinancialAddressesABA           TreasuryFinancialAccountActiveFeature = "financial_addresses.aba"
+	TreasuryFinancialAccountActiveFeatureFinancialAddressesABAForwarding TreasuryFinancialAccountActiveFeature = "financial_addresses.aba.forwarding"
 	TreasuryFinancialAccountActiveFeatureInboundTransfersACH             TreasuryFinancialAccountActiveFeature = "inbound_transfers.ach"
 	TreasuryFinancialAccountActiveFeatureIntraStripeFlows                TreasuryFinancialAccountActiveFeature = "intra_stripe_flows"
 	TreasuryFinancialAccountActiveFeatureOutboundPaymentsACH             TreasuryFinancialAccountActiveFeature = "outbound_payments.ach"
@@ -48,6 +49,7 @@ const (
 	TreasuryFinancialAccountPendingFeatureCardIssuing                     TreasuryFinancialAccountPendingFeature = "card_issuing"
 	TreasuryFinancialAccountPendingFeatureDepositInsurance                TreasuryFinancialAccountPendingFeature = "deposit_insurance"
 	TreasuryFinancialAccountPendingFeatureFinancialAddressesABA           TreasuryFinancialAccountPendingFeature = "financial_addresses.aba"
+	TreasuryFinancialAccountPendingFeatureFinancialAddressesABAForwarding TreasuryFinancialAccountPendingFeature = "financial_addresses.aba.forwarding"
 	TreasuryFinancialAccountPendingFeatureInboundTransfersACH             TreasuryFinancialAccountPendingFeature = "inbound_transfers.ach"
 	TreasuryFinancialAccountPendingFeatureIntraStripeFlows                TreasuryFinancialAccountPendingFeature = "intra_stripe_flows"
 	TreasuryFinancialAccountPendingFeatureOutboundPaymentsACH             TreasuryFinancialAccountPendingFeature = "outbound_payments.ach"
@@ -83,6 +85,7 @@ const (
 	TreasuryFinancialAccountRestrictedFeatureCardIssuing                     TreasuryFinancialAccountRestrictedFeature = "card_issuing"
 	TreasuryFinancialAccountRestrictedFeatureDepositInsurance                TreasuryFinancialAccountRestrictedFeature = "deposit_insurance"
 	TreasuryFinancialAccountRestrictedFeatureFinancialAddressesABA           TreasuryFinancialAccountRestrictedFeature = "financial_addresses.aba"
+	TreasuryFinancialAccountRestrictedFeatureFinancialAddressesABAForwarding TreasuryFinancialAccountRestrictedFeature = "financial_addresses.aba.forwarding"
 	TreasuryFinancialAccountRestrictedFeatureInboundTransfersACH             TreasuryFinancialAccountRestrictedFeature = "inbound_transfers.ach"
 	TreasuryFinancialAccountRestrictedFeatureIntraStripeFlows                TreasuryFinancialAccountRestrictedFeature = "intra_stripe_flows"
 	TreasuryFinancialAccountRestrictedFeatureOutboundPaymentsACH             TreasuryFinancialAccountRestrictedFeature = "outbound_payments.ach"
@@ -92,7 +95,7 @@ const (
 	TreasuryFinancialAccountRestrictedFeatureRemoteDepositCapture            TreasuryFinancialAccountRestrictedFeature = "remote_deposit_capture"
 )
 
-// The enum specifying what state the account is in.
+// Status of this FinancialAccount.
 type TreasuryFinancialAccountStatus string
 
 // List of values that TreasuryFinancialAccountStatus can take
@@ -110,6 +113,22 @@ const (
 	TreasuryFinancialAccountStatusDetailsClosedReasonClosedByPlatform TreasuryFinancialAccountStatusDetailsClosedReason = "closed_by_platform"
 	TreasuryFinancialAccountStatusDetailsClosedReasonOther            TreasuryFinancialAccountStatusDetailsClosedReason = "other"
 )
+
+// Returns a list of FinancialAccounts.
+type TreasuryFinancialAccountListParams struct {
+	ListParams `form:"*"`
+	// Only return FinancialAccounts that were created during the given date interval.
+	Created *int64 `form:"created"`
+	// Only return FinancialAccounts that were created during the given date interval.
+	CreatedRange *RangeQueryParams `form:"created"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TreasuryFinancialAccountListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
 
 // Encodes the FinancialAccount's ability to be used with the Issuing product, including attaching cards to and drawing funds from the FinancialAccount.
 type TreasuryFinancialAccountFeaturesCardIssuingParams struct {
@@ -159,7 +178,7 @@ type TreasuryFinancialAccountFeaturesOutboundPaymentsACHParams struct {
 	Requested *bool `form:"requested"`
 }
 
-// Enables US domestic wire tranfers via the OutboundPayments API.
+// Enables US domestic wire transfers via the OutboundPayments API.
 type TreasuryFinancialAccountFeaturesOutboundPaymentsUSDomesticWireParams struct {
 	// Whether the FinancialAccount should have the Feature.
 	Requested *bool `form:"requested"`
@@ -169,7 +188,7 @@ type TreasuryFinancialAccountFeaturesOutboundPaymentsUSDomesticWireParams struct
 type TreasuryFinancialAccountFeaturesOutboundPaymentsParams struct {
 	// Enables ACH transfers via the OutboundPayments API.
 	ACH *TreasuryFinancialAccountFeaturesOutboundPaymentsACHParams `form:"ach"`
-	// Enables US domestic wire tranfers via the OutboundPayments API.
+	// Enables US domestic wire transfers via the OutboundPayments API.
 	USDomesticWire *TreasuryFinancialAccountFeaturesOutboundPaymentsUSDomesticWireParams `form:"us_domestic_wire"`
 }
 
@@ -179,7 +198,7 @@ type TreasuryFinancialAccountFeaturesOutboundTransfersACHParams struct {
 	Requested *bool `form:"requested"`
 }
 
-// Enables US domestic wire tranfers via the OutboundTransfers API.
+// Enables US domestic wire transfers via the OutboundTransfers API.
 type TreasuryFinancialAccountFeaturesOutboundTransfersUSDomesticWireParams struct {
 	// Whether the FinancialAccount should have the Feature.
 	Requested *bool `form:"requested"`
@@ -189,7 +208,7 @@ type TreasuryFinancialAccountFeaturesOutboundTransfersUSDomesticWireParams struc
 type TreasuryFinancialAccountFeaturesOutboundTransfersParams struct {
 	// Enables ACH transfers via the OutboundTransfers API.
 	ACH *TreasuryFinancialAccountFeaturesOutboundTransfersACHParams `form:"ach"`
-	// Enables US domestic wire tranfers via the OutboundTransfers API.
+	// Enables US domestic wire transfers via the OutboundTransfers API.
 	USDomesticWire *TreasuryFinancialAccountFeaturesOutboundTransfersUSDomesticWireParams `form:"us_domestic_wire"`
 }
 
@@ -219,15 +238,19 @@ type TreasuryFinancialAccountPlatformRestrictionsParams struct {
 	OutboundFlows *string `form:"outbound_flows"`
 }
 
-// Creates a new FinancialAccount. For now, each connected account can only have one FinancialAccount.
+// Creates a new FinancialAccount. Each connected account can have up to three FinancialAccounts by default.
 type TreasuryFinancialAccountParams struct {
 	Params `form:"*"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
 	// Encodes whether a FinancialAccount has access to a particular feature, with a status enum and associated `status_details`. Stripe or the platform may control features via the requested field.
 	Features *TreasuryFinancialAccountFeaturesParams `form:"features"`
+	// A different bank account where funds can be deposited/debited in order to get the closing FA's balance to $0
+	ForwardingSettings *TreasuryFinancialAccountForwardingSettingsParams `form:"forwarding_settings"`
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
 	Metadata map[string]string `form:"metadata"`
+	// The nickname for the FinancialAccount.
+	Nickname *string `form:"nickname"`
 	// The set of functionalities that the platform can restrict on the FinancialAccount.
 	PlatformRestrictions *TreasuryFinancialAccountPlatformRestrictionsParams `form:"platform_restrictions"`
 	// The currencies the FinancialAccount can hold a balance in.
@@ -248,17 +271,25 @@ func (p *TreasuryFinancialAccountParams) AddMetadata(key string, value string) {
 	p.Metadata[key] = value
 }
 
-// Returns a list of FinancialAccounts.
-type TreasuryFinancialAccountListParams struct {
-	ListParams   `form:"*"`
-	Created      *int64            `form:"created"`
-	CreatedRange *RangeQueryParams `form:"created"`
+// A different bank account where funds can be deposited/debited in order to get the closing FA's balance to $0
+type TreasuryFinancialAccountForwardingSettingsParams struct {
+	// The financial_account id
+	FinancialAccount *string `form:"financial_account"`
+	// The payment_method or bank account id. This needs to be a verified bank account.
+	PaymentMethod *string `form:"payment_method"`
+	// The type of the bank account provided. This can be either "financial_account" or "payment_method"
+	Type *string `form:"type"`
+}
+
+// Retrieves Features information associated with the FinancialAccount.
+type TreasuryFinancialAccountRetrieveFeaturesParams struct {
+	Params `form:"*"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
 }
 
 // AddExpand appends a new field to expand.
-func (p *TreasuryFinancialAccountListParams) AddExpand(f string) {
+func (p *TreasuryFinancialAccountRetrieveFeaturesParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
@@ -310,7 +341,7 @@ type TreasuryFinancialAccountUpdateFeaturesOutboundPaymentsACHParams struct {
 	Requested *bool `form:"requested"`
 }
 
-// Enables US domestic wire tranfers via the OutboundPayments API.
+// Enables US domestic wire transfers via the OutboundPayments API.
 type TreasuryFinancialAccountUpdateFeaturesOutboundPaymentsUSDomesticWireParams struct {
 	// Whether the FinancialAccount should have the Feature.
 	Requested *bool `form:"requested"`
@@ -320,7 +351,7 @@ type TreasuryFinancialAccountUpdateFeaturesOutboundPaymentsUSDomesticWireParams 
 type TreasuryFinancialAccountUpdateFeaturesOutboundPaymentsParams struct {
 	// Enables ACH transfers via the OutboundPayments API.
 	ACH *TreasuryFinancialAccountUpdateFeaturesOutboundPaymentsACHParams `form:"ach"`
-	// Enables US domestic wire tranfers via the OutboundPayments API.
+	// Enables US domestic wire transfers via the OutboundPayments API.
 	USDomesticWire *TreasuryFinancialAccountUpdateFeaturesOutboundPaymentsUSDomesticWireParams `form:"us_domestic_wire"`
 }
 
@@ -330,7 +361,7 @@ type TreasuryFinancialAccountUpdateFeaturesOutboundTransfersACHParams struct {
 	Requested *bool `form:"requested"`
 }
 
-// Enables US domestic wire tranfers via the OutboundTransfers API.
+// Enables US domestic wire transfers via the OutboundTransfers API.
 type TreasuryFinancialAccountUpdateFeaturesOutboundTransfersUSDomesticWireParams struct {
 	// Whether the FinancialAccount should have the Feature.
 	Requested *bool `form:"requested"`
@@ -340,11 +371,11 @@ type TreasuryFinancialAccountUpdateFeaturesOutboundTransfersUSDomesticWireParams
 type TreasuryFinancialAccountUpdateFeaturesOutboundTransfersParams struct {
 	// Enables ACH transfers via the OutboundTransfers API.
 	ACH *TreasuryFinancialAccountUpdateFeaturesOutboundTransfersACHParams `form:"ach"`
-	// Enables US domestic wire tranfers via the OutboundTransfers API.
+	// Enables US domestic wire transfers via the OutboundTransfers API.
 	USDomesticWire *TreasuryFinancialAccountUpdateFeaturesOutboundTransfersUSDomesticWireParams `form:"us_domestic_wire"`
 }
 
-// Updates the Features associated with a FinancialAccount.
+// Encodes whether a FinancialAccount has access to a particular feature, with a status enum and associated `status_details`. Stripe or the platform may control features via the requested field.
 type TreasuryFinancialAccountUpdateFeaturesParams struct {
 	Params `form:"*"`
 	// Encodes the FinancialAccount's ability to be used with the Issuing product, including attaching cards to and drawing funds from the FinancialAccount.
@@ -370,16 +401,228 @@ func (p *TreasuryFinancialAccountUpdateFeaturesParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
-// Retrieves Features information associated with the FinancialAccount.
-type TreasuryFinancialAccountRetrieveFeaturesParams struct {
+// A different bank account where funds can be deposited/debited in order to get the closing FA's balance to $0
+type TreasuryFinancialAccountCloseForwardingSettingsParams struct {
+	// The financial_account id
+	FinancialAccount *string `form:"financial_account"`
+	// The payment_method or bank account id. This needs to be a verified bank account.
+	PaymentMethod *string `form:"payment_method"`
+	// The type of the bank account provided. This can be either "financial_account" or "payment_method"
+	Type *string `form:"type"`
+}
+
+// Closes a FinancialAccount. A FinancialAccount can only be closed if it has a zero balance, has no pending InboundTransfers, and has canceled all attached Issuing cards.
+type TreasuryFinancialAccountCloseParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// A different bank account where funds can be deposited/debited in order to get the closing FA's balance to $0
+	ForwardingSettings *TreasuryFinancialAccountCloseForwardingSettingsParams `form:"forwarding_settings"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TreasuryFinancialAccountCloseParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Encodes the FinancialAccount's ability to be used with the Issuing product, including attaching cards to and drawing funds from the FinancialAccount.
+type TreasuryFinancialAccountCreateFeaturesCardIssuingParams struct {
+	// Whether the FinancialAccount should have the Feature.
+	Requested *bool `form:"requested"`
+}
+
+// Represents whether this FinancialAccount is eligible for deposit insurance. Various factors determine the insurance amount.
+type TreasuryFinancialAccountCreateFeaturesDepositInsuranceParams struct {
+	// Whether the FinancialAccount should have the Feature.
+	Requested *bool `form:"requested"`
+}
+
+// Adds an ABA FinancialAddress to the FinancialAccount.
+type TreasuryFinancialAccountCreateFeaturesFinancialAddressesABAParams struct {
+	// Whether the FinancialAccount should have the Feature.
+	Requested *bool `form:"requested"`
+}
+
+// Contains Features that add FinancialAddresses to the FinancialAccount.
+type TreasuryFinancialAccountCreateFeaturesFinancialAddressesParams struct {
+	// Adds an ABA FinancialAddress to the FinancialAccount.
+	ABA *TreasuryFinancialAccountCreateFeaturesFinancialAddressesABAParams `form:"aba"`
+}
+
+// Enables ACH Debits via the InboundTransfers API.
+type TreasuryFinancialAccountCreateFeaturesInboundTransfersACHParams struct {
+	// Whether the FinancialAccount should have the Feature.
+	Requested *bool `form:"requested"`
+}
+
+// Contains settings related to adding funds to a FinancialAccount from another Account with the same owner.
+type TreasuryFinancialAccountCreateFeaturesInboundTransfersParams struct {
+	// Enables ACH Debits via the InboundTransfers API.
+	ACH *TreasuryFinancialAccountCreateFeaturesInboundTransfersACHParams `form:"ach"`
+}
+
+// Represents the ability for the FinancialAccount to send money to, or receive money from other FinancialAccounts (for example, via OutboundPayment).
+type TreasuryFinancialAccountCreateFeaturesIntraStripeFlowsParams struct {
+	// Whether the FinancialAccount should have the Feature.
+	Requested *bool `form:"requested"`
+}
+
+// Enables ACH transfers via the OutboundPayments API.
+type TreasuryFinancialAccountCreateFeaturesOutboundPaymentsACHParams struct {
+	// Whether the FinancialAccount should have the Feature.
+	Requested *bool `form:"requested"`
+}
+
+// Enables US domestic wire transfers via the OutboundPayments API.
+type TreasuryFinancialAccountCreateFeaturesOutboundPaymentsUSDomesticWireParams struct {
+	// Whether the FinancialAccount should have the Feature.
+	Requested *bool `form:"requested"`
+}
+
+// Includes Features related to initiating money movement out of the FinancialAccount to someone else's bucket of money.
+type TreasuryFinancialAccountCreateFeaturesOutboundPaymentsParams struct {
+	// Enables ACH transfers via the OutboundPayments API.
+	ACH *TreasuryFinancialAccountCreateFeaturesOutboundPaymentsACHParams `form:"ach"`
+	// Enables US domestic wire transfers via the OutboundPayments API.
+	USDomesticWire *TreasuryFinancialAccountCreateFeaturesOutboundPaymentsUSDomesticWireParams `form:"us_domestic_wire"`
+}
+
+// Enables ACH transfers via the OutboundTransfers API.
+type TreasuryFinancialAccountCreateFeaturesOutboundTransfersACHParams struct {
+	// Whether the FinancialAccount should have the Feature.
+	Requested *bool `form:"requested"`
+}
+
+// Enables US domestic wire transfers via the OutboundTransfers API.
+type TreasuryFinancialAccountCreateFeaturesOutboundTransfersUSDomesticWireParams struct {
+	// Whether the FinancialAccount should have the Feature.
+	Requested *bool `form:"requested"`
+}
+
+// Contains a Feature and settings related to moving money out of the FinancialAccount into another Account with the same owner.
+type TreasuryFinancialAccountCreateFeaturesOutboundTransfersParams struct {
+	// Enables ACH transfers via the OutboundTransfers API.
+	ACH *TreasuryFinancialAccountCreateFeaturesOutboundTransfersACHParams `form:"ach"`
+	// Enables US domestic wire transfers via the OutboundTransfers API.
+	USDomesticWire *TreasuryFinancialAccountCreateFeaturesOutboundTransfersUSDomesticWireParams `form:"us_domestic_wire"`
+}
+
+// Encodes whether a FinancialAccount has access to a particular feature. Stripe or the platform can control features via the requested field.
+type TreasuryFinancialAccountCreateFeaturesParams struct {
+	// Encodes the FinancialAccount's ability to be used with the Issuing product, including attaching cards to and drawing funds from the FinancialAccount.
+	CardIssuing *TreasuryFinancialAccountCreateFeaturesCardIssuingParams `form:"card_issuing"`
+	// Represents whether this FinancialAccount is eligible for deposit insurance. Various factors determine the insurance amount.
+	DepositInsurance *TreasuryFinancialAccountCreateFeaturesDepositInsuranceParams `form:"deposit_insurance"`
+	// Contains Features that add FinancialAddresses to the FinancialAccount.
+	FinancialAddresses *TreasuryFinancialAccountCreateFeaturesFinancialAddressesParams `form:"financial_addresses"`
+	// Contains settings related to adding funds to a FinancialAccount from another Account with the same owner.
+	InboundTransfers *TreasuryFinancialAccountCreateFeaturesInboundTransfersParams `form:"inbound_transfers"`
+	// Represents the ability for the FinancialAccount to send money to, or receive money from other FinancialAccounts (for example, via OutboundPayment).
+	IntraStripeFlows *TreasuryFinancialAccountCreateFeaturesIntraStripeFlowsParams `form:"intra_stripe_flows"`
+	// Includes Features related to initiating money movement out of the FinancialAccount to someone else's bucket of money.
+	OutboundPayments *TreasuryFinancialAccountCreateFeaturesOutboundPaymentsParams `form:"outbound_payments"`
+	// Contains a Feature and settings related to moving money out of the FinancialAccount into another Account with the same owner.
+	OutboundTransfers *TreasuryFinancialAccountCreateFeaturesOutboundTransfersParams `form:"outbound_transfers"`
+}
+
+// The set of functionalities that the platform can restrict on the FinancialAccount.
+type TreasuryFinancialAccountCreatePlatformRestrictionsParams struct {
+	// Restricts all inbound money movement.
+	InboundFlows *string `form:"inbound_flows"`
+	// Restricts all outbound money movement.
+	OutboundFlows *string `form:"outbound_flows"`
+}
+
+// Creates a new FinancialAccount. Each connected account can have up to three FinancialAccounts by default.
+type TreasuryFinancialAccountCreateParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Encodes whether a FinancialAccount has access to a particular feature. Stripe or the platform can control features via the requested field.
+	Features *TreasuryFinancialAccountCreateFeaturesParams `form:"features"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+	// The nickname for the FinancialAccount.
+	Nickname *string `form:"nickname"`
+	// The set of functionalities that the platform can restrict on the FinancialAccount.
+	PlatformRestrictions *TreasuryFinancialAccountCreatePlatformRestrictionsParams `form:"platform_restrictions"`
+	// The currencies the FinancialAccount can hold a balance in.
+	SupportedCurrencies []*string `form:"supported_currencies"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TreasuryFinancialAccountCreateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *TreasuryFinancialAccountCreateParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
+}
+
+// Retrieves the details of a FinancialAccount.
+type TreasuryFinancialAccountRetrieveParams struct {
 	Params `form:"*"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
 }
 
 // AddExpand appends a new field to expand.
-func (p *TreasuryFinancialAccountRetrieveFeaturesParams) AddExpand(f string) {
+func (p *TreasuryFinancialAccountRetrieveParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
+}
+
+// A different bank account where funds can be deposited/debited in order to get the closing FA's balance to $0
+type TreasuryFinancialAccountUpdateForwardingSettingsParams struct {
+	// The financial_account id
+	FinancialAccount *string `form:"financial_account"`
+	// The payment_method or bank account id. This needs to be a verified bank account.
+	PaymentMethod *string `form:"payment_method"`
+	// The type of the bank account provided. This can be either "financial_account" or "payment_method"
+	Type *string `form:"type"`
+}
+
+// The set of functionalities that the platform can restrict on the FinancialAccount.
+type TreasuryFinancialAccountUpdatePlatformRestrictionsParams struct {
+	// Restricts all inbound money movement.
+	InboundFlows *string `form:"inbound_flows"`
+	// Restricts all outbound money movement.
+	OutboundFlows *string `form:"outbound_flows"`
+}
+
+// Updates the details of a FinancialAccount.
+type TreasuryFinancialAccountUpdateParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Encodes whether a FinancialAccount has access to a particular feature, with a status enum and associated `status_details`. Stripe or the platform may control features via the requested field.
+	Features *TreasuryFinancialAccountUpdateFeaturesParams `form:"features"`
+	// A different bank account where funds can be deposited/debited in order to get the closing FA's balance to $0
+	ForwardingSettings *TreasuryFinancialAccountUpdateForwardingSettingsParams `form:"forwarding_settings"`
+	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format. Individual keys can be unset by posting an empty value to them. All keys can be unset by posting an empty value to `metadata`.
+	Metadata map[string]string `form:"metadata"`
+	// The nickname for the FinancialAccount.
+	Nickname *string `form:"nickname"`
+	// The set of functionalities that the platform can restrict on the FinancialAccount.
+	PlatformRestrictions *TreasuryFinancialAccountUpdatePlatformRestrictionsParams `form:"platform_restrictions"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TreasuryFinancialAccountUpdateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// AddMetadata adds a new key-value pair to the Metadata.
+func (p *TreasuryFinancialAccountUpdateParams) AddMetadata(key string, value string) {
+	if p.Metadata == nil {
+		p.Metadata = make(map[string]string)
+	}
+
+	p.Metadata[key] = value
 }
 
 // Balance information for the FinancialAccount
@@ -452,11 +695,14 @@ type TreasuryFinancialAccount struct {
 	// The set of credentials that resolve to a FinancialAccount.
 	FinancialAddresses []*TreasuryFinancialAccountFinancialAddress `json:"financial_addresses"`
 	// Unique identifier for the object.
-	ID string `json:"id"`
+	ID        string `json:"id"`
+	IsDefault bool   `json:"is_default"`
 	// Has the value `true` if the object exists in live mode or the value `false` if the object exists in test mode.
 	Livemode bool `json:"livemode"`
 	// Set of [key-value pairs](https://stripe.com/docs/api/metadata) that you can attach to an object. This can be useful for storing additional information about the object in a structured format.
 	Metadata map[string]string `json:"metadata"`
+	// The nickname for the FinancialAccount.
+	Nickname string `json:"nickname"`
 	// String representing the object's type. Objects of the same type share the same value.
 	Object string `json:"object"`
 	// The array of paths to pending Features in the Features hash.
@@ -465,7 +711,7 @@ type TreasuryFinancialAccount struct {
 	PlatformRestrictions *TreasuryFinancialAccountPlatformRestrictions `json:"platform_restrictions"`
 	// The array of paths to restricted Features in the Features hash.
 	RestrictedFeatures []TreasuryFinancialAccountRestrictedFeature `json:"restricted_features"`
-	// The enum specifying what state the account is in.
+	// Status of this FinancialAccount.
 	Status        TreasuryFinancialAccountStatus         `json:"status"`
 	StatusDetails *TreasuryFinancialAccountStatusDetails `json:"status_details"`
 	// The currencies the FinancialAccount can hold a balance in. Three-letter [ISO currency code](https://www.iso.org/iso-4217-currency-codes.html), in lowercase.

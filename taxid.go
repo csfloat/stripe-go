@@ -8,40 +8,72 @@ package stripe
 
 import "encoding/json"
 
-// Type of the tax ID, one of `ad_nrt`, `ae_trn`, `ar_cuit`, `au_abn`, `au_arn`, `bg_uic`, `bo_tin`, `br_cnpj`, `br_cpf`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `ch_vat`, `cl_tin`, `cn_tin`, `co_nit`, `cr_tin`, `do_rcn`, `ec_ruc`, `eg_tin`, `es_cif`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `hk_br`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kr_brn`, `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `pe_ruc`, `ph_tin`, `ro_tin`, `rs_pib`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `sv_nit`, `th_vat`, `tr_tin`, `tw_vat`, `ua_vat`, `us_ein`, `uy_ruc`, `ve_rif`, `vn_tin`, or `za_vat`. Note that some legacy tax IDs have type `unknown`
+// Type of owner referenced.
+type TaxIDOwnerType string
+
+// List of values that TaxIDOwnerType can take
+const (
+	TaxIDOwnerTypeAccount     TaxIDOwnerType = "account"
+	TaxIDOwnerTypeApplication TaxIDOwnerType = "application"
+	TaxIDOwnerTypeCustomer    TaxIDOwnerType = "customer"
+	TaxIDOwnerTypeSelf        TaxIDOwnerType = "self"
+)
+
+// Type of the tax ID, one of `ad_nrt`, `ae_trn`, `al_tin`, `am_tin`, `ao_tin`, `ar_cuit`, `au_abn`, `au_arn`, `aw_tin`, `az_tin`, `ba_tin`, `bb_tin`, `bd_bin`, `bf_ifu`, `bg_uic`, `bh_vat`, `bj_ifu`, `bo_tin`, `br_cnpj`, `br_cpf`, `bs_tin`, `by_tin`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `cd_nif`, `ch_uid`, `ch_vat`, `cl_tin`, `cm_niu`, `cn_tin`, `co_nit`, `cr_tin`, `cv_nif`, `de_stn`, `do_rcn`, `ec_ruc`, `eg_tin`, `es_cif`, `et_tin`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `gn_nif`, `hk_br`, `hr_oib`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kg_tin`, `kh_tin`, `kr_brn`, `kz_bin`, `la_tin`, `li_uid`, `li_vat`, `ma_vat`, `md_vat`, `me_pib`, `mk_vat`, `mr_nif`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `ng_tin`, `no_vat`, `no_voec`, `np_pan`, `nz_gst`, `om_vat`, `pe_ruc`, `ph_tin`, `ro_tin`, `rs_pib`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `sn_ninea`, `sr_fin`, `sv_nit`, `th_vat`, `tj_tin`, `tr_tin`, `tw_vat`, `tz_vat`, `ua_vat`, `ug_tin`, `us_ein`, `uy_ruc`, `uz_tin`, `uz_vat`, `ve_rif`, `vn_tin`, `za_vat`, `zm_tin`, or `zw_tin`. Note that some legacy tax IDs have type `unknown`
 type TaxIDType string
 
 // List of values that TaxIDType can take
 const (
 	TaxIDTypeADNRT    TaxIDType = "ad_nrt"
 	TaxIDTypeAETRN    TaxIDType = "ae_trn"
+	TaxIDTypeAlTin    TaxIDType = "al_tin"
+	TaxIDTypeAmTin    TaxIDType = "am_tin"
+	TaxIDTypeAoTin    TaxIDType = "ao_tin"
 	TaxIDTypeARCUIT   TaxIDType = "ar_cuit"
 	TaxIDTypeAUABN    TaxIDType = "au_abn"
 	TaxIDTypeAUARN    TaxIDType = "au_arn"
+	TaxIDTypeAwTin    TaxIDType = "aw_tin"
+	TaxIDTypeAzTin    TaxIDType = "az_tin"
+	TaxIDTypeBaTin    TaxIDType = "ba_tin"
+	TaxIDTypeBbTin    TaxIDType = "bb_tin"
+	TaxIDTypeBdBin    TaxIDType = "bd_bin"
+	TaxIDTypeBfIfu    TaxIDType = "bf_ifu"
 	TaxIDTypeBGUIC    TaxIDType = "bg_uic"
+	TaxIDTypeBhVAT    TaxIDType = "bh_vat"
+	TaxIDTypeBjIfu    TaxIDType = "bj_ifu"
 	TaxIDTypeBOTIN    TaxIDType = "bo_tin"
 	TaxIDTypeBRCNPJ   TaxIDType = "br_cnpj"
 	TaxIDTypeBRCPF    TaxIDType = "br_cpf"
+	TaxIDTypeBsTin    TaxIDType = "bs_tin"
+	TaxIDTypeByTin    TaxIDType = "by_tin"
 	TaxIDTypeCABN     TaxIDType = "ca_bn"
 	TaxIDTypeCAGSTHST TaxIDType = "ca_gst_hst"
 	TaxIDTypeCAPSTBC  TaxIDType = "ca_pst_bc"
 	TaxIDTypeCAPSTMB  TaxIDType = "ca_pst_mb"
 	TaxIDTypeCAPSTSK  TaxIDType = "ca_pst_sk"
 	TaxIDTypeCAQST    TaxIDType = "ca_qst"
+	TaxIDTypeCdNif    TaxIDType = "cd_nif"
+	TaxIDTypeCHUID    TaxIDType = "ch_uid"
 	TaxIDTypeCHVAT    TaxIDType = "ch_vat"
 	TaxIDTypeCLTIN    TaxIDType = "cl_tin"
+	TaxIDTypeCmNiu    TaxIDType = "cm_niu"
 	TaxIDTypeCNTIN    TaxIDType = "cn_tin"
 	TaxIDTypeCONIT    TaxIDType = "co_nit"
 	TaxIDTypeCRTIN    TaxIDType = "cr_tin"
+	TaxIDTypeCvNif    TaxIDType = "cv_nif"
+	TaxIDTypeDEStn    TaxIDType = "de_stn"
 	TaxIDTypeDORCN    TaxIDType = "do_rcn"
 	TaxIDTypeECRUC    TaxIDType = "ec_ruc"
 	TaxIDTypeEGTIN    TaxIDType = "eg_tin"
 	TaxIDTypeESCIF    TaxIDType = "es_cif"
+	TaxIDTypeETTin    TaxIDType = "et_tin"
 	TaxIDTypeEUOSSVAT TaxIDType = "eu_oss_vat"
 	TaxIDTypeEUVAT    TaxIDType = "eu_vat"
 	TaxIDTypeGBVAT    TaxIDType = "gb_vat"
 	TaxIDTypeGEVAT    TaxIDType = "ge_vat"
+	TaxIDTypeGnNif    TaxIDType = "gn_nif"
 	TaxIDTypeHKBR     TaxIDType = "hk_br"
+	TaxIDTypeHROIB    TaxIDType = "hr_oib"
 	TaxIDTypeHUTIN    TaxIDType = "hu_tin"
 	TaxIDTypeIDNPWP   TaxIDType = "id_npwp"
 	TaxIDTypeILVAT    TaxIDType = "il_vat"
@@ -51,14 +83,28 @@ const (
 	TaxIDTypeJPRN     TaxIDType = "jp_rn"
 	TaxIDTypeJPTRN    TaxIDType = "jp_trn"
 	TaxIDTypeKEPIN    TaxIDType = "ke_pin"
+	TaxIDTypeKgTin    TaxIDType = "kg_tin"
+	TaxIDTypeKhTin    TaxIDType = "kh_tin"
 	TaxIDTypeKRBRN    TaxIDType = "kr_brn"
+	TaxIDTypeKzBin    TaxIDType = "kz_bin"
+	TaxIDTypeLaTin    TaxIDType = "la_tin"
 	TaxIDTypeLIUID    TaxIDType = "li_uid"
+	TaxIDTypeLiVAT    TaxIDType = "li_vat"
+	TaxIDTypeMaVAT    TaxIDType = "ma_vat"
+	TaxIDTypeMdVAT    TaxIDType = "md_vat"
+	TaxIDTypeMePib    TaxIDType = "me_pib"
+	TaxIDTypeMkVAT    TaxIDType = "mk_vat"
+	TaxIDTypeMrNif    TaxIDType = "mr_nif"
 	TaxIDTypeMXRFC    TaxIDType = "mx_rfc"
 	TaxIDTypeMYFRP    TaxIDType = "my_frp"
 	TaxIDTypeMYITN    TaxIDType = "my_itn"
 	TaxIDTypeMYSST    TaxIDType = "my_sst"
+	TaxIDTypeNgTin    TaxIDType = "ng_tin"
 	TaxIDTypeNOVAT    TaxIDType = "no_vat"
+	TaxIDTypeNOVOEC   TaxIDType = "no_voec"
+	TaxIDTypeNpPan    TaxIDType = "np_pan"
 	TaxIDTypeNZGST    TaxIDType = "nz_gst"
+	TaxIDTypeOmVAT    TaxIDType = "om_vat"
 	TaxIDTypePERUC    TaxIDType = "pe_ruc"
 	TaxIDTypePHTIN    TaxIDType = "ph_tin"
 	TaxIDTypeROTIN    TaxIDType = "ro_tin"
@@ -69,17 +115,26 @@ const (
 	TaxIDTypeSGGST    TaxIDType = "sg_gst"
 	TaxIDTypeSGUEN    TaxIDType = "sg_uen"
 	TaxIDTypeSITIN    TaxIDType = "si_tin"
+	TaxIDTypeSnNinea  TaxIDType = "sn_ninea"
+	TaxIDTypeSrFin    TaxIDType = "sr_fin"
 	TaxIDTypeSVNIT    TaxIDType = "sv_nit"
 	TaxIDTypeTHVAT    TaxIDType = "th_vat"
+	TaxIDTypeTjTin    TaxIDType = "tj_tin"
 	TaxIDTypeTRTIN    TaxIDType = "tr_tin"
 	TaxIDTypeTWVAT    TaxIDType = "tw_vat"
+	TaxIDTypeTzVAT    TaxIDType = "tz_vat"
 	TaxIDTypeUAVAT    TaxIDType = "ua_vat"
+	TaxIDTypeUgTin    TaxIDType = "ug_tin"
 	TaxIDTypeUnknown  TaxIDType = "unknown"
 	TaxIDTypeUSEIN    TaxIDType = "us_ein"
 	TaxIDTypeUYRUC    TaxIDType = "uy_ruc"
+	TaxIDTypeUzTin    TaxIDType = "uz_tin"
+	TaxIDTypeUzVAT    TaxIDType = "uz_vat"
 	TaxIDTypeVERIF    TaxIDType = "ve_rif"
 	TaxIDTypeVNTIN    TaxIDType = "vn_tin"
 	TaxIDTypeZAVAT    TaxIDType = "za_vat"
+	TaxIDTypeZmTin    TaxIDType = "zm_tin"
+	TaxIDTypeZwTin    TaxIDType = "zw_tin"
 )
 
 // Verification status, one of `pending`, `verified`, `unverified`, or `unavailable`.
@@ -93,13 +148,13 @@ const (
 	TaxIDVerificationStatusVerified    TaxIDVerificationStatus = "verified"
 )
 
-// Creates a new TaxID object for a customer.
+// Deletes an existing tax_id object.
 type TaxIDParams struct {
 	Params   `form:"*"`
 	Customer *string `form:"-"` // Included in URL
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
-	// Type of the tax ID, one of `ad_nrt`, `ae_trn`, `ar_cuit`, `au_abn`, `au_arn`, `bg_uic`, `bo_tin`, `br_cnpj`, `br_cpf`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `ch_vat`, `cl_tin`, `cn_tin`, `co_nit`, `cr_tin`, `do_rcn`, `ec_ruc`, `eg_tin`, `es_cif`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `hk_br`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kr_brn`, `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `pe_ruc`, `ph_tin`, `ro_tin`, `rs_pib`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `sv_nit`, `th_vat`, `tr_tin`, `tw_vat`, `ua_vat`, `us_ein`, `uy_ruc`, `ve_rif`, `vn_tin`, or `za_vat`
+	// Type of the tax ID, one of `ad_nrt`, `ae_trn`, `al_tin`, `am_tin`, `ao_tin`, `ar_cuit`, `au_abn`, `au_arn`, `aw_tin`, `az_tin`, `ba_tin`, `bb_tin`, `bd_bin`, `bf_ifu`, `bg_uic`, `bh_vat`, `bj_ifu`, `bo_tin`, `br_cnpj`, `br_cpf`, `bs_tin`, `by_tin`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `cd_nif`, `ch_uid`, `ch_vat`, `cl_tin`, `cm_niu`, `cn_tin`, `co_nit`, `cr_tin`, `cv_nif`, `de_stn`, `do_rcn`, `ec_ruc`, `eg_tin`, `es_cif`, `et_tin`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `gn_nif`, `hk_br`, `hr_oib`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kg_tin`, `kh_tin`, `kr_brn`, `kz_bin`, `la_tin`, `li_uid`, `li_vat`, `ma_vat`, `md_vat`, `me_pib`, `mk_vat`, `mr_nif`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `ng_tin`, `no_vat`, `no_voec`, `np_pan`, `nz_gst`, `om_vat`, `pe_ruc`, `ph_tin`, `ro_tin`, `rs_pib`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `sn_ninea`, `sr_fin`, `sv_nit`, `th_vat`, `tj_tin`, `tr_tin`, `tw_vat`, `tz_vat`, `ua_vat`, `ug_tin`, `us_ein`, `uy_ruc`, `uz_tin`, `uz_vat`, `ve_rif`, `vn_tin`, `za_vat`, `zm_tin`, or `zw_tin`
 	Type *string `form:"type"`
 	// Value of the tax ID.
 	Value *string `form:"value"`
@@ -123,6 +178,54 @@ func (p *TaxIDListParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
+// Deletes an existing tax_id object.
+type TaxIDDeleteParams struct {
+	Params   `form:"*"`
+	Customer *string `form:"-"` // Included in URL
+}
+
+// Retrieves the tax_id object with the given identifier.
+type TaxIDRetrieveParams struct {
+	Params   `form:"*"`
+	Customer *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TaxIDRetrieveParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Creates a new tax_id object for a customer.
+type TaxIDCreateParams struct {
+	Params   `form:"*"`
+	Customer *string `form:"-"` // Included in URL
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+	// Type of the tax ID, one of `ad_nrt`, `ae_trn`, `al_tin`, `am_tin`, `ao_tin`, `ar_cuit`, `au_abn`, `au_arn`, `aw_tin`, `az_tin`, `ba_tin`, `bb_tin`, `bd_bin`, `bf_ifu`, `bg_uic`, `bh_vat`, `bj_ifu`, `bo_tin`, `br_cnpj`, `br_cpf`, `bs_tin`, `by_tin`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `cd_nif`, `ch_uid`, `ch_vat`, `cl_tin`, `cm_niu`, `cn_tin`, `co_nit`, `cr_tin`, `cv_nif`, `de_stn`, `do_rcn`, `ec_ruc`, `eg_tin`, `es_cif`, `et_tin`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `gn_nif`, `hk_br`, `hr_oib`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kg_tin`, `kh_tin`, `kr_brn`, `kz_bin`, `la_tin`, `li_uid`, `li_vat`, `ma_vat`, `md_vat`, `me_pib`, `mk_vat`, `mr_nif`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `ng_tin`, `no_vat`, `no_voec`, `np_pan`, `nz_gst`, `om_vat`, `pe_ruc`, `ph_tin`, `ro_tin`, `rs_pib`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `sn_ninea`, `sr_fin`, `sv_nit`, `th_vat`, `tj_tin`, `tr_tin`, `tw_vat`, `tz_vat`, `ua_vat`, `ug_tin`, `us_ein`, `uy_ruc`, `uz_tin`, `uz_vat`, `ve_rif`, `vn_tin`, `za_vat`, `zm_tin`, or `zw_tin`
+	Type *string `form:"type"`
+	// Value of the tax ID.
+	Value *string `form:"value"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TaxIDCreateParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// The account or customer the tax ID belongs to.
+type TaxIDOwner struct {
+	// The account being referenced when `type` is `account`.
+	Account *Account `json:"account"`
+	// The Connect Application being referenced when `type` is `application`.
+	Application *Application `json:"application"`
+	// The customer being referenced when `type` is `customer`.
+	Customer *Customer `json:"customer"`
+	// Type of owner referenced.
+	Type TaxIDOwnerType `json:"type"`
+}
+
 // Tax ID verification information.
 type TaxIDVerification struct {
 	// Verification status, one of `pending`, `verified`, `unverified`, or `unavailable`.
@@ -133,10 +236,10 @@ type TaxIDVerification struct {
 	VerifiedName string `json:"verified_name"`
 }
 
-// You can add one or multiple tax IDs to a [customer](https://stripe.com/docs/api/customers).
-// A customer's tax IDs are displayed on invoices and credit notes issued for the customer.
+// You can add one or multiple tax IDs to a [customer](https://stripe.com/docs/api/customers) or account.
+// Customer and account tax IDs get displayed on related invoices and credit notes.
 //
-// Related guide: [Customer tax identification numbers](https://stripe.com/docs/billing/taxes/tax-ids)
+// Related guides: [Customer tax identification numbers](https://stripe.com/docs/billing/taxes/tax-ids), [Account tax IDs](https://stripe.com/docs/invoicing/connect#account-tax-ids)
 type TaxID struct {
 	APIResource
 	// Two-letter ISO code representing the country of the tax ID.
@@ -152,7 +255,9 @@ type TaxID struct {
 	Livemode bool `json:"livemode"`
 	// String representing the object's type. Objects of the same type share the same value.
 	Object string `json:"object"`
-	// Type of the tax ID, one of `ad_nrt`, `ae_trn`, `ar_cuit`, `au_abn`, `au_arn`, `bg_uic`, `bo_tin`, `br_cnpj`, `br_cpf`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `ch_vat`, `cl_tin`, `cn_tin`, `co_nit`, `cr_tin`, `do_rcn`, `ec_ruc`, `eg_tin`, `es_cif`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `hk_br`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kr_brn`, `li_uid`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `no_vat`, `nz_gst`, `pe_ruc`, `ph_tin`, `ro_tin`, `rs_pib`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `sv_nit`, `th_vat`, `tr_tin`, `tw_vat`, `ua_vat`, `us_ein`, `uy_ruc`, `ve_rif`, `vn_tin`, or `za_vat`. Note that some legacy tax IDs have type `unknown`
+	// The account or customer the tax ID belongs to.
+	Owner *TaxIDOwner `json:"owner"`
+	// Type of the tax ID, one of `ad_nrt`, `ae_trn`, `al_tin`, `am_tin`, `ao_tin`, `ar_cuit`, `au_abn`, `au_arn`, `aw_tin`, `az_tin`, `ba_tin`, `bb_tin`, `bd_bin`, `bf_ifu`, `bg_uic`, `bh_vat`, `bj_ifu`, `bo_tin`, `br_cnpj`, `br_cpf`, `bs_tin`, `by_tin`, `ca_bn`, `ca_gst_hst`, `ca_pst_bc`, `ca_pst_mb`, `ca_pst_sk`, `ca_qst`, `cd_nif`, `ch_uid`, `ch_vat`, `cl_tin`, `cm_niu`, `cn_tin`, `co_nit`, `cr_tin`, `cv_nif`, `de_stn`, `do_rcn`, `ec_ruc`, `eg_tin`, `es_cif`, `et_tin`, `eu_oss_vat`, `eu_vat`, `gb_vat`, `ge_vat`, `gn_nif`, `hk_br`, `hr_oib`, `hu_tin`, `id_npwp`, `il_vat`, `in_gst`, `is_vat`, `jp_cn`, `jp_rn`, `jp_trn`, `ke_pin`, `kg_tin`, `kh_tin`, `kr_brn`, `kz_bin`, `la_tin`, `li_uid`, `li_vat`, `ma_vat`, `md_vat`, `me_pib`, `mk_vat`, `mr_nif`, `mx_rfc`, `my_frp`, `my_itn`, `my_sst`, `ng_tin`, `no_vat`, `no_voec`, `np_pan`, `nz_gst`, `om_vat`, `pe_ruc`, `ph_tin`, `ro_tin`, `rs_pib`, `ru_inn`, `ru_kpp`, `sa_vat`, `sg_gst`, `sg_uen`, `si_tin`, `sn_ninea`, `sr_fin`, `sv_nit`, `th_vat`, `tj_tin`, `tr_tin`, `tw_vat`, `tz_vat`, `ua_vat`, `ug_tin`, `us_ein`, `uy_ruc`, `uz_tin`, `uz_vat`, `ve_rif`, `vn_tin`, `za_vat`, `zm_tin`, or `zw_tin`. Note that some legacy tax IDs have type `unknown`
 	Type TaxIDType `json:"type"`
 	// Value of the tax ID.
 	Value string `json:"value"`

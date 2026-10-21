@@ -50,18 +50,6 @@ const (
 	TreasuryTransactionStatusVoid   TreasuryTransactionStatus = "void"
 )
 
-// Retrieves the details of an existing Transaction.
-type TreasuryTransactionParams struct {
-	Params `form:"*"`
-	// Specifies which fields in the response should be expanded.
-	Expand []*string `form:"expand"`
-}
-
-// AddExpand appends a new field to expand.
-func (p *TreasuryTransactionParams) AddExpand(f string) {
-	p.Expand = append(p.Expand, &f)
-}
-
 // A filter for the `status_transitions.posted_at` timestamp. When using this filter, `status=posted` and `order_by=posted_at` must also be specified.
 type TreasuryTransactionListStatusTransitionsParams struct {
 	// Returns Transactions with `posted_at` within the specified range.
@@ -72,8 +60,10 @@ type TreasuryTransactionListStatusTransitionsParams struct {
 
 // Retrieves a list of Transaction objects.
 type TreasuryTransactionListParams struct {
-	ListParams   `form:"*"`
-	Created      *int64            `form:"created"`
+	ListParams `form:"*"`
+	// Only return Transactions that were created during the given date interval.
+	Created *int64 `form:"created"`
+	// Only return Transactions that were created during the given date interval.
 	CreatedRange *RangeQueryParams `form:"created"`
 	// Specifies which fields in the response should be expanded.
 	Expand []*string `form:"expand"`
@@ -89,6 +79,30 @@ type TreasuryTransactionListParams struct {
 
 // AddExpand appends a new field to expand.
 func (p *TreasuryTransactionListParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Retrieves the details of an existing Transaction.
+type TreasuryTransactionParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TreasuryTransactionParams) AddExpand(f string) {
+	p.Expand = append(p.Expand, &f)
+}
+
+// Retrieves the details of an existing Transaction.
+type TreasuryTransactionRetrieveParams struct {
+	Params `form:"*"`
+	// Specifies which fields in the response should be expanded.
+	Expand []*string `form:"expand"`
+}
+
+// AddExpand appends a new field to expand.
+func (p *TreasuryTransactionRetrieveParams) AddExpand(f string) {
 	p.Expand = append(p.Expand, &f)
 }
 
@@ -108,7 +122,9 @@ type TreasuryTransactionFlowDetails struct {
 	CreditReversal *TreasuryCreditReversal `json:"credit_reversal"`
 	// You can reverse some [ReceivedDebits](https://stripe.com/docs/api#received_debits) depending on their network and source flow. Reversing a ReceivedDebit leads to the creation of a new object known as a DebitReversal.
 	DebitReversal *TreasuryDebitReversal `json:"debit_reversal"`
-	// Use [InboundTransfers](https://stripe.com/docs/treasury/moving-money/financial-accounts/into/inbound-transfers) to add funds to your [FinancialAccount](https://stripe.com/docs/api#financial_accounts) via a PaymentMethod that is owned by you. The funds will be transferred via an ACH debit.
+	// Use [InboundTransfers](https://docs.stripe.com/docs/treasury/moving-money/financial-accounts/into/inbound-transfers) to add funds to your [FinancialAccount](https://stripe.com/docs/api#financial_accounts) via a PaymentMethod that is owned by you. The funds will be transferred via an ACH debit.
+	//
+	// Related guide: [Moving money with Treasury using InboundTransfer objects](https://docs.stripe.com/docs/treasury/moving-money/financial-accounts/into/inbound-transfers)
 	InboundTransfer *TreasuryInboundTransfer `json:"inbound_transfer"`
 	// When an [issued card](https://stripe.com/docs/issuing) is used to make a purchase, an Issuing `Authorization`
 	// object is created. [Authorizations](https://stripe.com/docs/issuing/purchases/authorizations) must be approved for the
@@ -116,13 +132,17 @@ type TreasuryTransactionFlowDetails struct {
 	//
 	// Related guide: [Issued card authorizations](https://stripe.com/docs/issuing/purchases/authorizations)
 	IssuingAuthorization *IssuingAuthorization `json:"issuing_authorization"`
-	// Use OutboundPayments to send funds to another party's external bank account or [FinancialAccount](https://stripe.com/docs/api#financial_accounts). To send money to an account belonging to the same user, use an [OutboundTransfer](https://stripe.com/docs/api#outbound_transfers).
+	// Use [OutboundPayments](https://docs.stripe.com/docs/treasury/moving-money/financial-accounts/out-of/outbound-payments) to send funds to another party's external bank account or [FinancialAccount](https://stripe.com/docs/api#financial_accounts). To send money to an account belonging to the same user, use an [OutboundTransfer](https://stripe.com/docs/api#outbound_transfers).
 	//
 	// Simulate OutboundPayment state changes with the `/v1/test_helpers/treasury/outbound_payments` endpoints. These methods can only be called on test mode objects.
+	//
+	// Related guide: [Moving money with Treasury using OutboundPayment objects](https://docs.stripe.com/docs/treasury/moving-money/financial-accounts/out-of/outbound-payments)
 	OutboundPayment *TreasuryOutboundPayment `json:"outbound_payment"`
-	// Use OutboundTransfers to transfer funds from a [FinancialAccount](https://stripe.com/docs/api#financial_accounts) to a PaymentMethod belonging to the same entity. To send funds to a different party, use [OutboundPayments](https://stripe.com/docs/api#outbound_payments) instead. You can send funds over ACH rails or through a domestic wire transfer to a user's own external bank account.
+	// Use [OutboundTransfers](https://docs.stripe.com/docs/treasury/moving-money/financial-accounts/out-of/outbound-transfers) to transfer funds from a [FinancialAccount](https://stripe.com/docs/api#financial_accounts) to a PaymentMethod belonging to the same entity. To send funds to a different party, use [OutboundPayments](https://stripe.com/docs/api#outbound_payments) instead. You can send funds over ACH rails or through a domestic wire transfer to a user's own external bank account.
 	//
 	// Simulate OutboundTransfer state changes with the `/v1/test_helpers/treasury/outbound_transfers` endpoints. These methods can only be called on test mode objects.
+	//
+	// Related guide: [Moving money with Treasury using OutboundTransfer objects](https://docs.stripe.com/docs/treasury/moving-money/financial-accounts/out-of/outbound-transfers)
 	OutboundTransfer *TreasuryOutboundTransfer `json:"outbound_transfer"`
 	// ReceivedCredits represent funds sent to a [FinancialAccount](https://stripe.com/docs/api#financial_accounts) (for example, via ACH or wire). These money movements are not initiated from the FinancialAccount.
 	ReceivedCredit *TreasuryReceivedCredit `json:"received_credit"`
